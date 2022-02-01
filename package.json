@@ -1,0 +1,25 @@
+{
+  "name": "sdk",
+  "version": "1.0.0",
+  "description": "Strigo In-App SDK",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "node esbuild.js",
+    "start": "node esbuild-dev.js && cp -r dist/development/* example/js && live-server example"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/strigo/sdk.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/strigo/sdk/issues"
+  },
+  "homepage": "https://github.com/strigo/sdk#readme",
+  "dependencies": {
+    "esbuild": "^0.14.16"
+  },
+  "devDependencies": {}
+}
