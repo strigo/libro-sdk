@@ -1,12 +1,12 @@
 # Libro SDK
 
-An SDK that initiates and manages the in-app strigo experience, providing side-by-side exercises and assessments, easily integrated into your app
+An SDK that initiates and manages the in-app Strigo experience, providing side-by-side exercises and assessments, that can be easily integrated into your app
 
 # Getting Started
 
 ## Usage
 
-Include this snippet in the `<head>` section your website (you can copy it directly from Lounge, `web-api-key` included):
+Include this snippet in the `<head>` section of your website (you can copy it directly from Lounge, `web-api-key` included):
 
 ```html
 <script>
@@ -59,7 +59,6 @@ window.LibroSDK.shutdown();
 
 The `localStorage` and `sessionStorage` will be erased and the page will refresh.
 
-
 # Development
 
 ## Prerequisites
@@ -72,8 +71,7 @@ npm install -g live-server
 
 ## Testing
 
-The easiest way to test the SDK functionality is by using our built-in example
-just run-
+The easiest way to test the SDK functionality is by using our built-in example, just run
 
 ```sh
 npm start
@@ -85,7 +83,7 @@ Please feel free to add testing scenarios to the simple HTML template as you see
 
 ## Build
 
-Our built script is served **_directly_** from GitHub - so please handle it correctly
+Our built script is served **_directly_** from GitHub, so please handle it correctly
 
 ```sh
 npm run build
@@ -95,20 +93,20 @@ Will bundle and minify both `js` and `css` files to `dist/production` directory
 
 ## Serve
 
-These files in the `dist/production` directory can be fetched by the free CDN [JsDelivr](https://www.jsdelivr.com/)
+The files in the `dist/production` directory can be fetched by the free CDN at [JsDelivr](https://www.jsdelivr.com/)
 
 - https://cdn.jsdelivr.net/gh/strigo/libro-sdk/dist/production/libro.sdk.min.js
 - https://cdn.jsdelivr.net/gh/strigo/libro-sdk/dist/production/styles/libro.min.css
 
 
-# Development guidline
+# Development guideline
 
 ## Script Mechanism
 
 LibroSDK can operate as one of the following ways:
 
 - `Host` - the script that invokes the `setup` method and initiated page manipulation
-- `SUBSCRIBER` - the script that runs "underneath" inside the Iframe - this one can only send events to its `HOST`, using the `sessionStorage` or `localStorage`
+- `SUBSCRIBER` - the script that runs "underneath" inside the Iframe, and one can only send events to its `HOST`, using the `sessionStorage` or `localStorage`
 
 ### Init
 
@@ -171,3 +169,7 @@ We try to keep the script as **zero-dependency** as possible, since this it's a 
 - `storage-utils` - a helper module to manage both `localStorage` and `sessionStorage`
 - `config` - the module that manages `libroConfig` on `localStorage`
 - `session` - the module that manages `libroSession` on `sessionStorage` - data is relevant for every session (tab)
+ 
+## Contributions
+
+Found a bug? Please from and PR.
