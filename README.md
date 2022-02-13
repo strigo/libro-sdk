@@ -61,25 +61,23 @@ The `localStorage` and `sessionStorage` will be erased and the page will refresh
 
 # Development
 
-## Prerequisites
-
-For _testing_, please install [live-server](https://www.npmjs.com/package/live-server)
-
-```sh
-npm install -g live-server
-```
-
 ## Testing
 
-The easiest way to test the SDK functionality is by using our built-in example, just run
+Edit the `.env` file to include `SDK_HOSTING_PORT` as you like (7000 is the default port) 
+
+Then, just run:
 
 ```sh
 npm start
 ```
 
-It will bundle the script and copy it to the `example` directory, then it will serve it using `live-server`, so you can test the script capabilities.
+It will bundle the script and styles, and watch for changes.
+The scripts will be served in:
 
-Please feel free to add testing scenarios to the simple HTML template as you see fit.
+* `http://localhost:SDK_HOSTING_PORT/libro.sdk.js`
+* `http://localhost:SDK_HOSTING_PORT/styles/libro.css`
+
+You can include the script and call it from your
 
 ## Build
 
