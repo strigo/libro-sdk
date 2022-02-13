@@ -11,7 +11,6 @@ esbuild
     metafile: true,
     entryPoints: ["src/styles/strigo.css", "src/strigo.sdk.ts"],
     platform: "browser",
-    // plugins: [envFilePlugin],
     outdir: OUT_DIR,
     bundle: true,
     define: { SDK_HOSTING_PORT: `"${process.env.SDK_HOSTING_PORT}"` },

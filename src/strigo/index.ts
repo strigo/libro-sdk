@@ -60,7 +60,9 @@ export namespace Strigo {
 
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
-      url: development ? `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css` : CSS_URL
+      url: development
+        ? `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`
+        : CSS_URL
     });
 
     // Append strigo exercises Iframe

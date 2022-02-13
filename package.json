@@ -23,7 +23,6 @@
     "esbuild": "^0.14.16"
   },
   "devDependencies": {
-    "dotenv": "^16.0.0",
-    "esbuild-envfile-plugin": "^1.0.2"
+    "dotenv": "^16.0.0"
   }
 }
