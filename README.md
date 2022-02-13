@@ -77,7 +77,7 @@ The scripts will be served in:
 * `http://localhost:SDK_HOSTING_PORT/libro.sdk.js`
 * `http://localhost:SDK_HOSTING_PORT/styles/libro.css`
 
-You can include the script and call it from your
+You can include the script and call it from your local app
 
 ## Build
 
