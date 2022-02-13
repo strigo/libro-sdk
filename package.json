@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "node esbuild.js",
-    "start": "node esbuild-dev.js && cp -r dist/development/* example/js && live-server example"
+    "start": "node esbuild-dev.js -w"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,8 @@
   },
   "homepage": "https://github.com/strigo/sdk#readme",
   "dependencies": {
+    "create-serve": "^1.0.1",
+    "dotenv": "^16.0.0",
     "esbuild": "^0.14.16"
   },
   "devDependencies": {}
