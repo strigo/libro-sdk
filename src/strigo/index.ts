@@ -1,4 +1,4 @@
-import * as env from 'env';
+import { SDK_HOSTING_PORT } from 'env';
 import { SDKSetupData, SDK_TYPES } from "./types";
 import * as documentTools from "../modules/document/document";
 import * as urlTools from "../modules/url/url";
@@ -61,7 +61,7 @@ export namespace Strigo {
 
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
-      url: development ? `http://localhost:${env.SDK_HOSTING_PORT}/styles/strigo.css` : CSS_URL
+      url: development ? `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css` : CSS_URL
     });
 
     // Append strigo exercises Iframe

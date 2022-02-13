@@ -1,17 +1,17 @@
 import 'dotenv/config'
-import esbuild from "esbuild";
+import esbuild from 'esbuild';
 import envFilePlugin from 'esbuild-envfile-plugin';
-import serve, { error, log } from "create-serve";
+import serve, { error, log } from 'create-serve';
 
-const OUT_DIR = "dist/development";
+const OUT_DIR = 'dist/development';
 
 // Generate CSS/JS Builds
 esbuild
   .build({
-    logLevel: "debug",
+    logLevel: 'debug',
     metafile: true,
-    entryPoints: ["src/styles/strigo.css", "src/strigo.sdk.ts"],
-    platform: 'node',
+    entryPoints: ['src/styles/strigo.css', 'src/strigo.sdk.ts'],
+    platform: 'browser',
     plugins: [envFilePlugin],
     outdir: OUT_DIR,
     bundle: true,
@@ -19,12 +19,12 @@ esbuild
       onRebuild(err) {
         
         serve.update();
-        err ? error("× Failed") : log("✓ Updated");
+        err ? error('× Failed') : log('✓ Updated');
       }
     }
   })
   .then(() => {
-    console.log("⚡ Styles & Scripts Compiled! ⚡ ");
+    console.log('⚡ Styles & Scripts Compiled! ⚡ ');
   })
   .catch(() => process.exit(1));
 
