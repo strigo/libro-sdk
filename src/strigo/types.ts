@@ -1,8 +1,8 @@
-import { LibroToken } from "../modules/config/config.types";
+import { StrigoToken } from "../modules/config/config.types";
 
 export interface SDKSetupData {
   email: string;
-  token: LibroToken;
+  token: StrigoToken;
   webApiKey: string;
   subDomain: string;
   development: boolean;

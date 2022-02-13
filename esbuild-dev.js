@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import esbuild from "esbuild";
+import envFilePlugin from 'esbuild-envfile-plugin';
 import serve, { error, log } from "create-serve";
 
 const OUT_DIR = "dist/development";
@@ -9,7 +10,9 @@ esbuild
   .build({
     logLevel: "debug",
     metafile: true,
-    entryPoints: ["src/styles/libro.css", "src/libro.sdk.ts"],
+    entryPoints: ["src/styles/strigo.css", "src/strigo.sdk.ts"],
+    platform: 'node',
+    plugins: [envFilePlugin],
     outdir: OUT_DIR,
     bundle: true,
     watch: {

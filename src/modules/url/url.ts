@@ -1,5 +1,5 @@
-import { BASE_STRIGO_URL, LOCAL_STRIGO_URL } from "../../libro/consts";
-import { LibroConfig, SiteConfig } from "../config/config.types";
+import { BASE_STRIGO_URL, LOCAL_STRIGO_URL } from "../../strigo/consts";
+import { StrigoConfig, SiteConfig } from "../config/config.types";
 
 function paramsToObject(
   entries: IterableIterator<[string, string]>
@@ -31,7 +31,7 @@ export function extractUrlParams(search: string): Record<string, string> {
   return paramsToObject(entries);
 }
 
-export function generateLibroIframeURL(config: LibroConfig): string {
+export function generateStrigoIframeURL(config: StrigoConfig): string {
   const { subDomain, token, webApiKey, development } = config;
 
   return development

@@ -20,8 +20,10 @@
   "homepage": "https://github.com/strigo/sdk#readme",
   "dependencies": {
     "create-serve": "^1.0.1",
-    "dotenv": "^16.0.0",
     "esbuild": "^0.14.16"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "dotenv": "^16.0.0",
+    "esbuild-envfile-plugin": "^1.0.2"
+  }
 }
