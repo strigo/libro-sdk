@@ -11,4 +11,6 @@ export enum STORAGE_TYPES {
   LOCAL_STORAGE = "localStorage"
 }
 
-export interface StorageOptions<T extends StrigoSession | StrigoConfig | null> {}
+export interface StorageOptions<
+  T extends StrigoSession | StrigoConfig | null
+> {}

@@ -63,7 +63,7 @@ The `localStorage` and `sessionStorage` will be erased and the page will refresh
 
 ## Testing
 
-Edit the `.env` file to include `SDK_HOSTING_PORT` as you like (7000 is the default port) 
+Edit the `.env` file to include `SDK_HOSTING_PORT` as you like (7000 is the default port)
 
 Then, just run:
 
@@ -74,8 +74,8 @@ npm start
 It will bundle the script and styles, and watch for changes.
 The scripts will be served in:
 
-* `http://localhost:SDK_HOSTING_PORT/strigo.sdk.js`
-* `http://localhost:SDK_HOSTING_PORT/styles/strigo.css`
+- `http://localhost:SDK_HOSTING_PORT/strigo.sdk.js`
+- `http://localhost:SDK_HOSTING_PORT/styles/strigo.css`
 
 You can include the script and call it from your local app
 
@@ -95,7 +95,6 @@ The files in the `dist/production` directory can be fetched by the free CDN at [
 
 - https://cdn.jsdelivr.net/gh/strigo/strigo-sdk/dist/production/strigo.sdk.min.js
 - https://cdn.jsdelivr.net/gh/strigo/strigo-sdk/dist/production/styles/strigo.min.css
-
 
 # Development guideline
 
@@ -123,7 +122,8 @@ The `setup` method creates two storage sessions / types:
 
 - `strigoConfig` - on `localStorage` - represents the relevant data for the script initiation and operation
 
-***Example:***
+**_Example:_**
+
 ```js
 {
   "email": "hidday+strigo-user@strigo.io",
@@ -146,7 +146,8 @@ The `setup` method creates two storage sessions / types:
 
 - `strigoSession` - on `sessionStorage` - represents the data that's relevant to the current session / tab
 
-***Example***
+**_Example_**
+
 ```js
 {
   "currentUrl": "https://strigo-demo.web.app/",
@@ -167,7 +168,7 @@ We try to keep the script as **zero-dependency** as possible, since this it's a 
 - `storage-utils` - a helper module to manage both `localStorage` and `sessionStorage`
 - `config` - the module that manages `strigoConfig` on `localStorage`
 - `session` - the module that manages `strigoSession` on `sessionStorage` - data is relevant for every session (tab)
- 
+
 ## Contributions
 
 Found a bug? Please from and PR.
