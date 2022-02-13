@@ -1,4 +1,3 @@
-import { SDK_HOSTING_PORT } from 'env';
 import { SDKSetupData, SDK_TYPES } from "./types";
 import * as documentTools from "../modules/document/document";
 import * as urlTools from "../modules/url/url";

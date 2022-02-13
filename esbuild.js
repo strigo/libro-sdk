@@ -5,7 +5,6 @@ esbuild
     entryPoints: ['src/styles/strigo.css', 'src/strigo.sdk.ts'],
     outdir: 'dist/production',
     platform: 'browser',
-    external: ['env'],
     outExtension: { '.js': '.min.js', '.css': '.min.css' },
     bundle: true,
     minify: true
