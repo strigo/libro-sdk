@@ -7,16 +7,16 @@ export interface SiteConfig {
   params: Record<string, string>;
 }
 
-export interface LibroConfig {
+export interface StrigoConfig {
   email: string;
   webApiKey: string;
-  token: LibroToken;
+  token: StrigoToken;
   initSite: SiteConfig;
   subDomain: string;
   development: boolean;
 }
 
-export interface LibroToken {
+export interface StrigoToken {
   token: string;
   expiration: string;
 }

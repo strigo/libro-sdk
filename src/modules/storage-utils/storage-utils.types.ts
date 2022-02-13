@@ -1,9 +1,9 @@
-import { LibroConfig } from "../config/config.types";
-import { LibroSession } from "../session/session.types";
+import { StrigoConfig } from "../config/config.types";
+import { StrigoSession } from "../session/session.types";
 
 export enum STORAGE_NAMES {
-  LIBRO_CONFIG = "libroConfig",
-  LIBRO_SESSION = "libroSession"
+  STRIGO_CONFIG = "strigoConfig",
+  STRIGO_SESSION = "strigoSession"
 }
 
 export enum STORAGE_TYPES {
@@ -11,4 +11,4 @@ export enum STORAGE_TYPES {
   LOCAL_STORAGE = "localStorage"
 }
 
-export interface StorageOptions<T extends LibroSession | LibroConfig | null> {}
+export interface StorageOptions<T extends StrigoSession | StrigoConfig | null> {}

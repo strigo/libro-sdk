@@ -9,45 +9,45 @@ import {
   STORAGE_TYPES
 } from "../storage-utils/storage-utils.types";
 
-import { LibroConfig } from "./config.types";
+import { StrigoConfig } from "./config.types";
 
-export function init(): LibroConfig {
+export function init(): StrigoConfig {
   // Get the state from local storae
   const config = getStorageData(
     STORAGE_TYPES.LOCAL_STORAGE,
-    STORAGE_NAMES.LIBRO_CONFIG
+    STORAGE_NAMES.STRIGO_CONFIG
   );
-  return config as LibroConfig;
+  return config as StrigoConfig;
 }
 
-export function setup(initialConfig: LibroConfig): LibroConfig {
-  const config = setupStorage<LibroConfig>(
+export function setup(initialConfig: StrigoConfig): StrigoConfig {
+  const config = setupStorage<StrigoConfig>(
     STORAGE_TYPES.LOCAL_STORAGE,
-    STORAGE_NAMES.LIBRO_CONFIG,
+    STORAGE_NAMES.STRIGO_CONFIG,
     initialConfig
   );
-  return config as LibroConfig;
+  return config as StrigoConfig;
 }
 
-export function getConfig(): LibroConfig {
+export function getConfig(): StrigoConfig {
   const config = getStorageData(
     STORAGE_TYPES.LOCAL_STORAGE,
-    STORAGE_NAMES.LIBRO_CONFIG
+    STORAGE_NAMES.STRIGO_CONFIG
   );
-  return config as LibroConfig;
+  return config as StrigoConfig;
 }
 
-export function setConfigValue(key: string, value: any): LibroConfig {
+export function setConfigValue(key: string, value: any): StrigoConfig {
   const config = setStorageValue(
     STORAGE_TYPES.LOCAL_STORAGE,
-    STORAGE_NAMES.LIBRO_CONFIG,
+    STORAGE_NAMES.STRIGO_CONFIG,
     key,
     value
   );
 
-  return config as LibroConfig;
+  return config as StrigoConfig;
 }
 
 export function clearConfig() {
-  clearStorage(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.LIBRO_CONFIG);
+  clearStorage(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG);
 }

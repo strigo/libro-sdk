@@ -1,11 +1,13 @@
 import esbuild from "esbuild";
+import envFilePlugin from 'esbuild-envfile-plugin';
 
 esbuild
   .build({
-    entryPoints: ["src/styles/libro.css", "src/libro.sdk.ts"],
+    entryPoints: ["src/styles/strigo.css", "src/strigo.sdk.ts"],
     outdir: "dist/production",
-    outExtension: { '.js': '.min.js' },
-    outExtension: { '.css': '.min.css' },
+    platform: 'node',
+    plugins: [envFilePlugin],
+    outExtension: { '.js': '.min.js', '.css': '.min.css' },
     bundle: true,
     minify: true
   })

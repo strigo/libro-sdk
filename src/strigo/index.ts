@@ -1,3 +1,4 @@
+import * as env from 'env';
 import { SDKSetupData, SDK_TYPES } from "./types";
 import * as documentTools from "../modules/document/document";
 import * as urlTools from "../modules/url/url";
@@ -5,12 +6,11 @@ import * as configManager from "../modules/config/config";
 import * as sessionManager from "../modules/session/session";
 import {
   CSS_URL,
-  LIBRO_IFRAME_CLASSES,
+  STRIGO_IFRAME_CLASSES,
   ORIGINAL_WEBSITE_IFRAME_CLASSES
 } from "./consts";
-// import * as localstorageTools from "../modules/localstorage/localstorage";
 
-export namespace Libro {
+export namespace Strigo {
   export let SDKType;
 
   export function init() {
@@ -61,14 +61,14 @@ export namespace Libro {
 
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
-      url: CSS_URL
+      url: development ? `http://localhost:${env.SDK_HOSTING_PORT}/styles/strigo.css` : CSS_URL
     });
 
-    // Append libro exercises Iframe
+    // Append strigo exercises Iframe
     documentTools.appendIFrame({
       parentElement: documentTools.getBodyElement(),
-      url: urlTools.generateLibroIframeURL(configManager.getConfig()),
-      classNames: LIBRO_IFRAME_CLASSES
+      url: urlTools.generateStrigoIframeURL(configManager.getConfig()),
+      classNames: STRIGO_IFRAME_CLASSES
     });
 
     // Append original website Iframe

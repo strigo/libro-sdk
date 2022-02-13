@@ -1,4 +1,4 @@
-export interface LibroSession {
+export interface StrigoSession {
   currentUrl: string;
   isPanelOpen: boolean;
 }
