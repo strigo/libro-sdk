@@ -1,4 +1,4 @@
-import { BASE_STRIGO_URL } from "../../libro/consts";
+import { BASE_STRIGO_URL, LOCAL_STRIGO_URL } from "../../libro/consts";
 import { LibroConfig, SiteConfig } from "../config/config.types";
 
 function paramsToObject(
@@ -32,7 +32,9 @@ export function extractUrlParams(search: string): Record<string, string> {
 }
 
 export function generateLibroIframeURL(config: LibroConfig): string {
-  const { subDomain, token, webApiKey } = config;
+  const { subDomain, token, webApiKey, development } = config;
 
-  return `https://${subDomain}.${BASE_STRIGO_URL}/libro?token=${token.token}&webApiKey=${webApiKey}`;
+  return development
+    ? `http://${LOCAL_STRIGO_URL}/libro?token=${token.token}&webApiKey=${webApiKey}`
+    : `https://${subDomain}.${BASE_STRIGO_URL}/libro?token=${token.token}&webApiKey=${webApiKey}`;
 }

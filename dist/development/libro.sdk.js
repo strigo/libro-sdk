@@ -36,6 +36,7 @@
 
   // src/libro/consts.ts
   var BASE_STRIGO_URL = "strigo.io";
+  var LOCAL_STRIGO_URL = "localhost:3000";
   var CSS_URL = "https://libro-demo.web.app/assets/css/strigo.css";
   var LIBRO_IFRAME_CLASSES = ["strigo-exercises"];
   var ORIGINAL_WEBSITE_IFRAME_CLASSES = ["orig-iframe"];
@@ -65,8 +66,8 @@
     return paramsToObject(entries);
   }
   function generateLibroIframeURL(config) {
-    const { subDomain, token, webApiKey } = config;
-    return `https://${subDomain}.${BASE_STRIGO_URL}/libro?token=${token.token}&webApiKey=${webApiKey}`;
+    const { subDomain, token, webApiKey, development } = config;
+    return development ? `http://${LOCAL_STRIGO_URL}/libro?token=${token.token}&webApiKey=${webApiKey}` : `https://${subDomain}.${BASE_STRIGO_URL}/libro?token=${token.token}&webApiKey=${webApiKey}`;
   }
 
   // src/modules/storage-utils/storage-utils.ts
@@ -187,8 +188,8 @@
         return;
       }
       console.log("setup started");
-      const { email, token, webApiKey, subDomain } = data;
-      if (!email || !token || !webApiKey || !subDomain) {
+      const { email, token, webApiKey, subDomain, development = false } = data;
+      if (!development && (!email || !token || !webApiKey || !subDomain)) {
         console.log("Please provide setup data");
         return;
       }
@@ -197,7 +198,8 @@
         initSite: getUrlData(),
         token,
         webApiKey,
-        subDomain
+        subDomain,
+        development
       });
       clearDoc();
       appendCssFile({

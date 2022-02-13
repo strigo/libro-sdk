@@ -38,9 +38,9 @@ export namespace Libro {
 
     console.log("setup started");
 
-    const { email, token, webApiKey, subDomain } = data;
+    const { email, token, webApiKey, subDomain, development = false } = data;
 
-    if (!email || !token || !webApiKey || !subDomain) {
+    if (!development && (!email || !token || !webApiKey || !subDomain)) {
       console.log("Please provide setup data");
       return;
     }
@@ -50,7 +50,8 @@ export namespace Libro {
       initSite: urlTools.getUrlData(),
       token,
       webApiKey,
-      subDomain
+      subDomain,
+      development
     });
 
     // TODO: Add loader?

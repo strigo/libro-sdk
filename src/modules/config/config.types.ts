@@ -13,6 +13,7 @@ export interface LibroConfig {
   token: LibroToken;
   initSite: SiteConfig;
   subDomain: string;
+  development: boolean;
 }
 
 export interface LibroToken {

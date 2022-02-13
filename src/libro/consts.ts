@@ -1,4 +1,5 @@
 export const BASE_STRIGO_URL = "strigo.io";
+export const LOCAL_STRIGO_URL = "localhost:3000"
 
 //TODO: get CSS from build
 export const CSS_URL = "https://libro-demo.web.app/assets/css/strigo.css";

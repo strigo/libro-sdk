@@ -5,6 +5,7 @@ export interface SDKSetupData {
   token: LibroToken;
   webApiKey: string;
   subDomain: string;
+  development: boolean;
 }
 
 export enum SDK_TYPES {
