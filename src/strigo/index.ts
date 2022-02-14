@@ -33,7 +33,6 @@ export namespace Strigo {
   }
 
   function storageChanged({ key, oldValue, newValue }) {
-    console.log(`Storage changed: ${key}`, { oldValue, newValue });
     const newEventsStorage = JSON.parse(newValue)?.events;
     const oldEventsStorage = JSON.parse(oldValue)?.events;
     const difference = newEventsStorage.filter(({ eventName: newEventName }) => !oldEventsStorage.some(({ eventName: oldEventName }) => newEventName === oldEventName));
