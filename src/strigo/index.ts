@@ -14,6 +14,36 @@ import {
 export namespace Strigo {
   export let SDKType;
 
+  function postEventMessage() {
+    const newEvent = eventsStorageManager.getEventValue();
+    if (newEvent) {
+      console.log("Posting event", newEvent);
+      window.postMessage(newEvent, "*");
+      const poppedEvent = eventsStorageManager.popEventValue();
+      if (newEvent.eventName !== poppedEvent.eventName) {
+        console.error("Events storage error: popped event doesn't match new event", { newEvent, poppedEvent });
+      }
+    }
+  }
+
+  function postAllEventMessages() {
+    while (eventsStorageManager.getEventValue()) {
+      postEventMessage();
+    }
+  }
+
+  function storageChanged({ key, oldValue, newValue }) {
+    console.log(`Storage changed: ${key}`, { oldValue, newValue });
+    const newEventsStorage = JSON.parse(newValue)?.events;
+    const oldEventsStorage = JSON.parse(oldValue)?.events;
+    const difference = newEventsStorage.filter(({ eventName: newEventName }) => !oldEventsStorage.some(({ eventName: oldEventName }) => newEventName === oldEventName));
+
+    if (difference.length > 0) {
+      postEventMessage();
+    }
+
+  }
+
   export function init() {
     // Get webApiToken from script
 
@@ -86,6 +116,12 @@ export namespace Strigo {
       currentUrl: configManager.getConfig().initSite.href,
       isPanelOpen: true
     });
+
+    // Emptying events storage and posting all events
+    postAllEventMessages();
+
+    // Listen for events sent (on the HOST)
+    window.addEventListener('storage', storageChanged);
 
     console.log("setup finished");
   }
