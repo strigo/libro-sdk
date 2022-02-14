@@ -18,7 +18,7 @@ export namespace Strigo {
     const newEvent = eventsStorageManager.getEventValue();
     if (newEvent) {
       console.log("Posting event", newEvent);
-      window.postMessage(newEvent, "*");
+      window.frames[0].postMessage(newEvent, "*");
       const poppedEvent = eventsStorageManager.popEventValue();
       if (newEvent.eventName !== poppedEvent.eventName) {
         console.error("Events storage error: popped event doesn't match new event", { newEvent, poppedEvent });
