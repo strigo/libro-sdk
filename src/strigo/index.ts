@@ -3,6 +3,8 @@ import * as documentTools from "../modules/document/document";
 import * as urlTools from "../modules/url/url";
 import * as configManager from "../modules/config/config";
 import * as sessionManager from "../modules/session/session";
+import * as eventsStorageManager from "../modules/events-storage/events-storage";
+
 import {
   CSS_URL,
   STRIGO_IFRAME_CLASSES,
@@ -19,6 +21,7 @@ export namespace Strigo {
     // Initialize state
     configManager.init();
     sessionManager.init();
+    eventsStorageManager.init();
     // Check if other instances exists
     if (sessionManager && sessionManager.isPanelOpen()) {
       // Start as a subscriber
@@ -83,6 +86,7 @@ export namespace Strigo {
       currentUrl: configManager.getConfig().initSite.href,
       isPanelOpen: true
     });
+
     console.log("setup finished");
   }
   export function shutdown() {
@@ -94,7 +98,8 @@ export namespace Strigo {
     }
     console.log("shutdown called");
   }
-  export function sendEvent() {
-    console.log("sendEvent called");
+  export function sendEvent(eventName) {
+    eventsStorageManager.pushEventValue({ eventName });
+    console.log("sendEvent called", { eventName });
   }
 }

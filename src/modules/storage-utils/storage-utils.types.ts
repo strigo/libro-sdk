@@ -1,9 +1,11 @@
 import { StrigoConfig } from "../config/config.types";
 import { StrigoSession } from "../session/session.types";
+import { StrigoEventsStorage } from "../events-storage/events-storage.types";
 
 export enum STORAGE_NAMES {
   STRIGO_CONFIG = "strigoConfig",
-  STRIGO_SESSION = "strigoSession"
+  STRIGO_SESSION = "strigoSession",
+  STRIGO_EVENTS = "strigoEvents",
 }
 
 export enum STORAGE_TYPES {
@@ -13,4 +15,4 @@ export enum STORAGE_TYPES {
 
 export interface StorageOptions<
   T extends StrigoSession | StrigoConfig | null
-> {}
+  > { }

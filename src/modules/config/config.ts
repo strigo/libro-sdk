@@ -12,7 +12,7 @@ import {
 import { StrigoConfig } from "./config.types";
 
 export function init(): StrigoConfig {
-  // Get the state from local storae
+  // Get the state from local storage
   const config = getStorageData(
     STORAGE_TYPES.LOCAL_STORAGE,
     STORAGE_NAMES.STRIGO_CONFIG
