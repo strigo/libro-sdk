@@ -61,13 +61,27 @@ export function popEventValue(): StrigoEvent {
     try {
         const initialState = getEventsStorageData();
         if (!initialState) {
-            throw new Error("Can't find initial state");
+            throw new Error("Can't find events storage");
         }
 
         const event = initialState.events.pop();
 
         window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_EVENTS, JSON.stringify(initialState));
         return event;
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+}
+
+export function getEventValue(): StrigoEvent {
+    try {
+        const initialState = getEventsStorageData();
+        if (!initialState) {
+            throw new Error("Can't find events storage");
+        }
+
+        return initialState.events.pop();
     } catch (error) {
         console.log(error);
         return null;
