@@ -1,9 +1,7 @@
 import { BASE_STRIGO_URL, LOCAL_STRIGO_URL } from "../../strigo/consts";
 import { StrigoConfig, SiteConfig } from "../config/config.types";
 
-function paramsToObject(
-  entries: IterableIterator<[string, string]>
-): Record<string, string> {
+function paramsToObject(entries: IterableIterator<[string, string]>): Record<string, string> {
   const result = {};
   for (const [key, value] of entries) {
     // each 'entry' is a [key, value] tupple

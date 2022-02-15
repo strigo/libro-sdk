@@ -15,8 +15,7 @@ Include this snippet in the `<head>` section of your website (you can copy it di
     s.id = "strigo-sdk";
     s.type = "text/javascript";
     s.async = true;
-    s.src =
-      "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk/dist/production/strigo.sdk.min.js";
+    s.src = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk/dist/production/strigo.sdk.min.js";
     s.setAttribute("data-web-api-key", "<web-api-key>");
     var x = document.getElementsByTagName("script")[0];
     x.parentNode.insertBefore(s, x);

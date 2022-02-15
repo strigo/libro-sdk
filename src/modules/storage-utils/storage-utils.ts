@@ -67,10 +67,7 @@ export function setStorageValue<T extends StrigoSession | StrigoConfig>(
   }
 }
 
-export function clearStorage(
-  storageType: STORAGE_TYPES,
-  storageName: string
-): void {
+export function clearStorage(storageType: STORAGE_TYPES, storageName: string): void {
   try {
     window[storageType].removeItem(storageName);
   } catch (error) {

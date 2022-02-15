@@ -5,11 +5,7 @@ import * as configManager from "../modules/config/config";
 import * as sessionManager from "../modules/session/session";
 import * as eventsStorageManager from "../modules/events-storage/events-storage";
 
-import {
-  CSS_URL,
-  STRIGO_IFRAME_CLASSES,
-  ORIGINAL_WEBSITE_IFRAME_CLASSES
-} from "./consts";
+import { CSS_URL, STRIGO_IFRAME_CLASSES, ORIGINAL_WEBSITE_IFRAME_CLASSES } from "./consts";
 
 export namespace Strigo {
   export let SDKType;
@@ -35,12 +31,14 @@ export namespace Strigo {
   function storageChanged({ key, oldValue, newValue }) {
     const newEventsStorage = JSON.parse(newValue)?.events;
     const oldEventsStorage = JSON.parse(oldValue)?.events;
-    const difference = newEventsStorage.filter(({ eventName: newEventName }) => !oldEventsStorage.some(({ eventName: oldEventName }) => newEventName === oldEventName));
+    const difference = newEventsStorage.filter(
+      ({ eventName: newEventName }) =>
+        !oldEventsStorage.some(({ eventName: oldEventName }) => newEventName === oldEventName)
+    );
 
     if (difference.length > 0) {
       postEventMessage();
     }
-
   }
 
   export function init() {
@@ -92,9 +90,7 @@ export namespace Strigo {
 
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
-      url: development
-        ? `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`
-        : CSS_URL
+      url: development ? `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css` : CSS_URL
     });
 
     // Append strigo exercises Iframe
@@ -120,7 +116,7 @@ export namespace Strigo {
     postAllEventMessages();
 
     // Listen for events sent (on the HOST)
-    window.addEventListener('storage', storageChanged);
+    window.addEventListener("storage", storageChanged);
 
     console.log("setup finished");
   }
