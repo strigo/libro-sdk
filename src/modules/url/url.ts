@@ -35,6 +35,6 @@ export function generateStrigoIframeURL(config: StrigoConfig): string {
   const { subDomain, token, webApiKey, development } = config;
 
   return development
-    ? `http://${LOCAL_STRIGO_URL}/libro?token=${token.token}&webApiKey=${webApiKey}`
-    : `https://${subDomain}.${BASE_STRIGO_URL}/libro?token=${token.token}&webApiKey=${webApiKey}`;
+    ? `http://${LOCAL_STRIGO_URL}/libro/courses?token=${token.token}&webApiKey=${webApiKey}`
+    : `https://${subDomain}.${BASE_STRIGO_URL}/libro/courses?token=${token.token}&webApiKey=${webApiKey}`;
 }
