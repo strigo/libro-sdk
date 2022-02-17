@@ -7,7 +7,13 @@ import * as sessionManager from "../modules/session/session";
 import * as eventsStorageManager from "../modules/events-storage/events-storage";
 import * as listeners from "../modules/listeners/listeners";
 
-import { CSS_URL, STRIGO_IFRAME_CLASSES, ORIGINAL_WEBSITE_IFRAME_CLASSES } from "./consts";
+import {
+  CSS_URL,
+  STRIGO_IFRAME_CLASSES,
+  ORIGINAL_WEBSITE_IFRAME_CLASSES,
+  MINIMUM_PANE_SIZE_MOBILE,
+  MINIMUM_PANE_SIZE_DESKTOP
+} from "./consts";
 
 export namespace Strigo {
   export let SDKType;
@@ -114,7 +120,7 @@ export namespace Strigo {
 
     Split(["#exercises", "#original-site"], {
       sizes: [25, 75],
-      minSize: 0
+      minSize: documentTools.isMobile() ? MINIMUM_PANE_SIZE_MOBILE : MINIMUM_PANE_SIZE_DESKTOP
     });
 
     sessionManager.setup({
