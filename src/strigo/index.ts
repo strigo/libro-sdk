@@ -6,6 +6,7 @@ import * as configManager from "../modules/config/config";
 import * as sessionManager from "../modules/session/session";
 import * as eventsStorageManager from "../modules/events-storage/events-storage";
 import * as listeners from "../modules/listeners/listeners";
+import * as eventsSender from "../modules/events-sender/events-sender";
 
 import {
   CSS_URL,
@@ -17,37 +18,6 @@ import {
 
 export namespace Strigo {
   export let SDKType;
-
-  function postEventMessage() {
-    const newEvent = eventsStorageManager.getEventValue();
-    if (newEvent) {
-      console.log("Posting event", newEvent);
-      window.frames[0].postMessage(newEvent, "*");
-      const poppedEvent = eventsStorageManager.popEventValue();
-      if (newEvent.eventName !== poppedEvent.eventName) {
-        console.error("Events storage error: popped event doesn't match new event", { newEvent, poppedEvent });
-      }
-    }
-  }
-
-  function postAllEventMessages() {
-    while (eventsStorageManager.getEventValue()) {
-      postEventMessage();
-    }
-  }
-
-  function storageChanged({ key, oldValue, newValue }) {
-    const newEventsStorage = JSON.parse(newValue)?.events;
-    const oldEventsStorage = JSON.parse(oldValue)?.events;
-    const difference = newEventsStorage.filter(
-      ({ eventName: newEventName }) =>
-        !oldEventsStorage.some(({ eventName: oldEventName }) => newEventName === oldEventName)
-    );
-
-    if (difference.length > 0) {
-      postEventMessage();
-    }
-  }
 
   export function init() {
     // Get webApiToken from script
@@ -129,10 +99,7 @@ export namespace Strigo {
     });
 
     // Emptying events storage and posting all events
-    postAllEventMessages();
-
-    // Listen for events sent (on the HOST)
-    window.addEventListener("storage", storageChanged);
+    eventsSender.postAllEventMessages();
 
     // Init the HOST event listeners
     listeners.initHostEventListeners();
