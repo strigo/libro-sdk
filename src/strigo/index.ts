@@ -1,3 +1,4 @@
+import Split from "split.js";
 import { SDKSetupData, SDK_TYPES } from "./types";
 import * as documentTools from "../modules/document/document";
 import * as urlTools from "../modules/url/url";
@@ -93,18 +94,26 @@ export namespace Strigo {
       url: development ? `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css` : CSS_URL
     });
 
+    const mainDiv = documentTools.generatePageStructure();
     // Append strigo exercises Iframe
     documentTools.appendIFrame({
-      parentElement: documentTools.getBodyElement(),
+      parentElement: mainDiv,
       url: urlTools.generateStrigoIframeURL(configManager.getConfig()),
-      classNames: STRIGO_IFRAME_CLASSES
+      classNames: STRIGO_IFRAME_CLASSES,
+      id: "exercises"
     });
 
     // Append original website Iframe
     documentTools.appendIFrame({
-      parentElement: documentTools.getBodyElement(),
+      parentElement: mainDiv,
       url: configManager.getConfig().initSite.href,
-      classNames: ORIGINAL_WEBSITE_IFRAME_CLASSES
+      classNames: ORIGINAL_WEBSITE_IFRAME_CLASSES,
+      id: "original-site"
+    });
+
+    Split(["#exercises", "#original-site"], {
+      sizes: [25, 75],
+      minSize: 450
     });
 
     sessionManager.setup({

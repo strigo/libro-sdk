@@ -22,5 +22,8 @@
     "create-serve": "1.0.1",
     "dotenv": "16.0.0",
     "esbuild": "0.14.16"
+  },
+  "dependencies": {
+    "split.js": "1.6.5"
   }
 }

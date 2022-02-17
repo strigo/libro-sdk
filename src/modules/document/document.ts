@@ -13,6 +13,14 @@ export function clearDoc() {
   document.close();
 }
 
+export function generatePageStructure(): HTMLElement {
+  const mainDiv = document.createElement("div");
+  mainDiv.className = "strigo-main";
+
+  document.body.appendChild(mainDiv);
+  return mainDiv;
+}
+
 export function appendCssFile(params: AppendCSSFileParams) {
   const { url, parentElement } = params;
   const cssElement = document.createElement("link");
@@ -22,9 +30,10 @@ export function appendCssFile(params: AppendCSSFileParams) {
 }
 
 export function appendIFrame(params: AppendIframeParams) {
-  const { url, parentElement, classNames } = params;
+  const { url, parentElement, classNames, id } = params;
   const iframe = document.createElement("iframe");
   iframe.classList.add(...classNames);
+  iframe.id = id;
   iframe.src = url;
 
   parentElement.appendChild(iframe);

@@ -7,4 +7,5 @@ export interface AppendIframeParams {
   parentElement: HTMLElement;
   url: string;
   classNames: string[];
+  id: string;
 }
