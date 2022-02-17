@@ -1,6 +1,5 @@
 import { StrigoConfig } from "../config/config.types";
 import { StrigoSession } from "../session/session.types";
-import { StrigoEventsStorage } from "../events-storage/events-storage.types";
 
 export enum STORAGE_NAMES {
   STRIGO_CONFIG = "strigoConfig",
