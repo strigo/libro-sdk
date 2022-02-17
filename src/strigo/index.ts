@@ -113,7 +113,7 @@ export namespace Strigo {
 
     Split(["#exercises", "#original-site"], {
       sizes: [25, 75],
-      minSize: 450
+      minSize: 0
     });
 
     sessionManager.setup({
