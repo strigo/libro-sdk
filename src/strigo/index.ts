@@ -5,6 +5,7 @@ import * as urlTools from "../modules/url/url";
 import * as configManager from "../modules/config/config";
 import * as sessionManager from "../modules/session/session";
 import * as eventsStorageManager from "../modules/events-storage/events-storage";
+import * as listeners from "../modules/listeners/listeners";
 
 import { CSS_URL, STRIGO_IFRAME_CLASSES, ORIGINAL_WEBSITE_IFRAME_CLASSES } from "./consts";
 
@@ -127,16 +128,16 @@ export namespace Strigo {
     // Listen for events sent (on the HOST)
     window.addEventListener("storage", storageChanged);
 
+    // Init the HOST event listeners
+    listeners.initHostEventListeners();
+
     console.log("setup finished");
   }
   export function shutdown() {
-    if (SDKType === SDK_TYPES.SUBSCRIBER) {
-      // Send message to host
-      configManager.clearConfig();
-      sessionManager.clearSession();
-      documentTools.reloadPage();
-    }
     console.log("shutdown called");
+    configManager.clearConfig();
+    sessionManager.clearSession();
+    documentTools.reloadPage();
   }
   export function sendEvent(eventName) {
     eventsStorageManager.pushEventValue({ eventName });
