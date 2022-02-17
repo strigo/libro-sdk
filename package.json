@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "node esbuild.js",
-    "start": "node esbuild-dev.js -w"
+    "start": "node esbuild-dev.js -w",
+    "purge": "node purge-jsdelivr"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
   },
   "homepage": "https://github.com/strigo/sdk#readme",
   "devDependencies": {
+    "axios": "^0.26.0",
     "create-serve": "1.0.1",
     "dotenv": "16.0.0",
     "esbuild": "0.14.16"
