@@ -28,6 +28,7 @@ export function addLoader(iframeElement: HTMLElement) {
       if (opacity > 0) {
         preloader.style.opacity = (opacity - 0.1).toString();
       } else {
+        preloader.style.pointerEvents = "none";
         clearInterval(interval);
       }
     }, 200);
