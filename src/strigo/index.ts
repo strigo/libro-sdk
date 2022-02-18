@@ -15,6 +15,7 @@ import {
   MINIMUM_PANE_SIZE_MOBILE,
   MINIMUM_PANE_SIZE_DESKTOP
 } from "./consts";
+import { addLoader } from "../modules/loader/loader";
 
 export namespace Strigo {
   export let SDKType;
@@ -73,12 +74,14 @@ export namespace Strigo {
 
     const mainDiv = documentTools.generatePageStructure();
     // Append strigo exercises Iframe
-    documentTools.appendIFrame({
+    const exercisesIframe = documentTools.appendIFrame({
       parentElement: mainDiv,
       url: urlTools.generateStrigoIframeURL(configManager.getConfig()),
       classNames: STRIGO_IFRAME_CLASSES,
       id: "exercises"
     });
+
+    addLoader(exercisesIframe);
 
     // Append original website Iframe
     documentTools.appendIFrame({
