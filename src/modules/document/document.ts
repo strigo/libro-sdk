@@ -37,6 +37,7 @@ export function appendIFrame(params: AppendIframeParams) {
   iframe.src = url;
 
   parentElement.appendChild(iframe);
+  return iframe;
 }
 
 export function reloadPage(): void {
