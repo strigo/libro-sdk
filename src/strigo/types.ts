@@ -3,8 +3,6 @@ import { StrigoToken } from "../modules/config/config.types";
 export interface SDKSetupData {
   email: string;
   token: StrigoToken;
-  webApiKey: string;
-  subDomain: string;
   development: boolean;
 }
 
