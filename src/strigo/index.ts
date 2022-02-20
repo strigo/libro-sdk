@@ -33,6 +33,10 @@ export namespace Strigo {
     if (sessionManager && sessionManager.isPanelOpen()) {
       // Start as a subscriber
       SDKType = SDK_TYPES.SUBSCRIBER;
+
+      // Dispatch opened event 
+      const strigoOpenedEvent = new Event('strigo-opened')
+      window.dispatchEvent(strigoOpenedEvent)
     } else {
       SDKType = SDK_TYPES.HOST;
     }
