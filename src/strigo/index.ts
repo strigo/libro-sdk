@@ -7,6 +7,7 @@ import * as sessionManager from "../modules/session/session";
 import * as eventsStorageManager from "../modules/events-storage/events-storage";
 import * as listeners from "../modules/listeners/listeners";
 import * as eventsSender from "../modules/events-sender/events-sender";
+import { Logger } from "../../services/logger";
 
 import {
   CSS_URL,
@@ -35,7 +36,7 @@ export namespace Strigo {
     } else {
       SDKType = SDK_TYPES.HOST;
     }
-    console.log("init called");
+    Logger.info("init called");
   }
 
   export function setup(data: SDKSetupData) {
@@ -44,7 +45,7 @@ export namespace Strigo {
       return;
     }
 
-    console.log("setup started");
+    Logger.info("setup started");
 
     const { email, token, development = false } = data;
 
@@ -52,7 +53,7 @@ export namespace Strigo {
     const { webApiKey, subDomain } = urlTools.extractInitScriptParams();
 
     if (!development && (!email || !token || !webApiKey || !subDomain)) {
-      console.log("Please provide setup data");
+      Logger.error("Please provide setup data");
       return;
     }
 
@@ -108,16 +109,16 @@ export namespace Strigo {
     // Init the HOST event listeners
     listeners.initHostEventListeners();
 
-    console.log("setup finished");
+    Logger.info("setup finished");
   }
   export function shutdown() {
-    console.log("shutdown called");
+    Logger.info("shutdown called");
     configManager.clearConfig();
     sessionManager.clearSession();
     documentTools.reloadPage();
   }
   export function sendEvent(eventName) {
     eventsStorageManager.pushEventValue({ eventName });
-    console.log("sendEvent called", { eventName });
+    Logger.debug("sendEvent called", { eventName });
   }
 }
