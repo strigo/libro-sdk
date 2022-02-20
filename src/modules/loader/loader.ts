@@ -19,24 +19,18 @@ export function addLoader() {
   document.body.appendChild(loaderDiv);
 }
 
-export function addLoaderListener(iframeElement: HTMLElement) {
+export function showLoader() {
   const preloader = document.querySelector<HTMLElement>(".strigo-loader");
-
-  const fadeEffect = () => {
-    const interval = setInterval(() => {
-      if (!preloader.style.opacity) {
-        preloader.style.opacity = "1";
-      }
-      const opacity = parseFloat(preloader.style.opacity);
-      if (opacity > 0) {
-        preloader.style.opacity = (opacity - 0.1).toString();
-      } else {
-        preloader.style.pointerEvents = "none";
-        clearInterval(interval);
-      }
-    }, 200);
-  };
-
-  // Add listener to exercises div
-  iframeElement.addEventListener("load", fadeEffect);
+  const interval = setInterval(() => {
+    if (!preloader.style.opacity) {
+      preloader.style.opacity = "1";
+    }
+    const opacity = parseFloat(preloader.style.opacity);
+    if (opacity > 0) {
+      preloader.style.opacity = (opacity - 0.1).toString();
+    } else {
+      preloader.style.pointerEvents = "none";
+      clearInterval(interval);
+    }
+  }, 200);
 }
