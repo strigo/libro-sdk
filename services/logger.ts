@@ -21,19 +21,19 @@ export const Logger = {
     }
   },
 
-  debug(message, context) {
+  debug(message, context = {}) {
     this.log("debug", message, context);
   },
 
-  info(message, context) {
+  info(message, context = {}) {
     this.log("info", message, context);
   },
 
-  warn(message, context) {
+  warn(message, context = {}) {
     this.log("warn", message, context);
   },
 
-  error(message, context) {
+  error(message, context = {}) {
     this.log("error", message, context);
   }
 };

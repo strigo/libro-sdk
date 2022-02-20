@@ -1,6 +1,7 @@
 import { StorageOptions, STORAGE_TYPES } from "./storage-utils.types";
 import { StrigoSession } from "../session/session.types";
 import { StrigoConfig } from "../config/config.types";
+import { Logger } from "../../../services/logger";
 
 export function initStorage<T extends StrigoSession | StrigoConfig>(
   storageType: STORAGE_TYPES,
@@ -11,7 +12,7 @@ export function initStorage<T extends StrigoSession | StrigoConfig>(
     window[storageType].setItem(storageName, JSON.stringify(initialStorage));
     return initialStorage;
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return null;
   }
 }
@@ -24,7 +25,7 @@ export function getStorageData<T extends StrigoSession | StrigoConfig>(
     const value = JSON.parse(window[storageType].getItem(storageName));
     return value;
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return null;
   }
 }
@@ -38,7 +39,7 @@ export function setupStorage<T extends StrigoSession | StrigoConfig>(
     window[storageType].setItem(storageName, JSON.stringify(data));
     return data;
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return null;
   }
 }
@@ -62,7 +63,7 @@ export function setStorageValue<T extends StrigoSession | StrigoConfig>(
     window[storageType].setItem(storageName, JSON.stringify(newState));
     return newState;
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return null;
   }
 }
@@ -71,6 +72,6 @@ export function clearStorage(storageType: STORAGE_TYPES, storageName: string): v
   try {
     window[storageType].removeItem(storageName);
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
   }
 }
