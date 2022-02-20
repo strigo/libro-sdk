@@ -49,6 +49,16 @@ window.StrigoSDK.setup({
 });
 ```
 
+### Listen to SDK changes
+If you want to, for instance, know if the exercises panel was opened and hide the start button, you can listen to `strigo-opened` event - which the SDK will trigger whenever the SDK is opened
+
+```js
+window.addEventListener("strigo-opened", () => {
+  // Your custom code here
+  // e.g : setButtonDisabled(true)
+});
+```
+
 ### Shutdown
 
 To exit Strigo session, simply call:
@@ -96,7 +106,7 @@ The files in the `dist/production` directory can be fetched by the free CDN at [
 - https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/strigo.sdk.min.js
 - https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo.min.css
 
-# Invalidate CDN
+## Invalidate CDN
 You can refresh the script manually in JSDelivr CDN - just run `npm run purge` after building and pushing to master
 
 # Development guideline
