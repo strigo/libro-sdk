@@ -1,5 +1,6 @@
-import { BASE_STRIGO_URL, LOCAL_STRIGO_URL } from "../../strigo/consts";
+import { BASE_STRIGO_URL, INIT_SCRIPT_ID, LOCAL_STRIGO_URL } from "../../strigo/consts";
 import { StrigoConfig, SiteConfig } from "../config/config.types";
+import { InitScriptParams } from "./url.types";
 
 function paramsToObject(entries: IterableIterator<[string, string]>): Record<string, string> {
   const result = {};
@@ -35,4 +36,12 @@ export function generateStrigoIframeURL(config: StrigoConfig): string {
   return development
     ? `http://${LOCAL_STRIGO_URL}/libro/courses?token=${token.token}&webApiKey=${webApiKey}`
     : `https://${subDomain}.${BASE_STRIGO_URL}/libro/courses?token=${token.token}&webApiKey=${webApiKey}`;
+}
+
+export function extractInitScriptParams(): InitScriptParams {
+  const initScript = document.getElementById(INIT_SCRIPT_ID);
+  return {
+    webApiKey: initScript.getAttribute("data-web-api-key"),
+    subDomain: initScript.getAttribute("data-subdomain")
+  };
 }
