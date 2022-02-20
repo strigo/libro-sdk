@@ -93,7 +93,7 @@ export namespace Strigo {
       id: "exercises"
     });
 
-    addLoaderListener(exercisesIframe);
+    listeners.initSubscriberEventListeners(exercisesIframe);
 
     // Append original website Iframe
     documentTools.appendIFrame({
@@ -112,9 +112,6 @@ export namespace Strigo {
       currentUrl: configManager.getConfig().initSite.href,
       isPanelOpen: true
     });
-
-    // Emptying events storage and posting all events
-    eventsSender.postAllEventMessages();
 
     // Init the HOST event listeners
     listeners.initHostEventListeners();
