@@ -6,7 +6,7 @@ An SDK that initiates and manages the in-app Strigo experience, providing side-b
 
 ## Usage
 
-Include this snippet in the `<head>` section of your website (you can copy it directly from Lounge, `web-api-key` included):
+Include this snippet in the `<head>` section of your website (you can copy it directly from Lounge, `webApiKey` and `subdomain` included):
 
 ```html
 <script>
@@ -15,8 +15,9 @@ Include this snippet in the `<head>` section of your website (you can copy it di
     s.id = "strigo-sdk";
     s.type = "text/javascript";
     s.async = true;
-    s.src = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk/dist/production/strigo.sdk.min.js";
-    s.setAttribute("data-web-api-key", "<web-api-key>");
+    s.src = 'https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/strigo.sdk.min.js';
+    s.setAttribute('data-web-api-key', '<webApiKey>');
+    s.setAttribute('data-subdomain', '<subdomain>');
     var x = document.getElementsByTagName("script")[0];
     x.parentNode.insertBefore(s, x);
   })();
@@ -92,8 +93,11 @@ Will bundle and minify both `js` and `css` files to `dist/production` directory
 
 The files in the `dist/production` directory can be fetched by the free CDN at [JsDelivr](https://www.jsdelivr.com/)
 
-- https://cdn.jsdelivr.net/gh/strigo/strigo-sdk/dist/production/strigo.sdk.min.js
-- https://cdn.jsdelivr.net/gh/strigo/strigo-sdk/dist/production/styles/strigo.min.css
+- https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/strigo.sdk.min.js
+- https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo.min.css
+
+# Invalidate CDN
+You can refresh the script manually in JSDelivr CDN - just run `npm run purge` after building and pushing to master
 
 # Development guideline
 
