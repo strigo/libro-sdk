@@ -10,13 +10,16 @@ const SPINNER = `
 </circle>
 </svg>`;
 
-export function addLoader(iframeElement: HTMLElement) {
+export function addLoader() {
   // Add Spinner
   const loaderDiv = document.createElement("div");
   loaderDiv.className = "strigo-loader";
   loaderDiv.innerHTML = SPINNER;
 
   document.body.appendChild(loaderDiv);
+}
+
+export function addLoaderListener(iframeElement: HTMLElement) {
   const preloader = document.querySelector<HTMLElement>(".strigo-loader");
 
   const fadeEffect = () => {
