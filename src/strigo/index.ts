@@ -46,7 +46,10 @@ export namespace Strigo {
 
     console.log("setup started");
 
-    const { email, token, webApiKey, subDomain, development = false } = data;
+    const { email, token, development = false } = data;
+
+    // Get init script parameters
+    const { webApiKey, subDomain } = urlTools.extractInitScriptParams();
 
     if (!development && (!email || !token || !webApiKey || !subDomain)) {
       console.log("Please provide setup data");
@@ -61,8 +64,6 @@ export namespace Strigo {
       subDomain,
       development
     });
-
-    // TODO: Add loader?
 
     // Page manipulation
     documentTools.clearDoc();
