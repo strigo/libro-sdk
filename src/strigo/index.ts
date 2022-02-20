@@ -35,8 +35,7 @@ export namespace Strigo {
       SDKType = SDK_TYPES.SUBSCRIBER;
 
       // Dispatch opened event 
-      const strigoOpenedEvent = new Event('strigo-opened')
-      window.dispatchEvent(strigoOpenedEvent)
+      window.dispatchEvent(new Event('strigo-opened'))
     } else {
       SDKType = SDK_TYPES.HOST;
     }
