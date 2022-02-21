@@ -45,3 +45,15 @@ export function extractInitScriptParams(): InitScriptParams {
     subDomain: initScript.getAttribute("data-subdomain")
   };
 }
+
+export function generateCssURL(development: boolean, version?: string) {
+  if (development) {
+    return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
+  }
+
+  if (version) {
+    return `https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@${version}/dist/production/styles/strigo.min.css`;
+  }
+
+  return "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo.min.css";
+}
