@@ -33,10 +33,15 @@ export namespace Strigo {
       // Start as a subscriber
       SDKType = SDK_TYPES.SUBSCRIBER;
 
-      // Dispatch opened event 
-      window.dispatchEvent(new Event('strigo-opened'))
+      // Dispatch opened event
+      window.dispatchEvent(new Event("strigo-opened"));
     } else {
       SDKType = SDK_TYPES.HOST;
+      // Auto setup if the config exists
+      const config = configManager.getConfig();
+      if (config) {
+        setup(config);
+      }
     }
     Logger.info("init called");
   }
