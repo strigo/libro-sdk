@@ -10,7 +10,6 @@ import * as eventsSender from "../modules/events-sender/events-sender";
 import { Logger } from "../../services/logger";
 
 import {
-  CSS_URL,
   STRIGO_IFRAME_CLASSES,
   ORIGINAL_WEBSITE_IFRAME_CLASSES,
   MINIMUM_PANE_SIZE_MOBILE,
@@ -50,7 +49,7 @@ export namespace Strigo {
 
     Logger.info("setup started");
 
-    const { email, token, development = false } = data;
+    const { email, token, development = false, version } = data;
 
     // Get init script parameters
     const { webApiKey, subDomain } = urlTools.extractInitScriptParams();
@@ -74,7 +73,7 @@ export namespace Strigo {
 
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
-      url: development ? `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css` : CSS_URL
+      url: urlTools.generateCssURL(development, version)
     });
 
     addLoader();

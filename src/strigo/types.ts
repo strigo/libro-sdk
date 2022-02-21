@@ -4,6 +4,7 @@ export interface SDKSetupData {
   email: string;
   token: StrigoToken;
   development: boolean;
+  version?: string;
 }
 
 export enum SDK_TYPES {
