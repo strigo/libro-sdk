@@ -70,7 +70,8 @@ export namespace Strigo {
       token,
       webApiKey,
       subDomain,
-      development
+      development,
+      version
     });
 
     // Page manipulation
