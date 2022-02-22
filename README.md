@@ -15,9 +15,9 @@ Include this snippet in the `<head>` section of your web application (you can co
     s.id = "strigo-sdk";
     s.type = "text/javascript";
     s.async = true;
-    s.src = 'https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/strigo.sdk.min.js';
-    s.setAttribute('data-web-api-key', '<webApiKey>');
-    s.setAttribute('data-subdomain', '<subdomain>');
+    s.src = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/strigo.sdk.min.js";
+    s.setAttribute("data-web-api-key", "<webApiKey>");
+    s.setAttribute("data-subdomain", "<subdomain>");
     var x = document.getElementsByTagName("script")[0];
     x.parentNode.insertBefore(s, x);
   })();
@@ -52,6 +52,7 @@ window.StrigoSDK.setup({
 ```
 
 ### Listen to SDK changes
+
 `StrigoSDK` allows you to register to events, so you can be reactive to it.
 For instance, if you want to make changes to your web app's UI based on the state of the Strigo Panel, you can listen to the `strigo-opened` event - which the SDK will trigger whenever the `StrigoSDK.setup()` is called.
 
@@ -110,6 +111,7 @@ The files in the `dist/production` directory can be fetched by the free CDN at [
 - https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo.min.css
 
 ## Invalidate CDN
+
 You can refresh the script manually in JSDelivr CDN - just run `npm run purge` after building and pushing to master.
 
 # Development guideline

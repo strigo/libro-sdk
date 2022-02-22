@@ -9,7 +9,7 @@ async function purge() {
   for (const fileUrl of FILES_TO_PURGE) {
     console.log(fileUrl);
     const response = await axios.get(fileUrl, {});
-    console.log(JSON.stringify(response?.data,null,2));
+    console.log(JSON.stringify(response?.data, null, 2));
   }
 }
 
