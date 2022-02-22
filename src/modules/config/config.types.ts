@@ -14,7 +14,7 @@ export interface StrigoConfig {
   initSite: SiteConfig;
   subDomain: string;
   development: boolean;
-  version?:string;
+  version?: string;
 }
 
 export interface StrigoToken {
