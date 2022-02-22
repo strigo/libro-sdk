@@ -407,7 +407,7 @@ iframe {
   align-items: center;
   height: 100vh;
   width: 100%;
-  background: #1f2347;
+  background: inherit;
   position: fixed;
   top: 0;
   left: 0;
@@ -415,6 +415,15 @@ iframe {
   transition: opacity 0.3s linear;
   opacity: 1;
   transform: opacity 1s linear;
+}
+
+.strigo-loader:before {
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px) saturate(100%) contrast(45%) brightness(130%);
+  content: '';
+  height: 100%;
+  position: absolute;
+  width: 100%;
 }
 
 .circle-loader {
@@ -473,16 +482,16 @@ iframe {
 @keyframes color {
   100%,
   0% {
-    stroke: white;
+    stroke: #3d408f;
   }
   40% {
-    stroke: white;
+    stroke: #3d408f;
   }
   66% {
-    stroke: white;
+    stroke: #3d408f;
   }
   80%,
   90% {
-    stroke: white;
+    stroke: #3d408f;
   }
 }
