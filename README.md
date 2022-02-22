@@ -30,7 +30,7 @@ This will add the `StrigoSDK` to your `window` and call `StrigoSDK.init()` to in
 
 ### Get the user token
 
-Before calling `StrigoSDK.setup()`, please retreive the user token using strigo-api (server-to-server). The flow is documented [here](https://docs.strigo.io/).
+Before calling `StrigoSDK.setup()`, please retreive the user token using strigo-api (server-to-server). The flow is documented [here](https://docs.strigo.io/#sdk-user-token).
 
 This token is required to identify each user that uses the StrigoSDK.
 
