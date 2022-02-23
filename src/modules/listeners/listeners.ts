@@ -53,8 +53,6 @@ export function initHostEventListeners() {
 
 // Subscriber event listeners
 export function initSubscriberEventListeners(iframeElement: HTMLElement) {
-  // iframeElement.addEventListener("load", hideLoader);
-
   // Emptying events storage and posting all events
   iframeElement.addEventListener("load", eventsSender.postAllEventMessages);
 }

@@ -28,7 +28,6 @@ export function addLoader() {
 }
 
 export function hideLoader() {
-  console.log('here hide')
   const preloader = document.querySelector<HTMLElement>(".strigo-loader");
   const interval = setInterval(() => {
     if (!preloader.style.opacity) {
@@ -46,6 +45,5 @@ export function hideLoader() {
 }
 
 export function isLoading(): boolean {
-  console.log(sessionManager.getSessionValue("isLoading"))
   return !!sessionManager.getSessionValue("isLoading");
 }
