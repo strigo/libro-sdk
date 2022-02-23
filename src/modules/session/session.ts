@@ -4,8 +4,6 @@ import { StrigoSession } from "./session.types";
 
 export function init() {
   const session = getStorageData(STORAGE_TYPES.SESSION_STORAGE, STORAGE_NAMES.STRIGO_SESSION);
-  if (!session) {
-  }
   return session as StrigoSession;
 }
 
@@ -31,6 +29,11 @@ export function setSessionValue(key: string, value: any) {
   const session = setStorageValue(STORAGE_TYPES.SESSION_STORAGE, STORAGE_NAMES.STRIGO_SESSION, key, value);
 
   return session as StrigoSession;
+}
+
+export function getSessionValue(key: string):any {
+  const session = getSession();
+  return session?.[key];
 }
 
 export function clearSession() {

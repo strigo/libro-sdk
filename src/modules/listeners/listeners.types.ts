@@ -4,5 +4,6 @@ export const enum EVENT_TYPES {
 }
 
 export const enum MESSAGE_TYPES {
-  SHUTDOWN = "close"
+  SHUTDOWN = "close",
+  RENDERED = "rendered"
 }
