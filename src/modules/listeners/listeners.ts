@@ -1,7 +1,7 @@
 import { EVENT_TYPES, MESSAGE_TYPES } from "./listeners.types";
 import * as eventsSender from "../events-sender/events-sender";
 import { STORAGE_NAMES } from "../storage-utils/storage-utils.types";
-import { showLoader } from "../loader/loader";
+import { hideLoader, isLoading } from "../loader/loader";
 
 // TODO: Remove all existing event listeners
 export function removeAllEventListeners() {}
@@ -35,6 +35,11 @@ export function initHostEventListeners() {
 
           break;
         }
+        case MESSAGE_TYPES.RENDERED: {
+          isLoading() && hideLoader();
+
+          break;
+        }
         default: {
           break;
         }
@@ -48,7 +53,7 @@ export function initHostEventListeners() {
 
 // Subscriber event listeners
 export function initSubscriberEventListeners(iframeElement: HTMLElement) {
-  iframeElement.addEventListener("load", showLoader);
+  // iframeElement.addEventListener("load", hideLoader);
 
   // Emptying events storage and posting all events
   iframeElement.addEventListener("load", eventsSender.postAllEventMessages);

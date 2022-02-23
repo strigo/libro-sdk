@@ -15,7 +15,7 @@ import {
   MINIMUM_PANE_SIZE_MOBILE,
   MINIMUM_PANE_SIZE_DESKTOP
 } from "./consts";
-import { addLoader, addLoaderListener } from "../modules/loader/loader";
+import { addLoader } from "../modules/loader/loader";
 
 export namespace Strigo {
   export let SDKType;
@@ -74,6 +74,12 @@ export namespace Strigo {
       version
     });
 
+    sessionManager.setup({
+      currentUrl: configManager.getConfig().initSite.href,
+      isPanelOpen: true,
+      isLoading: true
+    });
+
     // Page manipulation
     documentTools.clearDoc();
 
@@ -106,11 +112,6 @@ export namespace Strigo {
     Split(["#exercises", "#original-site"], {
       sizes: [25, 75],
       minSize: documentTools.isMobile() ? MINIMUM_PANE_SIZE_MOBILE : MINIMUM_PANE_SIZE_DESKTOP
-    });
-
-    sessionManager.setup({
-      currentUrl: configManager.getConfig().initSite.href,
-      isPanelOpen: true
     });
 
     // Init the HOST event listeners
