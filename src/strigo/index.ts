@@ -11,9 +11,7 @@ import { Logger } from "../../services/logger";
 
 import {
   STRIGO_IFRAME_CLASSES,
-  ORIGINAL_WEBSITE_IFRAME_CLASSES,
-  MINIMUM_PANE_SIZE_MOBILE,
-  MINIMUM_PANE_SIZE_DESKTOP
+  ORIGINAL_WEBSITE_IFRAME_CLASSES
 } from "./consts";
 import { addLoader } from "../modules/loader/loader";
 
@@ -110,8 +108,9 @@ export namespace Strigo {
     });
 
     Split(["#exercises", "#original-site"], {
-      sizes: [25, 75],
-      minSize: documentTools.isMobile() ? MINIMUM_PANE_SIZE_MOBILE : MINIMUM_PANE_SIZE_DESKTOP
+      sizes: [25, 75], // +1280 [20, 80]  -1280 [25, 75]
+      maxSize: documentTools.getSplitMaxSizes(),
+      minSize: documentTools.getSplitMinSizes()
     });
 
     // Init the HOST event listeners

@@ -47,3 +47,17 @@ export function reloadPage(): void {
 export function isMobile(): boolean {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
+
+export function getSplitMaxSizes(): number[] {
+  if (isMobile()) {
+    return [window.screen.width, window.screen.width];
+  }
+  return [window.screen.width / 2, window.screen.width];
+}
+
+export function getSplitMinSizes(): number[] {
+  if (isMobile()) {
+    return [0, 0];
+  }
+  return [window.screen.width * 0.25, 0];
+}
