@@ -2,9 +2,9 @@ import { Strigo } from "./strigo";
 
 declare global {
   interface Window {
-    StrigoSDK: any;
+    Strigo: any;
   }
 }
 
-window.StrigoSDK = Strigo;
-window.StrigoSDK.init();
+window.Strigo = Strigo;
+window.Strigo.init();

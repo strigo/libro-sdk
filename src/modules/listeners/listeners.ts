@@ -31,7 +31,7 @@ export function initHostEventListeners() {
 
       switch (ev.data) {
         case MESSAGE_TYPES.SHUTDOWN: {
-          window.StrigoSDK && window.StrigoSDK.shutdown();
+          window.Strigo && window.Strigo.shutdown();
 
           break;
         }

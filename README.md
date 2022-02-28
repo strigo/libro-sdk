@@ -24,24 +24,24 @@ Include this snippet in the `<head>` section of your web application (you can co
 </script>
 ```
 
-This will add the `StrigoSDK` to your `window` and call `StrigoSDK.init()` to initialize the script.
+This will add the `Strigo` SDK to your `window` and call `Strigo.init()` to initialize the script.
 
 ## API
 
 ### Get the user token
 
-In order for `StrigoSDK` to communicate properly with Strigo, a token must be retrieved for your end user.
+In order for `Strigo` SDK to communicate properly with Strigo, a token must be retrieved for your end user.
 This token represents the user and the permissions it has against Strigo.
 This token can be retrieved using [Strigo's API](https://docs.strigo.io/#sdk-user-token) using a server-to-server means of communication.
 
-Make sure to retrieve the token before calling `StrigoSDK.setup()`.
+Make sure to retrieve the token before calling `Strigo.setup()`.
 
 ### Setup
 
 To start the Strigo experience, call `setup` with the following parameters:
 
 ```js
-window.StrigoSDK.setup({
+window.Strigo.setup({
   email: "user@domain.com",
   // The token you received from Strigo's API
   token: {
@@ -53,8 +53,8 @@ window.StrigoSDK.setup({
 
 ### Listen to SDK changes
 
-`StrigoSDK` allows you to register to events, so you can be reactive to it.
-For instance, if you want to make changes to your web app's UI based on the state of the Strigo Panel, you can listen to the `strigo-opened` event - which the SDK will trigger whenever the `StrigoSDK.setup()` is called.
+`Strigo` SDK allows you to register to events, so you can be reactive to it.
+For instance, if you want to make changes to your web app's UI based on the state of the Strigo Panel, you can listen to the `strigo-opened` event - which the SDK will trigger whenever the `Strigo.setup()` is called.
 
 ```js
 window.addEventListener("strigo-opened", () => {
@@ -68,7 +68,7 @@ window.addEventListener("strigo-opened", () => {
 To shut the Strigo experience down, simply call:
 
 ```js
-window.StrigoSDK.shutdown();
+window.Strigo.shutdown();
 ```
 
 The `localStorage` and `sessionStorage` will be erased and the page will refresh.
@@ -118,7 +118,7 @@ You can refresh the script manually in JSDelivr CDN - just run `npm run purge` a
 
 ## Script Mechanism
 
-`StrigoSDK` can operate in one of the following ways:
+`Strigo` can operate in one of the following ways:
 
 - `Host` - the script that invokes the `setup` method and initiated page manipulation
 - `SUBSCRIBER` - the script that runs "underneath" inside the Iframe, and one can only send events to its `HOST`, using the `sessionStorage` or `localStorage`
