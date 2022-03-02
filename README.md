@@ -50,6 +50,16 @@ window.Strigo.setup({
   }
 });
 ```
+### Send events
+
+`Strigo` SDK enables you to send dedicted events to `Strigo`'s exercises. 
+These events could solve challenges you have created on `Strigo`'s Lounge.
+Triggering these events is usually done in par with a user action that solves a challenge.
+The `eventName` is configured on `Strigo`'s Lounge in the class template, when creating the challenge.
+
+```js
+window.StrigoSDK.sendEvent(eventName);
+```
 
 ### Listen to SDK changes
 
@@ -182,7 +192,7 @@ We try to keep the script as **zero-dependency** as possible, since it's a code 
 ### Modules you can use
 
 - `url` - url tools to parse and build urls.
-- `document` - document manipulation tools, for appending Iframes, CSS, other elements to the documetn.
+- `document` - document manipulation tools, for appending Iframes, CSS, other elements to the document.
 - `storage-utils` - a helper module to manage both `localStorage` and `sessionStorage`.
 - `config` - the module that manages `strigoConfig` on `localStorage`.
 - `session` - the module that manages `strigoSession` on `sessionStorage` - data is relevant for every session (tab).
