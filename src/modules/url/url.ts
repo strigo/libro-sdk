@@ -41,8 +41,8 @@ export function generateStrigoIframeURL(config: StrigoConfig): string {
 export function extractInitScriptParams(): InitScriptParams {
   const initScript = document.getElementById(INIT_SCRIPT_ID);
   return {
-    webApiKey: initScript.getAttribute("data-web-api-key"),
-    subDomain: initScript.getAttribute("data-subdomain")
+    webApiKey: initScript?.getAttribute("data-web-api-key") || "",
+    subDomain: initScript?.getAttribute("data-subdomain") || ""
   };
 }
 
