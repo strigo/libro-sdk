@@ -73,6 +73,20 @@ export namespace Strigo {
       isLoading: true
     });
 
+    // Check if iframe is supported
+    if (!documentTools.isIframeSupported()) {
+      Logger.info("iframe is not supported, trying other ways");
+      documentTools.appendCssFile({
+        parentElement: documentTools.getHeadElement(),
+        url: urlTools.generateWidgetCssURL(development, version)
+      });
+      documentTools.createWidget(urlTools.generateStrigoIframeURL(configManager.getConfig()));
+
+      return;
+    }
+
+    Logger.info("iframe is supported - building the side by side experience");
+
     // Page manipulation
     documentTools.clearDoc();
 

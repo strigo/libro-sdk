@@ -61,3 +61,46 @@ export function getSplitMinSizes(): number[] {
   }
   return [window.screen.width * 0.25, 0];
 }
+
+export function isIframeSupported(): boolean {
+  const req = new XMLHttpRequest();
+  req.open("GET", window.document.location.href, false);
+  req.send(null);
+  const headers = req.getAllResponseHeaders().toLowerCase();
+  const headersArray = headers.split("\r\n");
+  for (const header of headersArray) {
+    if (header.includes("x-frame-options")) {
+      const headerSplitted = header.split(":");
+      console.log(headerSplitted);
+      if (headerSplitted && headerSplitted.length > 1) {
+        return !(headerSplitted[1].trim() === "deny");
+      }
+    }
+  }
+  return true;
+}
+
+export function createWidget(url: string) {
+  const widgetDiv = document.createElement("div");
+  widgetDiv.className = "strigo-widget";
+  widgetDiv.id = "strigo-widget";
+
+  const widgetIframe = document.createElement("iframe");
+  widgetIframe.className = "strigo-iframe";
+  widgetIframe.id = "strigo-iframe";
+  widgetIframe.src = url;
+  widgetDiv.appendChild(widgetIframe);
+
+  const collapseButton = document.createElement("button");
+  collapseButton.className = "strigo-collapse-button";
+  collapseButton.id = "strigo-toggle";
+  collapseButton.innerText = "S";
+  widgetDiv.appendChild(collapseButton);
+
+  collapseButton.onclick = function () {
+    const widget = document.getElementById("strigo-widget");
+    widget.classList.toggle("strigo-widget_small");
+  };
+
+  document.body.appendChild(widgetDiv);
+}
