@@ -9,7 +9,7 @@ esbuild
   .build({
     logLevel: "debug",
     metafile: true,
-    entryPoints: ["src/styles/strigo.css", "src/strigo.sdk.ts"],
+    entryPoints: ["src/styles/strigo.css", "src/styles/strigo-widget.css", "src/strigo.sdk.ts"],
     platform: "browser",
     outdir: OUT_DIR,
     bundle: true,
