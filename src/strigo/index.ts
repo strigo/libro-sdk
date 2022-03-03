@@ -9,31 +9,27 @@ import * as listeners from "../modules/listeners/listeners";
 import * as eventsSender from "../modules/events-sender/events-sender";
 import { Logger } from "../../services/logger";
 
-import {
-  STRIGO_IFRAME_CLASSES,
-  ORIGINAL_WEBSITE_IFRAME_CLASSES
-} from "./consts";
+import { STRIGO_IFRAME_CLASSES, ORIGINAL_WEBSITE_IFRAME_CLASSES } from "./consts";
 import { addLoader } from "../modules/loader/loader";
 
 export namespace Strigo {
   export let SDKType;
 
   export function init() {
-    // Get webApiToken from script
-
-    // Get Script parameters
-    // Initialize state
-    configManager.init();
-    sessionManager.init();
+    Logger.info("init called");
     eventsStorageManager.init();
     // Check if other instances exists
     if (sessionManager && sessionManager.isPanelOpen()) {
+      Logger.info("SUBSCRIBER SDK");
+
       // Start as a subscriber
       SDKType = SDK_TYPES.SUBSCRIBER;
 
       // Dispatch opened event
       window.dispatchEvent(new Event("strigo-opened"));
     } else {
+      Logger.info("HOST SDK");
+
       SDKType = SDK_TYPES.HOST;
       // Auto setup if the config exists
       const config = configManager.getConfig();
@@ -41,7 +37,6 @@ export namespace Strigo {
         setup(config);
       }
     }
-    Logger.info("init called");
   }
 
   export function setup(data: SDKSetupData) {
