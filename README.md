@@ -58,7 +58,7 @@ Triggering these events is usually done in par with a user action that solves a 
 The `eventName` is configured on `Strigo`'s Lounge in the class template, when creating the challenge.
 
 ```js
-window.StrigoSDK.sendEvent(eventName);
+window.Strigo.sendEvent(eventName);
 ```
 
 ### Listen to SDK changes
