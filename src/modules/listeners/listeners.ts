@@ -34,11 +34,11 @@ export function initHostEventListeners() {
 
           break;
         }
-        case MESSAGE_TYPES.RENDERED: {
-          isLoading() && hideLoader();
+        // case MESSAGE_TYPES.RENDERED: {
+        //   isLoading() && hideLoader();
 
-          break;
-        }
+        //   break;
+        // }
         default: {
           break;
         }
@@ -53,5 +53,8 @@ export function initHostEventListeners() {
 // Subscriber event listeners
 export function initSubscriberEventListeners(iframeElement: HTMLElement) {
   // Emptying events storage and posting all events
-  iframeElement.addEventListener("load", eventsSender.postAllEventMessages);
+  iframeElement.addEventListener("load", () => {
+    isLoading() && hideLoader();
+    eventsSender.postAllEventMessages();
+  });
 }
