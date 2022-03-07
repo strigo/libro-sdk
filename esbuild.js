@@ -2,7 +2,7 @@ import esbuild from "esbuild";
 
 esbuild
   .build({
-    entryPoints: ["src/styles/strigo.css", "src/strigo.sdk.ts"],
+    entryPoints: ["src/styles/strigo.css", "src/styles/strigo-widget.css", "src/strigo.sdk.ts"],
     outdir: "dist/production",
     platform: "browser",
     outExtension: { ".js": ".min.js", ".css": ".min.css" },

@@ -64,8 +64,8 @@ export function generateWidgetCssURL(development: boolean, version?: string) {
   }
 
   if (version) {
-    return `https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@${version}/dist/production/styles/strigo.min.css`;
+    return `https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@${version}/dist/production/styles/strigo-widget.min.css`;
   }
 
-  return "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo.min.css";
+  return "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo-widget.min.css";
 }
