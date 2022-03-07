@@ -1,3 +1,4 @@
+import { CHEVRON_LEFT, CHEVRON_RIGHT } from "../../strigo/consts";
 import { AppendCSSFileParams, AppendIframeParams } from "./document.types";
 
 export function getHeadElement(): HTMLElement {
@@ -71,7 +72,6 @@ export function isIframeSupported(): boolean {
   for (const header of headersArray) {
     if (header.includes("x-frame-options")) {
       const headerSplitted = header.split(":");
-      console.log(headerSplitted);
       if (headerSplitted && headerSplitted.length > 1) {
         return !(headerSplitted[1].trim() === "deny");
       }
@@ -81,26 +81,50 @@ export function isIframeSupported(): boolean {
 }
 
 export function createWidget(url: string) {
-  const widgetDiv = document.createElement("div");
-  widgetDiv.className = "strigo-widget";
-  widgetDiv.id = "strigo-widget";
+  const toggleFunction = function () {
+    const widget = document.getElementById("strigo-widget");
+    const isOpen = widget.classList.contains("slide-in");
+    widget.classList.toggle("slide-in");
 
+    setTimeout(() => {
+      const arrow = document.getElementById("strigo-arrow");
+      arrow.innerHTML = isOpen ? CHEVRON_LEFT : CHEVRON_RIGHT;
+    }, 300);
+  };
+
+  const arrowDiv = document.createElement("div");
+  arrowDiv.className = "strigo-arrow";
+  arrowDiv.id = "strigo-arrow";
+  arrowDiv.innerHTML = CHEVRON_LEFT;
+
+  // Create collapse button
+  const collapseButton = document.createElement("button");
+  collapseButton.className = "strigo-collapse-button";
+  collapseButton.id = "strigo-toggle";
+
+  collapseButton.appendChild(arrowDiv);
+
+  // Create collapse div
+  const collapseDiv = document.createElement("div");
+  collapseDiv.className = "strigo-collapse-div";
+  collapseDiv.onclick = () => {
+    toggleFunction();
+  };
+  collapseDiv.appendChild(collapseButton);
+
+  // Create widget iframe (strigo-app exercises)
   const widgetIframe = document.createElement("iframe");
   widgetIframe.className = "strigo-iframe";
   widgetIframe.id = "strigo-iframe";
   widgetIframe.src = url;
+
+  // Create widget div (wrapper)
+  const widgetDiv = document.createElement("div");
+  widgetDiv.className = "strigo-widget";
+  widgetDiv.id = "strigo-widget";
+  widgetDiv.appendChild(collapseDiv);
   widgetDiv.appendChild(widgetIframe);
 
-  const collapseButton = document.createElement("button");
-  collapseButton.className = "strigo-collapse-button";
-  collapseButton.id = "strigo-toggle";
-  collapseButton.innerText = "S";
-  widgetDiv.appendChild(collapseButton);
-
-  collapseButton.onclick = function () {
-    const widget = document.getElementById("strigo-widget");
-    widget.classList.toggle("strigo-widget_small");
-  };
-
   document.body.appendChild(widgetDiv);
+  return widgetIframe;
 }
