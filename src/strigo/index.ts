@@ -80,7 +80,9 @@ export namespace Strigo {
         parentElement: documentTools.getHeadElement(),
         url: urlTools.generateWidgetCssURL(development, version)
       });
-      documentTools.createWidget(urlTools.generateStrigoIframeURL(configManager.getConfig()));
+      const exercisesIframe = documentTools.createWidget(urlTools.generateStrigoIframeURL(configManager.getConfig()));
+      listeners.initSubscriberEventListeners(exercisesIframe);
+      listeners.initHostEventListeners();
 
       return;
     }

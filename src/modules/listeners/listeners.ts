@@ -28,7 +28,6 @@ export function initHostEventListeners() {
     EVENT_TYPES.MESSAGE,
     (ev) => {
       if (!ev || !ev.data) return;
-
       switch (ev.data) {
         case MESSAGE_TYPES.SHUTDOWN: {
           window.Strigo && window.Strigo.shutdown();

@@ -3,13 +3,21 @@
   width: 500px;
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
   overflow: show;
-  transition: 1s ease;
+  z-index: 99999;
+  -webkit-transition: -webkit-transform 0.3s 0.3s;
+  transition: -webkit-transform 0.3s 0.3s;
+  transition: transform 0.3s 0.3s;
+  transition: transform 0.3s 0.3s, -webkit-transform 0.3s 0.3s;
+  
+  -webkit-transform: translate3d(100%, 0, 0), translate3d(-8px, 0, 0);
+  transform: translate3d(100%, 0, 0) translate3d(-8px, 0, 0);
+  display: flex;
 }
 
 .strigo-widget_small {
-  width: 0%;
+  width: 8px;
 }
 
 .strigo-iframe {
@@ -17,17 +25,62 @@
   height: 100%;
   width: 100%;
   border: none !important;
+  transition: 1s ease;
+}
+
+.strigo-collapse-div {
+  width: 6px;
+  height: 100%;
+  background: #3d408f;
+  border-style: solid;
+  border-left-color: #eaebf6;
+  border-left-width: 2px;
+  border-right: none;
+  border-top: none;
+  border-bottom: none;
+  box-shadow: 0px 1px 4px 1px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.strigo-collapse-div:hover {
+  background: #696cbf;
+}
+
+.strigo-collapse-div:hover .strigo-collapse-button {
+  background: #696cbf;
 }
 
 .strigo-collapse-button {
-  position: absolute;
-  border: none;
-  height: 40px;
-  width: 40px;
-  border-radius: 50%;
-  box-shadow: 0px 1px 4px 1px rgba(0, 0, 0, 0.3);
-  left: 100%;
+  position: relative;
+  height: 32px;
+  width: 16px;
+  right: 16px;
   top: 2rem;
-  transform: translateX(-50%);
+  background: #3d408f;
+  border-style: solid;
+  border-left-color: #eaebf6;
+  border-right: none;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+  border-top-color: #eaebf6;
+  border-bottom-color: #eaebf6;
   cursor: pointer;
+
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.strigo-collapse-button:hover {
+  background: #696cbf;
+}
+
+.slide-in {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+
+.strigo-arrow {
+  fill: #e2e2e7;
+  width: 6px;
 }
