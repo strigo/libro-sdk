@@ -1,4 +1,5 @@
 import { CHEVRON_LEFT, CHEVRON_RIGHT } from "../../strigo/consts";
+import { WIDGET_TYPES } from "../session/session.types";
 import { AppendCSSFileParams, AppendIframeParams } from "./document.types";
 
 export function getHeadElement(): HTMLElement {
@@ -80,6 +81,10 @@ export function isIframeSupported(): boolean {
   return true;
 }
 
+export function getWidgetType(): WIDGET_TYPES {
+  return isIframeSupported() ? WIDGET_TYPES.IFRAME : WIDGET_TYPES.OVERLAY;
+}
+
 export function createWidget(url: string) {
   const toggleFunction = function () {
     const widget = document.getElementById("strigo-widget");
@@ -95,7 +100,7 @@ export function createWidget(url: string) {
   const arrowDiv = document.createElement("div");
   arrowDiv.className = "strigo-arrow";
   arrowDiv.id = "strigo-arrow";
-  arrowDiv.innerHTML = CHEVRON_LEFT;
+  arrowDiv.innerHTML = CHEVRON_RIGHT;
 
   // Create collapse button
   const collapseButton = document.createElement("button");
@@ -113,18 +118,30 @@ export function createWidget(url: string) {
   collapseDiv.appendChild(collapseButton);
 
   // Create widget iframe (strigo-app exercises)
-  const widgetIframe = document.createElement("iframe");
-  widgetIframe.className = "strigo-iframe";
-  widgetIframe.id = "strigo-iframe";
-  widgetIframe.src = url;
+  const strigoExercisesIframe = document.createElement("iframe");
+  strigoExercisesIframe.className = "strigo-iframe";
+  strigoExercisesIframe.id = "strigo-exercises";
+  strigoExercisesIframe.src = url;
 
   // Create widget div (wrapper)
   const widgetDiv = document.createElement("div");
   widgetDiv.className = "strigo-widget";
   widgetDiv.id = "strigo-widget";
   widgetDiv.appendChild(collapseDiv);
-  widgetDiv.appendChild(widgetIframe);
+  widgetDiv.appendChild(strigoExercisesIframe);
 
   document.body.appendChild(widgetDiv);
-  return widgetIframe;
+  return strigoExercisesIframe;
 }
+
+export const removeWidget = function () {
+  document.getElementById("strigo-widget").remove();
+};
+
+export const openWidget = function () {
+  const widget = document.getElementById("strigo-widget");
+  if (widget.classList.contains("slide-in")) {
+    return;
+  }
+  widget.classList.add("slide-in");
+};

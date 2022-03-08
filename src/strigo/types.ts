@@ -8,6 +8,11 @@ export interface SDKSetupData {
 }
 
 export enum SDK_TYPES {
-  HOST = "HOST",
-  SUBSCRIBER = "SUBSCRIBER"
+  PARENT = "PARENT",
+  CHILD = "CHILD",
+  OVERLAY = "OVERLAY"
+}
+
+export interface StrigoWindow extends Window {
+  Strigo: any;
 }

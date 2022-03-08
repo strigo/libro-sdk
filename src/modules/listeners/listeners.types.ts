@@ -5,5 +5,6 @@ export const enum EVENT_TYPES {
 
 export const enum MESSAGE_TYPES {
   SHUTDOWN = "close",
-  RENDERED = "rendered"
+  RENDERED = "rendered",
+  CHALLENGE_SUCCESS = "challenge-success"
 }

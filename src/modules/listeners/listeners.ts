@@ -1,7 +1,11 @@
 import { EVENT_TYPES, MESSAGE_TYPES } from "./listeners.types";
 import * as eventsSender from "../events-sender/events-sender";
+import * as sessionManager from "../session/session";
 import { STORAGE_NAMES } from "../storage-utils/storage-utils.types";
 import { hideLoader, isLoading } from "../loader/loader";
+import { WIDGET_TYPES } from "../session/session.types";
+import ovelayWidget from "../widgets/overlay"
+import { Logger } from "../../../services/logger";
 
 // TODO: Remove all existing event listeners
 export function removeAllEventListeners() {}
@@ -34,12 +38,20 @@ export function initHostEventListeners() {
 
           break;
         }
+        case MESSAGE_TYPES.CHALLENGE_SUCCESS: {
+          if (sessionManager.getWidgetType() === WIDGET_TYPES.OVERLAY){
+            ovelayWidget.open()
+          }
+
+          break;
+        }
         // case MESSAGE_TYPES.RENDERED: {
         //   isLoading() && hideLoader();
 
         //   break;
         // }
         default: {
+          Logger.error("widgetType is not supported - event message");
           break;
         }
       }
@@ -51,7 +63,7 @@ export function initHostEventListeners() {
 }
 
 // Subscriber event listeners
-export function initSubscriberEventListeners(iframeElement: HTMLElement) {
+export function initStrigoAppEventListeners(iframeElement: HTMLElement) {
   // Emptying events storage and posting all events
   iframeElement.addEventListener("load", () => {
     isLoading() && hideLoader();

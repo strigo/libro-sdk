@@ -1,4 +1,6 @@
+import { Logger } from "../../../services/logger";
 import * as sessionManager from "../session/session";
+import { WIDGET_TYPES } from "../session/session.types";
 
 const SPINNER = `
 <div class="circle-loader">
@@ -28,20 +30,35 @@ export function addLoader() {
 }
 
 export function hideLoader() {
-  const preloader = document.querySelector<HTMLElement>(".strigo-loader");
-  const interval = setInterval(() => {
-    if (!preloader.style.opacity) {
-      preloader.style.opacity = "1";
+  switch (sessionManager.getWidgetType()) {
+    case WIDGET_TYPES.IFRAME: {
+      const preloader = document.querySelector<HTMLElement>(".strigo-loader");
+      const interval = setInterval(() => {
+        if (!preloader.style.opacity) {
+          preloader.style.opacity = "1";
+        }
+        const opacity = parseFloat(preloader.style.opacity);
+        if (opacity > 0) {
+          preloader.style.opacity = (opacity - 0.1).toString();
+        } else {
+          sessionManager.setSessionValue("isLoading", false);
+          preloader.style.pointerEvents = "none";
+          clearInterval(interval);
+        }
+      }, 200);
+      break;
     }
-    const opacity = parseFloat(preloader.style.opacity);
-    if (opacity > 0) {
-      preloader.style.opacity = (opacity - 0.1).toString();
-    } else {
+    case WIDGET_TYPES.OVERLAY: {
       sessionManager.setSessionValue("isLoading", false);
-      preloader.style.pointerEvents = "none";
-      clearInterval(interval);
+      document.getElementById("strigo-widget").classList.add("slide-in"); 
+      document.getElementById("strigo-widget").classList.add("loaded");
+      break;
     }
-  }, 200);
+    default: {
+      Logger.error("widgetType is not supported - loader");
+      break;
+    }
+  }
 }
 
 export function isLoading(): boolean {
