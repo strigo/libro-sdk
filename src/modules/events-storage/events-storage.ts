@@ -1,6 +1,9 @@
 import { STORAGE_NAMES, STORAGE_TYPES } from "../storage-utils/storage-utils.types";
 import { StrigoEventsStorage, StrigoEvent } from "./events-storage.types";
 import { Logger } from "../../../services/logger";
+import * as sessionManager from "../session/session";
+import { WIDGET_TYPES } from "../session/session.types";
+import { EVENT_TYPES } from "../listeners/listeners.types";
 
 export function init(): StrigoEventsStorage {
   try {
@@ -45,10 +48,23 @@ export function pushEventValue(event: StrigoEvent): StrigoEventsStorage {
     if (!initialState) {
       throw new Error("Can't find initial state");
     }
-
+    const prev = JSON.stringify(initialState);
     initialState.events.push(event);
 
     window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_EVENTS, JSON.stringify(initialState));
+
+    if (sessionManager.getWidgetType() === WIDGET_TYPES.OVERLAY) {
+      const event = new CustomEvent(EVENT_TYPES.OVERLAY_WIDGET_EVENT, {
+        bubbles: true,
+        detail: {
+          key: "strigoEvents",
+          oldValue: prev,
+          newValue: JSON.stringify(initialState)
+        }
+      });
+      window.dispatchEvent(event);
+    }
+
     return initialState;
   } catch (error) {
     Logger.error("Push event to storage error", { error });

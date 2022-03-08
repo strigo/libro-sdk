@@ -4,13 +4,15 @@ import * as sessionManager from "../session/session";
 import { STORAGE_NAMES } from "../storage-utils/storage-utils.types";
 import { hideLoader, isLoading } from "../loader/loader";
 import { WIDGET_TYPES } from "../session/session.types";
-import ovelayWidget from "../widgets/overlay"
+import ovelayWidget from "../widgets/overlay";
 import { Logger } from "../../../services/logger";
 
 // TODO: Remove all existing event listeners
 export function removeAllEventListeners() {}
 
 function storageChanged({ key, oldValue, newValue }) {
+  console.log({ key, oldValue, newValue });
+
   if (key !== STORAGE_NAMES.STRIGO_EVENTS) {
     return;
   }
@@ -39,8 +41,9 @@ export function initHostEventListeners() {
           break;
         }
         case MESSAGE_TYPES.CHALLENGE_SUCCESS: {
-          if (sessionManager.getWidgetType() === WIDGET_TYPES.OVERLAY){
-            ovelayWidget.open()
+          Logger.info("Challenge event success received");
+          if (sessionManager.getWidgetType() === WIDGET_TYPES.OVERLAY) {
+            ovelayWidget.open();
           }
 
           break;
@@ -58,7 +61,21 @@ export function initHostEventListeners() {
     false
   );
 
-  window.addEventListener(EVENT_TYPES.STORAGE, storageChanged);
+  switch (sessionManager.getWidgetType()) {
+    case WIDGET_TYPES.IFRAME: {
+      window.addEventListener(EVENT_TYPES.STORAGE, storageChanged);
+      break;
+    }
+    case WIDGET_TYPES.OVERLAY: {
+      window.addEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, (customEvent) => {
+        storageChanged(customEvent?.detail);
+      });
+      break;
+    }
+    default: {
+      break;
+    }
+  }
 }
 
 // Subscriber event listeners
