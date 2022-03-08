@@ -51,7 +51,6 @@ export function initHostEventListeners() {
         //   break;
         // }
         default: {
-          Logger.error("widgetType is not supported - event message");
           break;
         }
       }
