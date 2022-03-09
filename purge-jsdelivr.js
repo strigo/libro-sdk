@@ -2,7 +2,8 @@ import axios from "axios";
 
 const FILES_TO_PURGE = [
   "https://purge.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/strigo.sdk.min.js",
-  "https://purge.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo.min.css"
+  "https://purge.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo.min.css",
+  "https://purge.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo-widget.min.css"
 ];
 
 async function purge() {
