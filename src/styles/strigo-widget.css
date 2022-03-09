@@ -37,7 +37,7 @@
   height: 100%;
   background: #3d408f;
   border-style: solid;
-  border-left-color: #eaebf6;
+  border-left-color: #ADAFDC;
   border-left-width: 2px;
   border-right: none;
   border-top: none;
@@ -62,12 +62,12 @@
   top: 2rem;
   background: #3d408f;
   border-style: solid;
-  border-left-color: #eaebf6;
+  border-left-color: #ADAFDC;
   border-right: none;
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
-  border-top-color: #eaebf6;
-  border-bottom-color: #eaebf6;
+  border-top-color: #ADAFDC;
+  border-bottom-color: #ADAFDC;
   cursor: pointer;
 
   display: flex;
