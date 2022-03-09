@@ -11,8 +11,6 @@ import { Logger } from "../../../services/logger";
 export function removeAllEventListeners() {}
 
 function storageChanged({ key, oldValue, newValue }) {
-  console.log({ key, oldValue, newValue });
-
   if (key !== STORAGE_NAMES.STRIGO_EVENTS) {
     return;
   }
