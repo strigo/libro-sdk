@@ -15,7 +15,7 @@ Include this snippet in the `<head>` section of your web application (you can co
     s.id = "strigo-sdk";
     s.type = "text/javascript";
     s.async = true;
-    s.src = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/strigo.sdk.min.js";
+    s.src = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@v0.2.2/dist/production/strigo.sdk.min.js";
     s.setAttribute("data-web-api-key", "<webApiKey>");
     s.setAttribute("data-subdomain", "<subdomain>");
     var x = document.getElementsByTagName("script")[0];
@@ -47,7 +47,8 @@ window.Strigo.setup({
   token: {
     token: "",
     expiration: ""
-  }
+  },
+  version: "v0.2.2"
 });
 ```
 ### Send events
