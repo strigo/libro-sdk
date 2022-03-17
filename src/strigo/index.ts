@@ -8,7 +8,7 @@ import iframeWidget from "../modules/widgets/iframe";
 import overlayWidget from "../modules/widgets/overlay";
 import { Logger } from "../../services/logger";
 
-import { WIDGET_TYPES } from "../modules/session/session.types";
+import { WIDGET_FLAVORS } from "../modules/session/session.types";
 
 export namespace Strigo {
   export let SDKType: SDK_TYPES;
@@ -16,12 +16,18 @@ export namespace Strigo {
   export function init() {
     Logger.info("init called");
     eventsStorageManager.init();
+    if (window.Strigo?.initialized) {
+      return;
+    }
+    window.Strigo.initialized = true;
+
     // Check if other instances exists
-    switch (sessionManager.getWidgetType()) {
-      case WIDGET_TYPES.IFRAME: {
+    switch (sessionManager.getWidgetFlavor()) {
+      case WIDGET_FLAVORS.IFRAME: {
         SDKType = iframeWidget.init();
+        break;
       }
-      case WIDGET_TYPES.OVERLAY: {
+      case WIDGET_FLAVORS.OVERLAY: {
         SDKType = SDK_TYPES.OVERLAY;
         overlayWidget.init();
         break;
@@ -43,9 +49,9 @@ export namespace Strigo {
     const { email, token, development = false, version } = data;
 
     // Get init script parameters
-    const { webApiKey, subDomain } = urlTools.extractInitScriptParams();
+    const { webApiKey, subDomain, selectedWidgetFlavor} = urlTools.extractInitScriptParams();
 
-    if (!development && (!email || !token || !webApiKey || !subDomain)) {
+    if (!development && (!email || !token || !webApiKey || !subDomain || !selectedWidgetFlavor)) {
       Logger.error("Please provide setup data");
       return;
     }
@@ -57,26 +63,27 @@ export namespace Strigo {
       webApiKey,
       subDomain,
       development,
-      version
+      version,
+      selectedWidgetFlavor
     });
 
-    const widgetType = documentTools.getWidgetType();
+    const widgetFlavor = documentTools.getWidgetFlavor(selectedWidgetFlavor);
     sessionManager.setup({
       currentUrl: configManager.getConfig().initSite.href,
       isPanelOpen: true,
       isLoading: true,
-      widgetType
+      widgetFlavor
     });
 
-    switch (widgetType) {
-      case WIDGET_TYPES.IFRAME: {
+    switch (widgetFlavor) {
+      case WIDGET_FLAVORS.IFRAME: {
         iframeWidget.setup({
           version,
           development
         });
         break;
       }
-      case WIDGET_TYPES.OVERLAY: {
+      case WIDGET_FLAVORS.OVERLAY: {
         overlayWidget.setup({
           version,
           development
@@ -84,7 +91,7 @@ export namespace Strigo {
         break;
       }
       default: {
-        Logger.error("widgetType is not supported - setup");
+        Logger.error("widgetFlavor is not supported - setup");
         break;
       }
     }
@@ -93,21 +100,24 @@ export namespace Strigo {
   }
   export function shutdown() {
     Logger.info("shutdown called");
-    const widgetType = sessionManager.getWidgetType();
+    if (SDKType === SDK_TYPES.CHILD) {
+      return window.parent.postMessage("close", "*");
+    }
+    const widgetFlavor = sessionManager.getWidgetFlavor();
     configManager.clearConfig();
     sessionManager.clearSession();
 
-    switch (widgetType) {
-      case WIDGET_TYPES.IFRAME: {
+    switch (widgetFlavor) {
+      case WIDGET_FLAVORS.IFRAME: {
         iframeWidget.shutdown();
         break;
       }
-      case WIDGET_TYPES.OVERLAY: {
+      case WIDGET_FLAVORS.OVERLAY: {
         overlayWidget.shutdown();
         break;
       }
       default: {
-        Logger.error("widgetType is not supported");
+        Logger.error("widgetFlavor is not supported");
         break;
       }
     }

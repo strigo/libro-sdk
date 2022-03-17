@@ -1,3 +1,5 @@
+import { WIDGET_FLAVORS } from "../session/session.types";
+
 export interface SiteConfig {
   host: string;
   pathName: string;
@@ -15,6 +17,7 @@ export interface StrigoConfig {
   subDomain: string;
   development: boolean;
   version?: string;
+  selectedWidgetFlavor: WIDGET_FLAVORS;
 }
 
 export interface StrigoToken {

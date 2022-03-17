@@ -1,11 +1,12 @@
-export enum WIDGET_TYPES {
+export enum WIDGET_FLAVORS {
   IFRAME = "iframe",
-  OVERLAY = "overlay"
+  OVERLAY = "overlay",
+  DYNAMIC = "dynamic"
 }
 
 export interface StrigoSession {
   currentUrl: string;
   isPanelOpen: boolean;
   isLoading?: boolean;
-  widgetType: WIDGET_TYPES;
+  widgetFlavor: WIDGET_FLAVORS;
 }
