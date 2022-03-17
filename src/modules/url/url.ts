@@ -1,5 +1,6 @@
 import { BASE_STRIGO_URL, INIT_SCRIPT_ID, LOCAL_STRIGO_URL } from "../../strigo/consts";
 import { StrigoConfig, SiteConfig } from "../config/config.types";
+import { WIDGET_FLAVORS } from "../session/session.types";
 import { InitScriptParams } from "./url.types";
 
 function paramsToObject(entries: IterableIterator<[string, string]>): Record<string, string> {
@@ -42,7 +43,8 @@ export function extractInitScriptParams(): InitScriptParams {
   const initScript = document.getElementById(INIT_SCRIPT_ID);
   return {
     webApiKey: initScript?.getAttribute("data-web-api-key") || "",
-    subDomain: initScript?.getAttribute("data-subdomain") || ""
+    subDomain: initScript?.getAttribute("data-subdomain") || "",
+    selectedWidgetFlavor: (initScript?.getAttribute("data-layout-flavor") as WIDGET_FLAVORS) || WIDGET_FLAVORS.DYNAMIC
   };
 }
 

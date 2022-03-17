@@ -2,7 +2,7 @@ import { STORAGE_NAMES, STORAGE_TYPES } from "../storage-utils/storage-utils.typ
 import { StrigoEventsStorage, StrigoEvent } from "./events-storage.types";
 import { Logger } from "../../../services/logger";
 import * as sessionManager from "../session/session";
-import { WIDGET_TYPES } from "../session/session.types";
+import { WIDGET_FLAVORS } from "../session/session.types";
 import { EVENT_TYPES } from "../listeners/listeners.types";
 
 export function init(): StrigoEventsStorage {
@@ -53,7 +53,7 @@ export function pushEventValue(event: StrigoEvent): StrigoEventsStorage {
 
     window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_EVENTS, JSON.stringify(initialState));
 
-    if (sessionManager.getWidgetType() === WIDGET_TYPES.OVERLAY) {
+    if (sessionManager.getWidgetFlavor() === WIDGET_FLAVORS.OVERLAY) {
       const event = new CustomEvent(EVENT_TYPES.OVERLAY_WIDGET_EVENT, {
         bubbles: true,
         detail: {

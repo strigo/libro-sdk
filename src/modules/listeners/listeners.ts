@@ -3,7 +3,7 @@ import * as eventsSender from "../events-sender/events-sender";
 import * as sessionManager from "../session/session";
 import { STORAGE_NAMES } from "../storage-utils/storage-utils.types";
 import { hideLoader, isLoading } from "../loader/loader";
-import { WIDGET_TYPES } from "../session/session.types";
+import { WIDGET_FLAVORS } from "../session/session.types";
 import ovelayWidget from "../widgets/overlay";
 import { Logger } from "../../../services/logger";
 
@@ -40,7 +40,7 @@ export function initHostEventListeners() {
         }
         case MESSAGE_TYPES.CHALLENGE_SUCCESS: {
           Logger.info("Challenge event success received");
-          if (sessionManager.getWidgetType() === WIDGET_TYPES.OVERLAY) {
+          if (sessionManager.getWidgetFlavor() === WIDGET_FLAVORS.OVERLAY) {
             ovelayWidget.open();
           }
 
@@ -59,12 +59,12 @@ export function initHostEventListeners() {
     false
   );
 
-  switch (sessionManager.getWidgetType()) {
-    case WIDGET_TYPES.IFRAME: {
+  switch (sessionManager.getWidgetFlavor()) {
+    case WIDGET_FLAVORS.IFRAME: {
       window.addEventListener(EVENT_TYPES.STORAGE, storageChanged);
       break;
     }
-    case WIDGET_TYPES.OVERLAY: {
+    case WIDGET_FLAVORS.OVERLAY: {
       window.addEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, (customEvent) => {
         storageChanged(customEvent?.detail);
       });

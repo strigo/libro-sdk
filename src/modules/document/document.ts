@@ -1,5 +1,5 @@
 import { CHEVRON_LEFT, CHEVRON_RIGHT } from "../../strigo/consts";
-import { WIDGET_TYPES } from "../session/session.types";
+import { WIDGET_FLAVORS } from "../session/session.types";
 import { AppendCSSFileParams, AppendIframeParams } from "./document.types";
 
 export function getHeadElement(): HTMLElement {
@@ -81,8 +81,11 @@ export function isIframeSupported(): boolean {
   return true;
 }
 
-export function getWidgetType(): WIDGET_TYPES {
-  return isIframeSupported() ? WIDGET_TYPES.IFRAME : WIDGET_TYPES.OVERLAY;
+export function getWidgetFlavor(selectedWidgetFlavor?: WIDGET_FLAVORS): WIDGET_FLAVORS {
+  if (selectedWidgetFlavor && selectedWidgetFlavor === WIDGET_FLAVORS.DYNAMIC) {
+    return isIframeSupported() ? WIDGET_FLAVORS.IFRAME : WIDGET_FLAVORS.OVERLAY;
+  }
+  return selectedWidgetFlavor;
 }
 
 export function createWidget(url: string) {

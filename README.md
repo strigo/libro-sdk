@@ -15,9 +15,10 @@ Include this snippet in the `<head>` section of your web application (you can co
     s.id = "strigo-sdk";
     s.type = "text/javascript";
     s.async = true;
-    s.src = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@v0.2.2/dist/production/strigo.sdk.min.js";
+    s.src = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@v0.2.3/dist/production/strigo.sdk.min.js";
     s.setAttribute("data-web-api-key", "<webApiKey>");
     s.setAttribute("data-subdomain", "<subdomain>");
+    s.setAttribute("data-layout-flavor", "dynamic");
     var x = document.getElementsByTagName("script")[0];
     x.parentNode.insertBefore(s, x);
   })();
@@ -48,12 +49,13 @@ window.Strigo.setup({
     token: "",
     expiration: ""
   },
-  version: "v0.2.2"
+  version: "v0.2.3"
 });
 ```
+
 ### Send events
 
-`Strigo` SDK enables you to send dedicted events to `Strigo`'s exercises. 
+`Strigo` SDK enables you to send dedicted events to `Strigo`'s exercises.
 These events could solve challenges you have created on `Strigo`'s Lounge.
 Triggering these events is usually done in par with a user action that solves a challenge.
 The `eventName` is configured on `Strigo`'s Lounge in the class template, when creating the challenge.
