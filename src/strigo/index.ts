@@ -14,7 +14,7 @@ export namespace Strigo {
   export let SDKType: SDK_TYPES;
 
   export function init() {
-    Logger.info("init called - main");
+    Logger.info("init called");
     eventsStorageManager.init();
     if (window.Strigo?.initialized) {
       return;
