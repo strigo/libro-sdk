@@ -106,7 +106,7 @@ export function createWidget(url: string) {
   arrowDiv.innerHTML = CHEVRON_RIGHT;
 
   // Create collapse button
-  const collapseButton = document.createElement("button");
+  const collapseButton = document.createElement("div");
   collapseButton.className = "strigo-collapse-button";
   collapseButton.id = "strigo-toggle";
 
