@@ -66,7 +66,8 @@ export default {
     Split(["#strigo-exercises", "#original-site"], {
       sizes: [25, 75],
       maxSize: documentTools.getSplitMaxSizes(),
-      minSize: documentTools.getSplitMinSizes()
+      minSize: documentTools.getSplitMinSizes(),
+      gutterSize: 2
     });
 
     listeners.initStrigoAppEventListeners(exercisesIframe);
