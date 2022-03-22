@@ -15,7 +15,7 @@ Include this snippet in the `<head>` section of your web application (you can co
     s.id = "strigo-sdk";
     s.type = "text/javascript";
     s.async = true;
-    s.src = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@v0.2.3/dist/production/strigo.sdk.min.js";
+    s.src = "https://cdn.statically.io/gh/strigo/strigo-sdk@latest/dist/production/strigo.sdk.min.js";
     s.setAttribute("data-web-api-key", "<webApiKey>");
     s.setAttribute("data-subdomain", "<subdomain>");
     s.setAttribute("data-layout-flavor", "dynamic");
@@ -118,14 +118,11 @@ Will bundle and minify both `js` and `css` files to `dist/production` directory.
 
 ## Serve
 
-The files in the `dist/production` directory can be fetched by the free CDN at [JsDelivr](https://www.jsdelivr.com/).
+The files in the `dist/production` directory can be fetched by the free CDN at [Statically.io](https://statically.io/).
 
-- https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/strigo.sdk.min.js
-- https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo.min.css
-
-## Invalidate CDN
-
-You can refresh the script manually in JSDelivr CDN - just run `npm run purge` after building and pushing to master.
+- https://cdn.statically.io/gh/strigo/strigo-sdk@latest/dist/production/strigo.sdk.min.js
+- https://cdn.statically.io/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo.min.css
+- https://cdn.statically.io/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo-widget.min.css
 
 # Development guideline
 

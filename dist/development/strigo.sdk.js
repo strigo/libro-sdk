@@ -11,6 +11,7 @@
   var CHEVRON_LEFT = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Pro 6.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z"/></svg>
 `;
+  var CDN_BASE_PATH = "https://cdn.statically.io/gh/strigo/strigo-sdk";
 
   // src/modules/document/document.ts
   function getHeadElement() {
@@ -167,21 +168,21 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
+      return `http://localhost:${"7005"}/styles/strigo.css`;
     }
     if (version) {
-      return `https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@${version}/dist/production/styles/strigo.min.css`;
+      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
     }
-    return "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo.min.css";
+    return `${CDN_BASE_PATH}@latest/dist/production/styles/strigo.min.css`;
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
+      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
     }
     if (version) {
-      return `https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@${version}/dist/production/styles/strigo-widget.min.css`;
+      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
     }
-    return "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@latest/dist/production/styles/strigo-widget.min.css";
+    return `${CDN_BASE_PATH}@latest/dist/production/styles/strigo-widget.min.css`;
   }
 
   // services/logger.ts
