@@ -9,6 +9,11 @@ export interface SiteConfig {
   params: Record<string, string>;
 }
 
+export interface LoggingConfig {
+  url: string;
+  token: string;
+}
+
 export interface StrigoConfig {
   email: string;
   webApiKey: string;
@@ -18,6 +23,7 @@ export interface StrigoConfig {
   development: boolean;
   version?: string;
   selectedWidgetFlavor: WIDGET_FLAVORS;
+  loggingConfig?: LoggingConfig;
 }
 
 export interface StrigoToken {
