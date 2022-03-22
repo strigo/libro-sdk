@@ -49,10 +49,15 @@
 }
 .strigo-collapse-button {
   position: relative;
+  padding-top: 3px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 4px;
+  border-width: 2px;
   height: 32px;
   width: 16px;
   right: 16px;
-  top: 2rem;
+  top: 32px;
   background: #3d408f;
   border-style: solid;
   border-left-color: #ADAFDC;
@@ -65,6 +70,27 @@
   display: flex;
   justify-content: center;
   flex-direction: column;
+  appearance: auto;
+  writing-mode: horizontal-tb !important;
+  font-style: unset;
+  font-variant-ligatures: unset;
+  font-variant-caps: unset;
+  font-variant-numeric: unset;
+  font-variant-east-asian: unset;
+  font-weight: unset;
+  font-stretch: unset;
+  font-size: unset;
+  font-family: unset;
+  text-rendering: auto;
+  letter-spacing: normal;
+  word-spacing: normal;
+  line-height: normal;
+  text-transform: none;
+  text-indent: 0px;
+  text-shadow: none;
+  text-align: center;
+  align-items: flex-start;
+  box-sizing: border-box;
 }
 .strigo-collapse-button:hover {
   background: #696cbf;

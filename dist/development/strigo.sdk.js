@@ -96,7 +96,7 @@
     arrowDiv.className = "strigo-arrow";
     arrowDiv.id = "strigo-arrow";
     arrowDiv.innerHTML = CHEVRON_RIGHT;
-    const collapseButton = document.createElement("button");
+    const collapseButton = document.createElement("div");
     collapseButton.className = "strigo-collapse-button";
     collapseButton.id = "strigo-toggle";
     collapseButton.appendChild(arrowDiv);
