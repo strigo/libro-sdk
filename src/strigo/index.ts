@@ -38,6 +38,18 @@ export namespace Strigo {
   }
 
   export function setup(data: SDKSetupData) {
+    const { email, token, development = false, version } = data;
+
+    if (!token) {
+      console.log("token is not defined - exiting setup");
+
+      return;
+    }
+
+    // TODO: get logging config from strigo-app
+    // const loggingConfig = { token: "******", url: "https://in.logtail.com/" };
+    // Logger.setup(loggingConfig);
+
     // Setup won't do anything for now (subscriber will only be able to send events later)
     if (SDKType === SDK_TYPES.CHILD || (SDKType === SDK_TYPES.OVERLAY && sessionManager.isPanelOpen())) {
       Logger.info("panel is already opened");
@@ -46,10 +58,8 @@ export namespace Strigo {
 
     Logger.info("setup started");
 
-    const { email, token, development = false, version } = data;
-
     // Get init script parameters
-    const { webApiKey, subDomain, selectedWidgetFlavor} = urlTools.extractInitScriptParams();
+    const { webApiKey, subDomain, selectedWidgetFlavor } = urlTools.extractInitScriptParams();
 
     if (!development && (!email || !token || !webApiKey || !subDomain || !selectedWidgetFlavor)) {
       Logger.error("Please provide setup data");
@@ -65,6 +75,7 @@ export namespace Strigo {
       development,
       version,
       selectedWidgetFlavor
+      // loggingConfig
     });
 
     const widgetFlavor = documentTools.getWidgetFlavor(selectedWidgetFlavor);
