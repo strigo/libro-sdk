@@ -57,7 +57,7 @@ export function generateCssURL(development: boolean, version?: string) {
     return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
   }
 
-  return `${CDN_BASE_PATH}@latest/dist/production/styles/strigo.min.css`;
+  return `${CDN_BASE_PATH}@master/dist/production/styles/strigo.min.css`;
 }
 
 export function generateWidgetCssURL(development: boolean, version?: string) {
@@ -69,5 +69,5 @@ export function generateWidgetCssURL(development: boolean, version?: string) {
     return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
   }
 
-  return `${CDN_BASE_PATH}@latest/dist/production/styles/strigo-widget.min.css`;
+  return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-widget.min.css`;
 }

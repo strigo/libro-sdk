@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "node esbuild.js",
-    "start": "node esbuild-dev.js -w"
+    "start": "node esbuild-dev.js -w",
+    "purge": "node purge-jsdelivr"
   },
   "repository": {
     "type": "git",
