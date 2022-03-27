@@ -9,6 +9,7 @@ import overlayWidget from "../modules/widgets/overlay";
 import { Logger } from "../../services/logger";
 
 import { WIDGET_FLAVORS } from "../modules/session/session.types";
+import { LoggingConfig, StrigoToken } from "../modules/config/config.types";
 
 export namespace Strigo {
   export let SDKType: SDK_TYPES;
@@ -37,18 +38,38 @@ export namespace Strigo {
     }
   }
 
-  export function setup(data: SDKSetupData) {
+  async function fetchRemoteConfiguration(token: StrigoToken, development: boolean) {
+    try {
+      const configDomain = development ? "http://localhost:3000" : "https://app.strigo.io";
+      const response = await fetch(`${configDomain}/api/internal/academy/v1/config`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token.token}`
+        }
+      });
+      const configuration = await response.json();
+      return configuration.data;
+    } catch (err) {
+      Logger.warn("Error fetching configuration from Strigo", err);
+    }
+  }
+
+  export async function setup(data: SDKSetupData) {
     const { email, token, development = false, version } = data;
 
     if (!token) {
-      console.log("token is not defined - exiting setup");
+      Logger.error("token is not defined - exiting setup");
 
       return;
     }
 
-    // TODO: get logging config from strigo-app
-    // const loggingConfig = { token: "******", url: "https://in.logtail.com/" };
-    // Logger.setup(loggingConfig);
+    const configuration = await fetchRemoteConfiguration(token, development);
+    if (configuration) {
+      const { loggingConfig } = configuration;
+      Logger.debug("Configuration fetched from Strigo");
+      Logger.setup(loggingConfig);
+    }
 
     // Setup won't do anything for now (subscriber will only be able to send events later)
     if (SDKType === SDK_TYPES.CHILD || (SDKType === SDK_TYPES.OVERLAY && sessionManager.isPanelOpen())) {
@@ -74,8 +95,8 @@ export namespace Strigo {
       subDomain,
       development,
       version,
-      selectedWidgetFlavor
-      // loggingConfig
+      selectedWidgetFlavor,
+      loggingConfig: configuration?.loggingConfig
     });
 
     const widgetFlavor = documentTools.getWidgetFlavor(selectedWidgetFlavor);
