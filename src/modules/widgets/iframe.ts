@@ -14,7 +14,7 @@ export default {
     let SDKType: SDK_TYPES;
 
     if (sessionManager.isPanelOpen()) {
-      Logger.info("SUBSCRIBER SDK");
+      Logger.info("Child SDK window");
 
       // Start as a subscriber
       SDKType = SDK_TYPES.CHILD;
@@ -22,7 +22,7 @@ export default {
       // Dispatch opened event
       window.dispatchEvent(new Event("strigo-opened"));
     } else {
-      Logger.info("HOST SDK");
+      Logger.info("Parent SDK window");
 
       SDKType = SDK_TYPES.PARENT;
       // Auto setup if the config exists
@@ -34,7 +34,7 @@ export default {
     return SDKType;
   },
   setup: function ({ development, version }) {
-    Logger.info("widget - iframe - setup");
+    Logger.info("iframe setup started");
 
     // Page manipulation
     documentTools.clearDoc();
@@ -74,7 +74,7 @@ export default {
     listeners.initHostEventListeners();
   },
   shutdown: function () {
-    Logger.info("widget - iframe - shutdown");
+    Logger.info("iframe shutdown invoked");
     documentTools.reloadPage();
   }
 };
