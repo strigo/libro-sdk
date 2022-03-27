@@ -7,14 +7,14 @@ import * as sessionManager from "../session/session";
 
 export default {
   init: function () {
-    Logger.info("widget - overlay - init");
+    Logger.info("overlay init called");
     const config = configManager.getConfig();
     if (config) {
       window.Strigo.setup(config);
     }
   },
   setup: function ({ development, version }) {
-    Logger.info("widget - overlay - setup");
+    Logger.info("overlay setup called");
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
       url: urlTools.generateWidgetCssURL(development, version)
@@ -24,7 +24,7 @@ export default {
     listeners.initHostEventListeners();
   },
   shutdown: function () {
-    Logger.info("widget - overlay - shutdown");
+    Logger.info("overlay shutdown called");
     documentTools.removeWidget();
     sessionManager.setPanelClosed();
   },

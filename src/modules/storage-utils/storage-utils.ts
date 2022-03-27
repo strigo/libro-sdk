@@ -12,7 +12,7 @@ export function initStorage<T extends StrigoSession | StrigoConfig>(
     window[storageType].setItem(storageName, JSON.stringify(initialStorage));
     return initialStorage;
   } catch (error) {
-    Logger.error(error);
+    Logger.error("init storage error", error);
     return null;
   }
 }
@@ -25,7 +25,7 @@ export function getStorageData<T extends StrigoSession | StrigoConfig>(
     const value = JSON.parse(window[storageType].getItem(storageName));
     return value;
   } catch (error) {
-    Logger.error(error);
+    Logger.error("get storage data error", error);
     return null;
   }
 }
@@ -39,7 +39,7 @@ export function setupStorage<T extends StrigoSession | StrigoConfig>(
     window[storageType].setItem(storageName, JSON.stringify(data));
     return data;
   } catch (error) {
-    Logger.error(error);
+    Logger.error("setup storage error", error);
     return null;
   }
 }
@@ -63,7 +63,7 @@ export function setStorageValue<T extends StrigoSession | StrigoConfig>(
     window[storageType].setItem(storageName, JSON.stringify(newState));
     return newState;
   } catch (error) {
-    Logger.error(error);
+    Logger.error("set storage value error", error);
     return null;
   }
 }
@@ -72,6 +72,6 @@ export function clearStorage(storageType: STORAGE_TYPES, storageName: string): v
   try {
     window[storageType].removeItem(storageName);
   } catch (error) {
-    Logger.error(error);
+    Logger.error("clear storage error", error);
   }
 }

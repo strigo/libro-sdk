@@ -168,7 +168,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
+      return `http://localhost:${"7000"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -177,7 +177,7 @@
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
+      return `http://localhost:${"7000"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -220,11 +220,12 @@
 ${JSON.stringify(context)}` : "");
     }
     log(severity, message, context) {
+      const prefixedMessage = `Academy - ${message}`;
       try {
         if (this.url && this.token && !getConfig().development) {
-          this.logToRemote(severity, message, context);
+          this.logToRemote(severity, prefixedMessage, context);
         }
-        this.logToConsole(severity, message, context);
+        this.logToConsole(severity, prefixedMessage, context);
       } catch (err) {
         console.log("Logging error:", err);
       }
@@ -250,7 +251,7 @@ ${JSON.stringify(context)}` : "");
       const value = JSON.parse(window[storageType].getItem(storageName));
       return value;
     } catch (error) {
-      LoggerInstance.error(error);
+      LoggerInstance.error("get storage data error", error);
       return null;
     }
   }
@@ -259,7 +260,7 @@ ${JSON.stringify(context)}` : "");
       window[storageType].setItem(storageName, JSON.stringify(data));
       return data;
     } catch (error) {
-      LoggerInstance.error(error);
+      LoggerInstance.error("setup storage error", error);
       return null;
     }
   }
@@ -276,7 +277,7 @@ ${JSON.stringify(context)}` : "");
       window[storageType].setItem(storageName, JSON.stringify(newState));
       return newState;
     } catch (error) {
-      LoggerInstance.error(error);
+      LoggerInstance.error("set storage value error", error);
       return null;
     }
   }
@@ -284,7 +285,7 @@ ${JSON.stringify(context)}` : "");
     try {
       window[storageType].removeItem(storageName);
     } catch (error) {
-      LoggerInstance.error(error);
+      LoggerInstance.error("clear storage error", error);
     }
   }
 
@@ -915,14 +916,14 @@ ${JSON.stringify(context)}` : "");
   // src/modules/widgets/overlay.ts
   var overlay_default = {
     init: function() {
-      LoggerInstance.info("widget - overlay - init");
+      LoggerInstance.info("overlay init called");
       const config = getConfig();
       if (config) {
         window.Strigo.setup(config);
       }
     },
     setup: function({ development, version }) {
-      LoggerInstance.info("widget - overlay - setup");
+      LoggerInstance.info("overlay setup called");
       appendCssFile({
         parentElement: getHeadElement(),
         url: generateWidgetCssURL(development, version)
@@ -932,7 +933,7 @@ ${JSON.stringify(context)}` : "");
       initHostEventListeners();
     },
     shutdown: function() {
-      LoggerInstance.info("widget - overlay - shutdown");
+      LoggerInstance.info("overlay shutdown called");
       removeWidget();
       setPanelClosed();
     },
@@ -1002,11 +1003,11 @@ ${JSON.stringify(context)}` : "");
     init: function() {
       let SDKType;
       if (isPanelOpen()) {
-        LoggerInstance.info("SUBSCRIBER SDK");
+        LoggerInstance.info("Child SDK window");
         SDKType = "CHILD" /* CHILD */;
         window.dispatchEvent(new Event("strigo-opened"));
       } else {
-        LoggerInstance.info("HOST SDK");
+        LoggerInstance.info("Parent SDK window");
         SDKType = "PARENT" /* PARENT */;
         const config = getConfig();
         if (config) {
@@ -1016,7 +1017,7 @@ ${JSON.stringify(context)}` : "");
       return SDKType;
     },
     setup: function({ development, version }) {
-      LoggerInstance.info("widget - iframe - setup");
+      LoggerInstance.info("iframe setup started");
       clearDoc();
       appendCssFile({
         parentElement: getHeadElement(),
@@ -1046,7 +1047,7 @@ ${JSON.stringify(context)}` : "");
       initHostEventListeners();
     },
     shutdown: function() {
-      LoggerInstance.info("widget - iframe - shutdown");
+      LoggerInstance.info("iframe shutdown invoked");
       reloadPage();
     }
   };
@@ -1114,7 +1115,7 @@ ${JSON.stringify(context)}` : "");
       LoggerInstance.info("setup started");
       const { webApiKey, subDomain, selectedWidgetFlavor } = extractInitScriptParams();
       if (!development && (!email || !token || !webApiKey || !subDomain || !selectedWidgetFlavor)) {
-        LoggerInstance.error("Please provide setup data");
+        LoggerInstance.error("setup data missing - exiting setup");
         return;
       }
       setup({
@@ -1151,7 +1152,7 @@ ${JSON.stringify(context)}` : "");
           break;
         }
         default: {
-          LoggerInstance.error("widgetFlavor is not supported - setup");
+          LoggerInstance.error("widgetFlavor is not supported", { widgetFlavor });
           break;
         }
       }
@@ -1176,7 +1177,7 @@ ${JSON.stringify(context)}` : "");
           break;
         }
         default: {
-          LoggerInstance.error("widgetFlavor is not supported");
+          LoggerInstance.error("widgetFlavor is not supported", { widgetFlavor });
           break;
         }
       }

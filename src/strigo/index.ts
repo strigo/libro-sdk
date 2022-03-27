@@ -76,7 +76,7 @@ export namespace Strigo {
       Logger.setup(loggingConfig);
     }
 
-    // Setup won't do anything for now (subscriber will only be able to send events later)
+    // Setup won't do anything for now (child will only be able to send events later)
     if (SDKType === SDK_TYPES.CHILD || (SDKType === SDK_TYPES.OVERLAY && sessionManager.isPanelOpen())) {
       Logger.info("panel is already opened");
       return;
@@ -88,7 +88,7 @@ export namespace Strigo {
     const { webApiKey, subDomain, selectedWidgetFlavor } = urlTools.extractInitScriptParams();
 
     if (!development && (!email || !token || !webApiKey || !subDomain || !selectedWidgetFlavor)) {
-      Logger.error("Please provide setup data");
+      Logger.error("setup data missing - exiting setup");
       return;
     }
 
@@ -128,7 +128,7 @@ export namespace Strigo {
         break;
       }
       default: {
-        Logger.error("widgetFlavor is not supported - setup");
+        Logger.error("widgetFlavor is not supported", { widgetFlavor });
         break;
       }
     }
@@ -154,7 +154,7 @@ export namespace Strigo {
         break;
       }
       default: {
-        Logger.error("widgetFlavor is not supported");
+        Logger.error("widgetFlavor is not supported", { widgetFlavor });
         break;
       }
     }
