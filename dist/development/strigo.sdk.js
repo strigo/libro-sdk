@@ -186,29 +186,63 @@
   }
 
   // services/logger.ts
-  var Logger = {
+  var Logger = class {
+    constructor(config) {
+      this.url = config?.url;
+      this.token = config?.token;
+    }
+    setup(config) {
+      this.url = config.url;
+      this.token = config.token;
+    }
+    logToRemote(severity, message, context) {
+      fetch(this.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.token}`
+        },
+        body: JSON.stringify({
+          severity,
+          message,
+          context,
+          timestamp: new Date().toISOString()
+        })
+      }).then((result) => {
+        if (!result.ok) {
+          console.warn("Logging to Strigo failed");
+        }
+      });
+    }
+    logToConsole(severity, message, context) {
+      const enrichedMessage = `${new Date().toISOString()} - ${message}`;
+      console[severity](enrichedMessage, context ? `
+${JSON.stringify(context)}` : "");
+    }
     log(severity, message, context) {
       try {
-        const enrichedMessage = `${new Date().toISOString()} - ${message}`;
-        console[severity](enrichedMessage, context ? `
-${JSON.stringify(context)}` : "");
+        if (this.url && this.token && !getConfig().development) {
+          this.logToRemote(severity, message, context);
+        }
+        this.logToConsole(severity, message, context);
       } catch (err) {
         console.log("Logging error:", err);
       }
-    },
+    }
     debug(message, context = {}) {
       this.log("debug", message, context);
-    },
+    }
     info(message, context = {}) {
       this.log("info", message, context);
-    },
+    }
     warn(message, context = {}) {
       this.log("warn", message, context);
-    },
+    }
     error(message, context = {}) {
       this.log("error", message, context);
     }
   };
+  var LoggerInstance = new Logger();
 
   // src/modules/storage-utils/storage-utils.ts
   function getStorageData(storageType, storageName) {
@@ -216,7 +250,7 @@ ${JSON.stringify(context)}` : "");
       const value = JSON.parse(window[storageType].getItem(storageName));
       return value;
     } catch (error) {
-      Logger.error(error);
+      LoggerInstance.error(error);
       return null;
     }
   }
@@ -225,7 +259,7 @@ ${JSON.stringify(context)}` : "");
       window[storageType].setItem(storageName, JSON.stringify(data));
       return data;
     } catch (error) {
-      Logger.error(error);
+      LoggerInstance.error(error);
       return null;
     }
   }
@@ -242,7 +276,7 @@ ${JSON.stringify(context)}` : "");
       window[storageType].setItem(storageName, JSON.stringify(newState));
       return newState;
     } catch (error) {
-      Logger.error(error);
+      LoggerInstance.error(error);
       return null;
     }
   }
@@ -250,7 +284,7 @@ ${JSON.stringify(context)}` : "");
     try {
       window[storageType].removeItem(storageName);
     } catch (error) {
-      Logger.error(error);
+      LoggerInstance.error(error);
     }
   }
 
@@ -305,14 +339,14 @@ ${JSON.stringify(context)}` : "");
     try {
       const currentEventsStorage = getEventsStorageData();
       if (currentEventsStorage) {
-        Logger.debug("Events storage already exists");
+        LoggerInstance.debug("Events storage already exists");
         return currentEventsStorage;
       }
       const storageEvents = { events: [] };
       window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(storageEvents));
       return storageEvents;
     } catch (error) {
-      Logger.error("Init events storage error", { error });
+      LoggerInstance.error("Init events storage error", { error });
       return null;
     }
   }
@@ -320,7 +354,7 @@ ${JSON.stringify(context)}` : "");
     try {
       return JSON.parse(window["localStorage" /* LOCAL_STORAGE */].getItem("strigoEvents" /* STRIGO_EVENTS */));
     } catch (error) {
-      Logger.error("Get events storage error", { error });
+      LoggerInstance.error("Get events storage error", { error });
       return null;
     }
   }
@@ -346,7 +380,7 @@ ${JSON.stringify(context)}` : "");
       }
       return initialState;
     } catch (error) {
-      Logger.error("Push event to storage error", { error });
+      LoggerInstance.error("Push event to storage error", { error });
       return null;
     }
   }
@@ -360,7 +394,7 @@ ${JSON.stringify(context)}` : "");
       window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(initialState));
       return event;
     } catch (error) {
-      Logger.error("Pop event from storage error", { error });
+      LoggerInstance.error("Pop event from storage error", { error });
       return null;
     }
   }
@@ -372,7 +406,7 @@ ${JSON.stringify(context)}` : "");
       }
       return initialState.events.pop();
     } catch (error) {
-      Logger.error("Get event from storage error", { error });
+      LoggerInstance.error("Get event from storage error", { error });
       return null;
     }
   }
@@ -851,7 +885,7 @@ ${JSON.stringify(context)}` : "");
         break;
       }
       default: {
-        Logger.error("widgetFlavor is not supported - loader");
+        LoggerInstance.error("widgetFlavor is not supported - loader");
         break;
       }
     }
@@ -864,7 +898,7 @@ ${JSON.stringify(context)}` : "");
   function postEventMessage() {
     const newEvent = getEventValue();
     if (newEvent) {
-      Logger.info("Posting event", newEvent);
+      LoggerInstance.info("Posting event", newEvent);
       window.frames[0].postMessage(newEvent, "*");
       const poppedEvent = popEventValue();
       if (newEvent.eventName !== poppedEvent.eventName) {
@@ -881,14 +915,14 @@ ${JSON.stringify(context)}` : "");
   // src/modules/widgets/overlay.ts
   var overlay_default = {
     init: function() {
-      Logger.info("widget - overlay - init");
+      LoggerInstance.info("widget - overlay - init");
       const config = getConfig();
       if (config) {
         window.Strigo.setup(config);
       }
     },
     setup: function({ development, version }) {
-      Logger.info("widget - overlay - setup");
+      LoggerInstance.info("widget - overlay - setup");
       appendCssFile({
         parentElement: getHeadElement(),
         url: generateWidgetCssURL(development, version)
@@ -898,7 +932,7 @@ ${JSON.stringify(context)}` : "");
       initHostEventListeners();
     },
     shutdown: function() {
-      Logger.info("widget - overlay - shutdown");
+      LoggerInstance.info("widget - overlay - shutdown");
       removeWidget();
       setPanelClosed();
     },
@@ -929,7 +963,7 @@ ${JSON.stringify(context)}` : "");
           break;
         }
         case "challenge-success" /* CHALLENGE_SUCCESS */: {
-          Logger.info("Challenge event success received");
+          LoggerInstance.info("Challenge event success received");
           if (getWidgetFlavor2() === "overlay" /* OVERLAY */) {
             overlay_default.open();
           }
@@ -968,11 +1002,11 @@ ${JSON.stringify(context)}` : "");
     init: function() {
       let SDKType;
       if (isPanelOpen()) {
-        Logger.info("SUBSCRIBER SDK");
+        LoggerInstance.info("SUBSCRIBER SDK");
         SDKType = "CHILD" /* CHILD */;
         window.dispatchEvent(new Event("strigo-opened"));
       } else {
-        Logger.info("HOST SDK");
+        LoggerInstance.info("HOST SDK");
         SDKType = "PARENT" /* PARENT */;
         const config = getConfig();
         if (config) {
@@ -982,7 +1016,7 @@ ${JSON.stringify(context)}` : "");
       return SDKType;
     },
     setup: function({ development, version }) {
-      Logger.info("widget - iframe - setup");
+      LoggerInstance.info("widget - iframe - setup");
       clearDoc();
       appendCssFile({
         parentElement: getHeadElement(),
@@ -1012,7 +1046,7 @@ ${JSON.stringify(context)}` : "");
       initHostEventListeners();
     },
     shutdown: function() {
-      Logger.info("widget - iframe - shutdown");
+      LoggerInstance.info("widget - iframe - shutdown");
       reloadPage();
     }
   };
@@ -1021,7 +1055,7 @@ ${JSON.stringify(context)}` : "");
   var Strigo;
   ((Strigo2) => {
     function init2() {
-      Logger.info("init called");
+      LoggerInstance.info("init called");
       init();
       if (window.Strigo?.initialized) {
         return;
@@ -1042,16 +1076,45 @@ ${JSON.stringify(context)}` : "");
       }
     }
     Strigo2.init = init2;
-    function setup3(data) {
-      if (Strigo2.SDKType === "CHILD" /* CHILD */ || Strigo2.SDKType === "OVERLAY" /* OVERLAY */ && isPanelOpen()) {
-        Logger.info("panel is already opened");
+    async function fetchRemoteConfiguration(token, development) {
+      try {
+        const configDomain = development ? "http://localhost:3000" : "https://app.strigo.io";
+        const response = await fetch(`${configDomain}/api/internal/academy/v1/config`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token.token}`
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch remote configuration: ${response.statusText}`);
+        }
+        const configuration = await response.json();
+        return configuration.data;
+      } catch (err) {
+        LoggerInstance.warn("Error fetching configuration from Strigo", err);
+      }
+    }
+    async function setup3(data) {
+      const { email, token, development = false, version } = data;
+      if (!token) {
+        LoggerInstance.error("token is not defined - exiting setup");
         return;
       }
-      Logger.info("setup started");
-      const { email, token, development = false, version } = data;
+      const configuration = await fetchRemoteConfiguration(token, development);
+      if (configuration) {
+        const { loggingConfig } = configuration;
+        LoggerInstance.debug("Configuration fetched from Strigo");
+        LoggerInstance.setup(loggingConfig);
+      }
+      if (Strigo2.SDKType === "CHILD" /* CHILD */ || Strigo2.SDKType === "OVERLAY" /* OVERLAY */ && isPanelOpen()) {
+        LoggerInstance.info("panel is already opened");
+        return;
+      }
+      LoggerInstance.info("setup started");
       const { webApiKey, subDomain, selectedWidgetFlavor } = extractInitScriptParams();
       if (!development && (!email || !token || !webApiKey || !subDomain || !selectedWidgetFlavor)) {
-        Logger.error("Please provide setup data");
+        LoggerInstance.error("Please provide setup data");
         return;
       }
       setup({
@@ -1062,7 +1125,8 @@ ${JSON.stringify(context)}` : "");
         subDomain,
         development,
         version,
-        selectedWidgetFlavor
+        selectedWidgetFlavor,
+        loggingConfig: configuration?.loggingConfig
       });
       const widgetFlavor = getWidgetFlavor(selectedWidgetFlavor);
       setup2({
@@ -1087,15 +1151,15 @@ ${JSON.stringify(context)}` : "");
           break;
         }
         default: {
-          Logger.error("widgetFlavor is not supported - setup");
+          LoggerInstance.error("widgetFlavor is not supported - setup");
           break;
         }
       }
-      Logger.info("setup finished");
+      LoggerInstance.info("setup finished");
     }
     Strigo2.setup = setup3;
     function shutdown() {
-      Logger.info("shutdown called");
+      LoggerInstance.info("shutdown called");
       if (Strigo2.SDKType === "CHILD" /* CHILD */) {
         return window.parent.postMessage("close", "*");
       }
@@ -1112,7 +1176,7 @@ ${JSON.stringify(context)}` : "");
           break;
         }
         default: {
-          Logger.error("widgetFlavor is not supported");
+          LoggerInstance.error("widgetFlavor is not supported");
           break;
         }
       }
@@ -1120,7 +1184,7 @@ ${JSON.stringify(context)}` : "");
     Strigo2.shutdown = shutdown;
     function sendEvent(eventName) {
       pushEventValue({ eventName });
-      Logger.debug("sendEvent called", { eventName });
+      LoggerInstance.debug("sendEvent called", { eventName });
     }
     Strigo2.sendEvent = sendEvent;
   })(Strigo || (Strigo = {}));
