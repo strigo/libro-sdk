@@ -220,14 +220,13 @@
 ${JSON.stringify(context)}` : "");
     }
     log(severity, message, context) {
-      const prefixedMessage = `Academy - ${message}`;
       try {
-        if (this.url && this.token && !getConfig().development) {
-          this.logToRemote(severity, prefixedMessage, context);
+        if (this.url && this.token && !getConfig()?.development) {
+          this.logToRemote(severity, message, context);
         }
-        this.logToConsole(severity, prefixedMessage, context);
+        this.logToConsole(severity, `Academy - ${message}`, context);
       } catch (err) {
-        console.log("Logging error:", err);
+        console.log("Logging error:", { err });
       }
     }
     debug(message, context = {}) {
@@ -251,7 +250,7 @@ ${JSON.stringify(context)}` : "");
       const value = JSON.parse(window[storageType].getItem(storageName));
       return value;
     } catch (error) {
-      LoggerInstance.error("get storage data error", error);
+      LoggerInstance.error("get storage data error", { err: error });
       return null;
     }
   }
@@ -260,7 +259,7 @@ ${JSON.stringify(context)}` : "");
       window[storageType].setItem(storageName, JSON.stringify(data));
       return data;
     } catch (error) {
-      LoggerInstance.error("setup storage error", error);
+      LoggerInstance.error("setup storage error", { err: error });
       return null;
     }
   }
@@ -277,7 +276,7 @@ ${JSON.stringify(context)}` : "");
       window[storageType].setItem(storageName, JSON.stringify(newState));
       return newState;
     } catch (error) {
-      LoggerInstance.error("set storage value error", error);
+      LoggerInstance.error("set storage value error", { err: error });
       return null;
     }
   }
@@ -285,7 +284,7 @@ ${JSON.stringify(context)}` : "");
     try {
       window[storageType].removeItem(storageName);
     } catch (error) {
-      LoggerInstance.error("clear storage error", error);
+      LoggerInstance.error("clear storage error", { err: error });
     }
   }
 
@@ -1047,7 +1046,7 @@ ${JSON.stringify(context)}` : "");
       initHostEventListeners();
     },
     shutdown: function() {
-      LoggerInstance.info("iframe shutdown invoked");
+      LoggerInstance.info("iframe shutdown called");
       reloadPage();
     }
   };
@@ -1093,7 +1092,7 @@ ${JSON.stringify(context)}` : "");
         const configuration = await response.json();
         return configuration.data;
       } catch (err) {
-        LoggerInstance.warn("Error fetching configuration from Strigo", err);
+        LoggerInstance.warn("Error fetching configuration from Strigo", { err });
       }
     }
     async function setup3(data) {
