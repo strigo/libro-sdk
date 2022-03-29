@@ -48,16 +48,15 @@ class Logger {
    * @param {Object} context the object to provide as context.
    */
   log(severity: string, message: string, context: {}) {
-    const prefixedMessage = `Academy - ${message}`;
     try {
-      if (this.url && this.token && !configManager.getConfig().development) {
-        this.logToRemote(severity, prefixedMessage, context);
+      if (this.url && this.token && !configManager.getConfig()?.development) {
+        this.logToRemote(severity, message, context);
       }
 
       // also console.log always
-      this.logToConsole(severity, prefixedMessage, context);
+      this.logToConsole(severity, `Academy - ${message}`, context);
     } catch (err) {
-      console.log("Logging error:", err);
+      console.log("Logging error:", { err: err });
     }
   }
 

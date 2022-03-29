@@ -74,7 +74,7 @@ export default {
     listeners.initHostEventListeners();
   },
   shutdown: function () {
-    Logger.info("iframe shutdown invoked");
+    Logger.info("iframe shutdown called");
     documentTools.reloadPage();
   }
 };

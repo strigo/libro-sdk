@@ -9,7 +9,7 @@ import overlayWidget from "../modules/widgets/overlay";
 import { Logger } from "../../services/logger";
 
 import { WIDGET_FLAVORS } from "../modules/session/session.types";
-import { LoggingConfig, StrigoToken } from "../modules/config/config.types";
+import { StrigoToken } from "../modules/config/config.types";
 
 export namespace Strigo {
   export let SDKType: SDK_TYPES;
@@ -56,7 +56,7 @@ export namespace Strigo {
       const configuration = await response.json();
       return configuration.data;
     } catch (err) {
-      Logger.warn("Error fetching configuration from Strigo", err);
+      Logger.warn("Error fetching configuration from Strigo", { err: err });
     }
   }
 
