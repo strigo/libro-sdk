@@ -26,7 +26,7 @@ class Logger {
         severity,
         message,
         context,
-        dt: new Date().toISOString()
+        timestamp: new Date().toISOString()
       })
     }).then((result) => {
       if (!result.ok) {

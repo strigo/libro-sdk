@@ -48,6 +48,11 @@ export namespace Strigo {
           Authorization: `Bearer ${token.token}`
         }
       });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch remote configuration: ${response.statusText}`);
+      }
+
       const configuration = await response.json();
       return configuration.data;
     } catch (err) {
