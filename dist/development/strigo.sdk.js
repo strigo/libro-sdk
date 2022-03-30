@@ -224,10 +224,8 @@ ${JSON.stringify(context)}` : "");
       if (!config) {
         return {};
       }
-      const { email, webApiKey, token, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
+      const { token, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
       return {
-        email,
-        webApiKey,
         token: token.token,
         initSite: initSite.href,
         subDomain,
