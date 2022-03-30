@@ -168,7 +168,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -177,7 +177,7 @@
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo-widget.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -219,12 +219,30 @@
       console[severity](enrichedMessage, context ? `
 ${JSON.stringify(context)}` : "");
     }
+    getDefaultContext() {
+      const config = getConfig();
+      if (!config) {
+        return {};
+      }
+      const { email, webApiKey, token, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
+      return {
+        email,
+        webApiKey,
+        token: token.token,
+        initSite: initSite.href,
+        subDomain,
+        development,
+        version,
+        selectedWidgetFlavor
+      };
+    }
     log(severity, message, context) {
+      const enrichedContext = { ...this.getDefaultContext(), ...context };
       try {
         if (this.url && this.token && !getConfig()?.development) {
-          this.logToRemote(severity, message, context);
+          this.logToRemote(severity, message, enrichedContext);
         }
-        this.logToConsole(severity, `Academy - ${message}`, context);
+        this.logToConsole(severity, `Academy - ${message}`, enrichedContext);
       } catch (err) {
         console.log("Logging error:", { err });
       }

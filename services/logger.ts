@@ -40,6 +40,24 @@ class Logger {
     console[severity](enrichedMessage, context ? `\n${JSON.stringify(context)}` : "");
   }
 
+  getDefaultContext() {
+    const config = configManager.getConfig();
+    if (!config) {
+      return {};
+    }
+    const { email, webApiKey, token, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
+    return {
+      email,
+      webApiKey,
+      token: token.token,
+      initSite: initSite.href,
+      subDomain,
+      development,
+      version,
+      selectedWidgetFlavor
+    };
+  }
+
   /**
    * Writes a log message to a remote logging solution and the browser's console.
    *
@@ -48,13 +66,15 @@ class Logger {
    * @param {Object} context the object to provide as context.
    */
   log(severity: string, message: string, context: {}) {
+    const enrichedContext = { ...this.getDefaultContext(), ...context };
+
     try {
       if (this.url && this.token && !configManager.getConfig()?.development) {
-        this.logToRemote(severity, message, context);
+        this.logToRemote(severity, message, enrichedContext);
       }
 
       // also console.log always
-      this.logToConsole(severity, `Academy - ${message}`, context);
+      this.logToConsole(severity, `Academy - ${message}`, enrichedContext);
     } catch (err) {
       console.log("Logging error:", { err: err });
     }
