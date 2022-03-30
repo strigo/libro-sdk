@@ -197,7 +197,7 @@
     }
     logToRemote(severity, message, context) {
       fetch(this.url, {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.token}`
@@ -210,8 +210,10 @@
         })
       }).then((result) => {
         if (!result.ok) {
-          console.warn("Logging to Strigo failed");
+          console.warn("Logging to Strigo failed", { result });
         }
+      }).catch((error) => {
+        console.log("Logging to Strigo failed", { err: error });
       });
     }
     logToConsole(severity, message, context) {
