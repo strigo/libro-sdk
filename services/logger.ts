@@ -45,10 +45,10 @@ class Logger {
     if (!config) {
       return {};
     }
-    const { email, webApiKey, token, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
+    const { token, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
+
+    // Explicitly not adding email and webApiKey because of GDPR and privacy concerns
     return {
-      email,
-      webApiKey,
       token: token.token,
       initSite: initSite.href,
       subDomain,
