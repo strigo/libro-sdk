@@ -17,7 +17,7 @@ class Logger {
 
   logToRemote(severity: string, message: string, context: {}) {
     fetch(this.url, {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.token}`
@@ -28,11 +28,15 @@ class Logger {
         context,
         timestamp: new Date().toISOString()
       })
-    }).then((result) => {
-      if (!result.ok) {
-        console.warn("Logging to Strigo failed");
-      }
-    });
+    })
+      .then((result) => {
+        if (!result.ok) {
+          console.warn("Logging to Strigo failed", { result });
+        }
+      })
+      .catch((error) => {
+        console.log("Logging to Strigo failed", { err: error });
+      });
   }
 
   logToConsole(severity: string, message: string, context: {}) {
