@@ -189,36 +189,32 @@
   var Logger = class {
     constructor(config) {
       this.url = config?.url;
-      this.token = config?.token;
     }
     setup(config) {
       this.url = config.url;
-      this.token = config.token;
     }
-    logToRemote(severity, message, context) {
+    logToRemote(level, message, context) {
       fetch(this.url, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.token}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          severity,
+          level,
           message,
-          context,
-          timestamp: new Date().toISOString()
+          context
         })
       }).then((result) => {
         if (!result.ok) {
           console.warn("Logging to Strigo failed", { result });
         }
       }).catch((error) => {
-        console.log("Logging to Strigo failed", { err: error });
+        console.warn("Logging to Strigo failed", { err: error });
       });
     }
-    logToConsole(severity, message, context) {
+    logToConsole(level, message, context) {
       const enrichedMessage = `${new Date().toISOString()} - ${message}`;
-      console[severity](enrichedMessage, context ? `
+      console[level](enrichedMessage, context ? `
 ${JSON.stringify(context)}` : "");
     }
     getDefaultContext() {
@@ -236,13 +232,13 @@ ${JSON.stringify(context)}` : "");
         selectedWidgetFlavor
       };
     }
-    log(severity, message, context) {
+    log(level, message, context) {
       const enrichedContext = { ...this.getDefaultContext(), ...context };
       try {
-        if (this.url && this.token && !getConfig()?.development) {
-          this.logToRemote(severity, message, enrichedContext);
+        if (this.url && !getConfig()?.development) {
+          this.logToRemote(level, message, enrichedContext);
         }
-        this.logToConsole(severity, `Academy - ${message}`, enrichedContext);
+        this.logToConsole(level, `Academy - ${message}`, enrichedContext);
       } catch (err) {
         console.log("Logging error:", { err });
       }

@@ -11,7 +11,6 @@ export interface SiteConfig {
 
 export interface LoggingConfig {
   url: string;
-  token: string;
 }
 
 export interface StrigoConfig {
