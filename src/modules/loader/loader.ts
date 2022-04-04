@@ -1,6 +1,5 @@
-import { Logger } from "../../../services/logger";
 import * as sessionManager from "../session/session";
-import { WIDGET_FLAVORS } from "../session/session.types";
+import * as widgetFactory from "../widgets/widget-factory";
 
 const SPINNER = `
 <div class="circle-loader">
@@ -30,35 +29,8 @@ export function addLoader() {
 }
 
 export function hideLoader() {
-  switch (sessionManager.getWidgetFlavor()) {
-    case WIDGET_FLAVORS.IFRAME: {
-      const preloader = document.querySelector<HTMLElement>(".strigo-loader");
-      const interval = setInterval(() => {
-        if (!preloader.style.opacity) {
-          preloader.style.opacity = "1";
-        }
-        const opacity = parseFloat(preloader.style.opacity);
-        if (opacity > 0) {
-          preloader.style.opacity = (opacity - 0.1).toString();
-        } else {
-          sessionManager.setSessionValue("isLoading", false);
-          preloader.style.pointerEvents = "none";
-          clearInterval(interval);
-        }
-      }, 200);
-      break;
-    }
-    case WIDGET_FLAVORS.OVERLAY: {
-      sessionManager.setSessionValue("isLoading", false);
-      document.getElementById("strigo-widget").classList.add("slide-in"); 
-      document.getElementById("strigo-widget").classList.add("loaded");
-      break;
-    }
-    default: {
-      Logger.error("widgetFlavor is not supported - loader");
-      break;
-    }
-  }
+  const widget = widgetFactory.getWidget(sessionManager.getWidgetFlavor());
+  widget.hideLoader();
 }
 
 export function isLoading(): boolean {
