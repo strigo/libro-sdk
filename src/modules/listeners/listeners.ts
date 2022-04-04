@@ -3,14 +3,14 @@ import * as eventsSender from "../events-sender/events-sender";
 import * as sessionManager from "../session/session";
 import { STORAGE_NAMES } from "../storage-utils/storage-utils.types";
 import { hideLoader, isLoading } from "../loader/loader";
-import { WIDGET_FLAVORS } from "../session/session.types";
 import ovelayWidget from "../widgets/overlay";
 import { Logger } from "../../../services/logger";
+import { WIDGET_FLAVORS } from "../widgets/widget.types";
 
 // TODO: Remove all existing event listeners
 export function removeAllEventListeners() {}
 
-function storageChanged({ key, oldValue, newValue }) {
+export function storageChanged({ key, oldValue, newValue }) {
   if (key !== STORAGE_NAMES.STRIGO_EVENTS) {
     return;
   }
@@ -58,22 +58,6 @@ export function initHostEventListeners() {
     },
     false
   );
-
-  switch (sessionManager.getWidgetFlavor()) {
-    case WIDGET_FLAVORS.IFRAME: {
-      window.addEventListener(EVENT_TYPES.STORAGE, storageChanged);
-      break;
-    }
-    case WIDGET_FLAVORS.OVERLAY: {
-      window.addEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, (customEvent) => {
-        storageChanged(customEvent?.detail);
-      });
-      break;
-    }
-    default: {
-      break;
-    }
-  }
 }
 
 // Subscriber event listeners

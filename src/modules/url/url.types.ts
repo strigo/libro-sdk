@@ -1,4 +1,4 @@
-import { WIDGET_FLAVORS } from "../session/session.types";
+import { WIDGET_FLAVORS } from "../widgets/widget.types";
 
 export interface InitScriptParams {
   webApiKey: string;

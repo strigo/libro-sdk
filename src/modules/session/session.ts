@@ -1,6 +1,7 @@
 import { clearStorage, getStorageData, setStorageValue, setupStorage } from "../storage-utils/storage-utils";
 import { STORAGE_NAMES, STORAGE_TYPES } from "../storage-utils/storage-utils.types";
-import { StrigoSession, WIDGET_FLAVORS } from "./session.types";
+import { WIDGET_FLAVORS } from "../widgets/widget.types";
+import { StrigoSession } from "./session.types";
 
 export function init() {
   const session = getStorageData(STORAGE_TYPES.SESSION_STORAGE, STORAGE_NAMES.STRIGO_SESSION);

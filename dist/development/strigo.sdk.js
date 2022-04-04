@@ -13,123 +13,6 @@
 `;
   var CDN_BASE_PATH = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk";
 
-  // src/modules/document/document.ts
-  function getHeadElement() {
-    return document.getElementsByTagName("head")[0];
-  }
-  function clearDoc() {
-    document.open();
-    document.close();
-  }
-  function generatePageStructure() {
-    const mainDiv = document.createElement("div");
-    mainDiv.className = "strigo-main";
-    document.body.appendChild(mainDiv);
-    return mainDiv;
-  }
-  function appendCssFile(params) {
-    const { url, parentElement } = params;
-    const cssElement = document.createElement("link");
-    cssElement.rel = "stylesheet";
-    cssElement.href = url;
-    parentElement.appendChild(cssElement);
-  }
-  function appendIFrame(params) {
-    const { url, parentElement, classNames, id } = params;
-    const iframe = document.createElement("iframe");
-    iframe.classList.add(...classNames);
-    iframe.id = id;
-    iframe.src = url;
-    parentElement.appendChild(iframe);
-    return iframe;
-  }
-  function reloadPage() {
-    location.reload();
-  }
-  function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  }
-  function getSplitMaxSizes() {
-    if (isMobile()) {
-      return [window.screen.width, window.screen.width];
-    }
-    return [window.screen.width / 2, window.screen.width];
-  }
-  function getSplitMinSizes() {
-    if (isMobile()) {
-      return [0, 0];
-    }
-    return [window.screen.width * 0.25, 0];
-  }
-  function isIframeSupported() {
-    const req = new XMLHttpRequest();
-    req.open("GET", window.document.location.href, false);
-    req.send(null);
-    const headers = req.getAllResponseHeaders().toLowerCase();
-    const headersArray = headers.split("\r\n");
-    for (const header of headersArray) {
-      if (header.includes("x-frame-options")) {
-        const headerSplitted = header.split(":");
-        if (headerSplitted && headerSplitted.length > 1) {
-          return !(headerSplitted[1].trim() === "deny");
-        }
-      }
-    }
-    return true;
-  }
-  function getWidgetFlavor(selectedWidgetFlavor) {
-    if (selectedWidgetFlavor && selectedWidgetFlavor === "dynamic" /* DYNAMIC */) {
-      return isIframeSupported() ? "iframe" /* IFRAME */ : "overlay" /* OVERLAY */;
-    }
-    return selectedWidgetFlavor;
-  }
-  function createWidget(url) {
-    const toggleFunction = function() {
-      const widget = document.getElementById("strigo-widget");
-      const isOpen = widget.classList.contains("slide-in");
-      widget.classList.toggle("slide-in");
-      setTimeout(() => {
-        const arrow = document.getElementById("strigo-arrow");
-        arrow.innerHTML = isOpen ? CHEVRON_LEFT : CHEVRON_RIGHT;
-      }, 300);
-    };
-    const arrowDiv = document.createElement("div");
-    arrowDiv.className = "strigo-arrow";
-    arrowDiv.id = "strigo-arrow";
-    arrowDiv.innerHTML = CHEVRON_RIGHT;
-    const collapseButton = document.createElement("div");
-    collapseButton.className = "strigo-collapse-button";
-    collapseButton.id = "strigo-toggle";
-    collapseButton.appendChild(arrowDiv);
-    const collapseDiv = document.createElement("div");
-    collapseDiv.className = "strigo-collapse-div";
-    collapseDiv.onclick = () => {
-      toggleFunction();
-    };
-    collapseDiv.appendChild(collapseButton);
-    const strigoExercisesIframe = document.createElement("iframe");
-    strigoExercisesIframe.className = "strigo-iframe";
-    strigoExercisesIframe.id = "strigo-exercises";
-    strigoExercisesIframe.src = url;
-    const widgetDiv = document.createElement("div");
-    widgetDiv.className = "strigo-widget";
-    widgetDiv.id = "strigo-widget";
-    widgetDiv.appendChild(collapseDiv);
-    widgetDiv.appendChild(strigoExercisesIframe);
-    document.body.appendChild(widgetDiv);
-    return strigoExercisesIframe;
-  }
-  var removeWidget = function() {
-    document.getElementById("strigo-widget").remove();
-  };
-  var openWidget = function() {
-    const widget = document.getElementById("strigo-widget");
-    if (widget.classList.contains("slide-in")) {
-      return;
-    }
-    widget.classList.add("slide-in");
-  };
-
   // src/modules/url/url.ts
   function paramsToObject(entries) {
     const result = {};
@@ -323,7 +206,7 @@ ${JSON.stringify(context)}` : "");
   function isPanelOpen() {
     return getSession()?.isPanelOpen;
   }
-  function getWidgetFlavor2() {
+  function getWidgetFlavor() {
     return getSession()?.widgetFlavor;
   }
   function getSession() {
@@ -381,7 +264,7 @@ ${JSON.stringify(context)}` : "");
       const prev = JSON.stringify(initialState);
       initialState.events.push(event);
       window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(initialState));
-      if (getWidgetFlavor2() === "overlay" /* OVERLAY */) {
+      if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
         const event2 = new CustomEvent("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, {
           bubbles: true,
           detail: {
@@ -424,6 +307,117 @@ ${JSON.stringify(context)}` : "");
       return null;
     }
   }
+
+  // src/modules/document/document.ts
+  function getHeadElement() {
+    return document.getElementsByTagName("head")[0];
+  }
+  function clearDoc() {
+    document.open();
+    document.close();
+  }
+  function generatePageStructure() {
+    const mainDiv = document.createElement("div");
+    mainDiv.className = "strigo-main";
+    document.body.appendChild(mainDiv);
+    return mainDiv;
+  }
+  function appendCssFile(params) {
+    const { url, parentElement } = params;
+    const cssElement = document.createElement("link");
+    cssElement.rel = "stylesheet";
+    cssElement.href = url;
+    parentElement.appendChild(cssElement);
+  }
+  function appendIFrame(params) {
+    const { url, parentElement, classNames, id } = params;
+    const iframe = document.createElement("iframe");
+    iframe.classList.add(...classNames);
+    iframe.id = id;
+    iframe.src = url;
+    parentElement.appendChild(iframe);
+    return iframe;
+  }
+  function reloadPage() {
+    location.reload();
+  }
+  function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+  function getSplitMaxSizes() {
+    if (isMobile()) {
+      return [window.screen.width, window.screen.width];
+    }
+    return [window.screen.width / 2, window.screen.width];
+  }
+  function getSplitMinSizes() {
+    if (isMobile()) {
+      return [0, 0];
+    }
+    return [window.screen.width * 0.25, 0];
+  }
+  function isIframeSupported() {
+    const req = new XMLHttpRequest();
+    req.open("GET", window.document.location.href, false);
+    req.send(null);
+    const headers = req.getAllResponseHeaders().toLowerCase();
+    const headersArray = headers.split("\r\n");
+    for (const header of headersArray) {
+      if (header.includes("x-frame-options")) {
+        const headerSplitted = header.split(":");
+        if (headerSplitted && headerSplitted.length > 1) {
+          return !(headerSplitted[1].trim() === "deny");
+        }
+      }
+    }
+    return true;
+  }
+  function createWidget(url) {
+    const toggleFunction = function() {
+      const widget = document.getElementById("strigo-widget");
+      const isOpen = widget.classList.contains("slide-in");
+      widget.classList.toggle("slide-in");
+      setTimeout(() => {
+        const arrow = document.getElementById("strigo-arrow");
+        arrow.innerHTML = isOpen ? CHEVRON_LEFT : CHEVRON_RIGHT;
+      }, 300);
+    };
+    const arrowDiv = document.createElement("div");
+    arrowDiv.className = "strigo-arrow";
+    arrowDiv.id = "strigo-arrow";
+    arrowDiv.innerHTML = CHEVRON_RIGHT;
+    const collapseButton = document.createElement("div");
+    collapseButton.className = "strigo-collapse-button";
+    collapseButton.id = "strigo-toggle";
+    collapseButton.appendChild(arrowDiv);
+    const collapseDiv = document.createElement("div");
+    collapseDiv.className = "strigo-collapse-div";
+    collapseDiv.onclick = () => {
+      toggleFunction();
+    };
+    collapseDiv.appendChild(collapseButton);
+    const strigoExercisesIframe = document.createElement("iframe");
+    strigoExercisesIframe.className = "strigo-iframe";
+    strigoExercisesIframe.id = "strigo-exercises";
+    strigoExercisesIframe.src = url;
+    const widgetDiv = document.createElement("div");
+    widgetDiv.className = "strigo-widget";
+    widgetDiv.id = "strigo-widget";
+    widgetDiv.appendChild(collapseDiv);
+    widgetDiv.appendChild(strigoExercisesIframe);
+    document.body.appendChild(widgetDiv);
+    return strigoExercisesIframe;
+  }
+  var removeWidget = function() {
+    document.getElementById("strigo-widget").remove();
+  };
+  var openWidget = function() {
+    const widget = document.getElementById("strigo-widget");
+    if (widget.classList.contains("slide-in")) {
+      return;
+    }
+    widget.classList.add("slide-in");
+  };
 
   // node_modules/split.js/dist/split.es.js
   var global = typeof window !== "undefined" ? window : null;
@@ -874,35 +868,8 @@ ${JSON.stringify(context)}` : "");
     document.body.appendChild(loaderDiv);
   }
   function hideLoader() {
-    switch (getWidgetFlavor2()) {
-      case "iframe" /* IFRAME */: {
-        const preloader = document.querySelector(".strigo-loader");
-        const interval = setInterval(() => {
-          if (!preloader.style.opacity) {
-            preloader.style.opacity = "1";
-          }
-          const opacity = parseFloat(preloader.style.opacity);
-          if (opacity > 0) {
-            preloader.style.opacity = (opacity - 0.1).toString();
-          } else {
-            setSessionValue("isLoading", false);
-            preloader.style.pointerEvents = "none";
-            clearInterval(interval);
-          }
-        }, 200);
-        break;
-      }
-      case "overlay" /* OVERLAY */: {
-        setSessionValue("isLoading", false);
-        document.getElementById("strigo-widget").classList.add("slide-in");
-        document.getElementById("strigo-widget").classList.add("loaded");
-        break;
-      }
-      default: {
-        LoggerInstance.error("widgetFlavor is not supported - loader");
-        break;
-      }
-    }
+    const widget = getWidget(getWidgetFlavor());
+    widget.hideLoader();
   }
   function isLoading() {
     return !!getSessionValue("isLoading");
@@ -927,13 +894,14 @@ ${JSON.stringify(context)}` : "");
   }
 
   // src/modules/widgets/overlay.ts
-  var overlay_default = {
+  var OverlayWidget = {
     init: function() {
       LoggerInstance.info("overlay init called");
       const config = getConfig();
       if (config) {
         window.Strigo.setup(config);
       }
+      return "OVERLAY" /* OVERLAY */;
     },
     setup: function({ development, version }) {
       LoggerInstance.info("overlay setup called");
@@ -941,9 +909,8 @@ ${JSON.stringify(context)}` : "");
         parentElement: getHeadElement(),
         url: generateWidgetCssURL(development, version)
       });
-      const exercisesIframe = createWidget(generateStrigoIframeURL(getConfig()));
-      initStrigoAppEventListeners(exercisesIframe);
-      initHostEventListeners();
+      const academyPlayerFrame = createWidget(generateStrigoIframeURL(getConfig()));
+      this.initEventListeners(academyPlayerFrame);
     },
     shutdown: function() {
       LoggerInstance.info("overlay shutdown called");
@@ -952,8 +919,21 @@ ${JSON.stringify(context)}` : "");
     },
     open: function() {
       openWidget();
+    },
+    hideLoader: function() {
+      setSessionValue("isLoading", false);
+      document.getElementById("strigo-widget").classList.add("slide-in");
+      document.getElementById("strigo-widget").classList.add("loaded");
+    },
+    initEventListeners: function(academyPlayerFrame) {
+      initStrigoAppEventListeners(academyPlayerFrame);
+      initHostEventListeners();
+      window.addEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, (customEvent) => {
+        storageChanged(customEvent?.detail);
+      });
     }
   };
+  var overlay_default = OverlayWidget;
 
   // src/modules/listeners/listeners.ts
   function storageChanged({ key, oldValue, newValue }) {
@@ -978,7 +958,7 @@ ${JSON.stringify(context)}` : "");
         }
         case "challenge-success" /* CHALLENGE_SUCCESS */: {
           LoggerInstance.info("Challenge event success received");
-          if (getWidgetFlavor2() === "overlay" /* OVERLAY */) {
+          if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
             overlay_default.open();
           }
           break;
@@ -988,21 +968,6 @@ ${JSON.stringify(context)}` : "");
         }
       }
     }, false);
-    switch (getWidgetFlavor2()) {
-      case "iframe" /* IFRAME */: {
-        window.addEventListener("storage" /* STORAGE */, storageChanged);
-        break;
-      }
-      case "overlay" /* OVERLAY */: {
-        window.addEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, (customEvent) => {
-          storageChanged(customEvent?.detail);
-        });
-        break;
-      }
-      default: {
-        break;
-      }
-    }
   }
   function initStrigoAppEventListeners(iframeElement) {
     iframeElement.addEventListener("load", () => {
@@ -1012,7 +977,7 @@ ${JSON.stringify(context)}` : "");
   }
 
   // src/modules/widgets/iframe.ts
-  var iframe_default = {
+  var IframeWidget = {
     init: function() {
       let SDKType;
       if (isPanelOpen()) {
@@ -1038,7 +1003,7 @@ ${JSON.stringify(context)}` : "");
       });
       addLoader();
       const mainDiv = generatePageStructure();
-      const exercisesIframe = appendIFrame({
+      const academyPlayerFrame = appendIFrame({
         parentElement: mainDiv,
         url: generateStrigoIframeURL(getConfig()),
         classNames: STRIGO_IFRAME_CLASSES,
@@ -1056,38 +1021,78 @@ ${JSON.stringify(context)}` : "");
         minSize: getSplitMinSizes(),
         gutterSize: 2
       });
-      initStrigoAppEventListeners(exercisesIframe);
-      initHostEventListeners();
+      this.initEventListeners(academyPlayerFrame);
     },
     shutdown: function() {
       LoggerInstance.info("iframe shutdown called");
       reloadPage();
+    },
+    hideLoader: function() {
+      const preloader = document.querySelector(".strigo-loader");
+      const interval = setInterval(() => {
+        if (!preloader.style.opacity) {
+          preloader.style.opacity = "1";
+        }
+        const opacity = parseFloat(preloader.style.opacity);
+        if (opacity > 0) {
+          preloader.style.opacity = (opacity - 0.1).toString();
+        } else {
+          setSessionValue("isLoading", false);
+          preloader.style.pointerEvents = "none";
+          clearInterval(interval);
+        }
+      }, 200);
+    },
+    initEventListeners: function(academyPlayerFrame) {
+      initStrigoAppEventListeners(academyPlayerFrame);
+      initHostEventListeners();
+      window.addEventListener("storage" /* STORAGE */, storageChanged);
     }
   };
+  var iframe_default = IframeWidget;
+
+  // src/modules/widgets/widget-factory.ts
+  function getWidgetFlavor2(selectedWidgetFlavor) {
+    if (selectedWidgetFlavor && selectedWidgetFlavor === "dynamic" /* DYNAMIC */) {
+      return isIframeSupported() ? "iframe" /* IFRAME */ : "overlay" /* OVERLAY */;
+    }
+    return selectedWidgetFlavor;
+  }
+  function getWidget(widgetFlavor) {
+    let widget = null;
+    switch (widgetFlavor) {
+      case "iframe" /* IFRAME */: {
+        widget = iframe_default;
+        break;
+      }
+      case "overlay" /* OVERLAY */: {
+        widget = overlay_default;
+        break;
+      }
+      default:
+        LoggerInstance.error("widgetFlavor is not supported", { widgetFlavor });
+        break;
+    }
+    return widget;
+  }
 
   // src/strigo/index.ts
   var Strigo;
   ((Strigo2) => {
     function init2() {
-      LoggerInstance.info("init called");
+      LoggerInstance.info("Started initialization");
       init();
       if (window.Strigo?.initialized) {
         return;
       }
       window.Strigo.initialized = true;
-      switch (getWidgetFlavor2()) {
-        case "iframe" /* IFRAME */: {
-          Strigo2.SDKType = iframe_default.init();
-          break;
-        }
-        case "overlay" /* OVERLAY */: {
-          Strigo2.SDKType = "OVERLAY" /* OVERLAY */;
-          overlay_default.init();
-          break;
-        }
-        default:
-          break;
+      const widget = getWidget(getWidgetFlavor());
+      if (!widget) {
+        LoggerInstance.error(`Can't finish initialization. widgetFlavor is not supported.`);
+        return;
       }
+      Strigo2.SDKType = widget.init();
+      LoggerInstance.info("Finished initialization");
     }
     Strigo2.init = init2;
     async function fetchRemoteConfiguration(token, development) {
@@ -1125,7 +1130,7 @@ ${JSON.stringify(context)}` : "");
         LoggerInstance.info("panel is already opened");
         return;
       }
-      LoggerInstance.info("setup started");
+      LoggerInstance.info("Started setup");
       const { webApiKey, subDomain, selectedWidgetFlavor } = extractInitScriptParams();
       if (!development && (!email || !token || !webApiKey || !subDomain || !selectedWidgetFlavor)) {
         LoggerInstance.error("setup data missing - exiting setup");
@@ -1142,58 +1147,37 @@ ${JSON.stringify(context)}` : "");
         selectedWidgetFlavor,
         loggingConfig: configuration?.loggingConfig
       });
-      const widgetFlavor = getWidgetFlavor(selectedWidgetFlavor);
+      const widgetFlavor = getWidgetFlavor2(selectedWidgetFlavor);
       setup2({
         currentUrl: getConfig().initSite.href,
         isPanelOpen: true,
         isLoading: true,
         widgetFlavor
       });
-      switch (widgetFlavor) {
-        case "iframe" /* IFRAME */: {
-          iframe_default.setup({
-            version,
-            development
-          });
-          break;
-        }
-        case "overlay" /* OVERLAY */: {
-          overlay_default.setup({
-            version,
-            development
-          });
-          break;
-        }
-        default: {
-          LoggerInstance.error("widgetFlavor is not supported", { widgetFlavor });
-          break;
-        }
+      const widget = getWidget(widgetFlavor);
+      if (!widget) {
+        LoggerInstance.error(`Can't finish setup. widgetFlavor is not supported.`);
+        return;
       }
-      LoggerInstance.info("setup finished");
+      widget.setup({ version, development });
+      LoggerInstance.info("Finished setup");
     }
     Strigo2.setup = setup3;
     function shutdown() {
-      LoggerInstance.info("shutdown called");
+      LoggerInstance.info("Started shutdown");
       if (Strigo2.SDKType === "CHILD" /* CHILD */) {
         return window.parent.postMessage("close", "*");
       }
-      const widgetFlavor = getWidgetFlavor2();
+      const widgetFlavor = getWidgetFlavor();
       clearConfig();
       clearSession();
-      switch (widgetFlavor) {
-        case "iframe" /* IFRAME */: {
-          iframe_default.shutdown();
-          break;
-        }
-        case "overlay" /* OVERLAY */: {
-          overlay_default.shutdown();
-          break;
-        }
-        default: {
-          LoggerInstance.error("widgetFlavor is not supported", { widgetFlavor });
-          break;
-        }
+      const widget = getWidget(widgetFlavor);
+      if (!widget) {
+        LoggerInstance.error(`Can't finish shutdown. widgetFlavor is not supported.`);
+        return;
       }
+      widget.shutdown();
+      LoggerInstance.info("Finished shutdown");
     }
     Strigo2.shutdown = shutdown;
     function sendEvent(eventName) {

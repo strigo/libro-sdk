@@ -1,6 +1,6 @@
 import { BASE_STRIGO_URL, CDN_BASE_PATH, INIT_SCRIPT_ID, LOCAL_STRIGO_URL } from "../../strigo/consts";
 import { StrigoConfig, SiteConfig } from "../config/config.types";
-import { WIDGET_FLAVORS } from "../session/session.types";
+import { WIDGET_FLAVORS } from "../widgets/widget.types";
 import { InitScriptParams } from "./url.types";
 
 function paramsToObject(entries: IterableIterator<[string, string]>): Record<string, string> {

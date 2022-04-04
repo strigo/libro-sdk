@@ -2,8 +2,8 @@ import { STORAGE_NAMES, STORAGE_TYPES } from "../storage-utils/storage-utils.typ
 import { StrigoEventsStorage, StrigoEvent } from "./events-storage.types";
 import { Logger } from "../../../services/logger";
 import * as sessionManager from "../session/session";
-import { WIDGET_FLAVORS } from "../session/session.types";
 import { EVENT_TYPES } from "../listeners/listeners.types";
+import { WIDGET_FLAVORS } from "../widgets/widget.types";
 
 export function init(): StrigoEventsStorage {
   try {

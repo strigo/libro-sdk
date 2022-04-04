@@ -1,9 +1,4 @@
-export enum WIDGET_FLAVORS {
-  IFRAME = "iframe",
-  OVERLAY = "overlay",
-  DYNAMIC = "dynamic"
-}
-
+import { WIDGET_FLAVORS } from "../widgets/widget.types";
 export interface StrigoSession {
   currentUrl: string;
   isPanelOpen: boolean;

@@ -4,38 +4,31 @@ import * as urlTools from "../modules/url/url";
 import * as configManager from "../modules/config/config";
 import * as sessionManager from "../modules/session/session";
 import * as eventsStorageManager from "../modules/events-storage/events-storage";
-import iframeWidget from "../modules/widgets/iframe";
-import overlayWidget from "../modules/widgets/overlay";
 import { Logger } from "../../services/logger";
-
-import { WIDGET_FLAVORS } from "../modules/session/session.types";
 import { StrigoToken } from "../modules/config/config.types";
+import * as widgetFactory from "../modules/widgets/widget-factory";
 
 export namespace Strigo {
   export let SDKType: SDK_TYPES;
 
   export function init() {
-    Logger.info("init called");
+    Logger.info("Started initialization");
     eventsStorageManager.init();
+
     if (window.Strigo?.initialized) {
       return;
     }
     window.Strigo.initialized = true;
 
-    // Check if other instances exists
-    switch (sessionManager.getWidgetFlavor()) {
-      case WIDGET_FLAVORS.IFRAME: {
-        SDKType = iframeWidget.init();
-        break;
-      }
-      case WIDGET_FLAVORS.OVERLAY: {
-        SDKType = SDK_TYPES.OVERLAY;
-        overlayWidget.init();
-        break;
-      }
-      default:
-        break;
+    const widget = widgetFactory.getWidget(sessionManager.getWidgetFlavor());
+
+    if (!widget) {
+      Logger.error(`Can't finish initialization. widgetFlavor is not supported.`);
+      return;
     }
+
+    SDKType = widget.init();
+    Logger.info("Finished initialization");
   }
 
   async function fetchRemoteConfiguration(token: StrigoToken, development: boolean) {
@@ -82,7 +75,7 @@ export namespace Strigo {
       return;
     }
 
-    Logger.info("setup started");
+    Logger.info("Started setup");
 
     // Get init script parameters
     const { webApiKey, subDomain, selectedWidgetFlavor } = urlTools.extractInitScriptParams();
@@ -104,7 +97,7 @@ export namespace Strigo {
       loggingConfig: configuration?.loggingConfig
     });
 
-    const widgetFlavor = documentTools.getWidgetFlavor(selectedWidgetFlavor);
+    const widgetFlavor = widgetFactory.getWidgetFlavor(selectedWidgetFlavor);
     sessionManager.setup({
       currentUrl: configManager.getConfig().initSite.href,
       isPanelOpen: true,
@@ -112,31 +105,19 @@ export namespace Strigo {
       widgetFlavor
     });
 
-    switch (widgetFlavor) {
-      case WIDGET_FLAVORS.IFRAME: {
-        iframeWidget.setup({
-          version,
-          development
-        });
-        break;
-      }
-      case WIDGET_FLAVORS.OVERLAY: {
-        overlayWidget.setup({
-          version,
-          development
-        });
-        break;
-      }
-      default: {
-        Logger.error("widgetFlavor is not supported", { widgetFlavor });
-        break;
-      }
+    const widget = widgetFactory.getWidget(widgetFlavor);
+
+    if (!widget) {
+      Logger.error(`Can't finish setup. widgetFlavor is not supported.`);
+      return;
     }
 
-    Logger.info("setup finished");
+    widget.setup({version, development})
+    Logger.info("Finished setup");
   }
+
   export function shutdown() {
-    Logger.info("shutdown called");
+    Logger.info("Started shutdown");
     if (SDKType === SDK_TYPES.CHILD) {
       return window.parent.postMessage("close", "*");
     }
@@ -144,21 +125,17 @@ export namespace Strigo {
     configManager.clearConfig();
     sessionManager.clearSession();
 
-    switch (widgetFlavor) {
-      case WIDGET_FLAVORS.IFRAME: {
-        iframeWidget.shutdown();
-        break;
-      }
-      case WIDGET_FLAVORS.OVERLAY: {
-        overlayWidget.shutdown();
-        break;
-      }
-      default: {
-        Logger.error("widgetFlavor is not supported", { widgetFlavor });
-        break;
-      }
+    const widget = widgetFactory.getWidget(widgetFlavor);
+
+    if (!widget) {
+      Logger.error(`Can't finish shutdown. widgetFlavor is not supported.`);
+      return;
     }
+
+    widget.shutdown();
+    Logger.info("Finished shutdown");
   }
+
   export function sendEvent(eventName) {
     eventsStorageManager.pushEventValue({ eventName });
     Logger.debug("sendEvent called", { eventName });
