@@ -24,12 +24,15 @@ jobs:
           name: Update package.json version (master branch only)
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              sudo curl -sSL -o /usr/local/bin/github-semver-release https://gist.githubusercontent.com/nir0s/ed262afd6a20d20af7be095e5004af9c/raw/c43c306f27905f05988f7399121103cd78fac047/semver-github-release.sh
+              sudo curl -sSL -o /usr/local/bin/github-semver-release https://gist.githubusercontent.com/nir0s/ed262afd6a20d20af7be095e5004af9c/raw/ea595179706df2f3e4aa6ffd2973c7e265162aa1/semver-github-release.sh
               source /usr/local/bin/github-semver-release
 
               set_new_version
-              source semver.env
-              sed -i "s/\"version\": \"0.0.0\"/\"version\": \"$NEW_VERSION\"/g" package.json && cat package.json
+
+              if [ -f "semver.env"]; then
+                source semver.env
+                sed -i "s/\"version\": \"0.0.0\"/\"version\": \"$NEW_VERSION\"/g" manifest.json && cat manifest.json
+              fi
             fi
 
       - run:
@@ -78,7 +81,7 @@ jobs:
       - run:
           name: Publish to GitHub
           command: |
-            sudo curl -sSL -o /usr/local/bin/github-semver-release https://gist.githubusercontent.com/nir0s/ed262afd6a20d20af7be095e5004af9c/raw/c43c306f27905f05988f7399121103cd78fac047/semver-github-release.sh
+            sudo curl -sSL -o /usr/local/bin/github-semver-release https://gist.githubusercontent.com/nir0s/ed262afd6a20d20af7be095e5004af9c/raw/ea595179706df2f3e4aa6ffd2973c7e265162aa1/semver-github-release.sh
             sudo chmod +x /usr/local/bin/github-semver-release
 
             github-semver-release
