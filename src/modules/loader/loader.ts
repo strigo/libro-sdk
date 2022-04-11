@@ -1,6 +1,3 @@
-import * as sessionManager from "../session/session";
-import * as widgetFactory from "../widgets/widget-factory";
-
 const SPINNER = `
 <div class="circle-loader">
   <svg class="circular" viewBox="25 25 50 50">
@@ -17,9 +14,7 @@ const SPINNER = `
 </div>
 `;
 
-export function addLoader() {
-  sessionManager.setSessionValue("isLoading", true);
-
+export function showLoader() {
   // Add Spinner
   const loaderDiv = document.createElement("div");
   loaderDiv.className = "strigo-loader";
@@ -28,11 +23,24 @@ export function addLoader() {
   document.body.appendChild(loaderDiv);
 }
 
-export function hideLoader() {
-  const widget = widgetFactory.getWidget(sessionManager.getWidgetFlavor());
-  widget.hideLoader();
-}
+export function hideLoader(): Promise<void> {
+  const preloader = document.querySelector<HTMLElement>(".strigo-loader");
 
-export function isLoading(): boolean {
-  return !!sessionManager.getSessionValue("isLoading");
+  // Temporarily create a promise to make this function usable externally
+  // until we rewrite the loader effect with css only.
+  return new Promise<void>((resolve) => {
+    const interval = setInterval(() => {
+      if (!preloader.style.opacity) {
+        preloader.style.opacity = "1";
+      }
+      const opacity = parseFloat(preloader.style.opacity);
+      if (opacity > 0) {
+        preloader.style.opacity = (opacity - 0.1).toString();
+      } else {
+        preloader.style.pointerEvents = "none";
+        clearInterval(interval);
+        resolve();
+      }
+    }, 200);
+  });
 }
