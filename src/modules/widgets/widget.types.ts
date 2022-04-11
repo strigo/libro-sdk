@@ -6,14 +6,12 @@ export enum WIDGET_FLAVORS {
   DYNAMIC = "dynamic"
 }
 
-export interface StrigoWidget {
+export interface IStrigoWidget {
   init: () => SDK_TYPES;
   setup: (params: { development: boolean, version?: string }) => void;
   shutdown: () => void;
-  hideLoader: () => void;
-  initEventListeners: (academyPlayerFrame: HTMLIFrameElement) => void;
 }
 
-export interface OverlayWidget extends StrigoWidget {
+export interface IOverlayWidget extends IStrigoWidget {
   open: () => void;
 }

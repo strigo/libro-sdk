@@ -860,19 +860,29 @@ ${JSON.stringify(context)}` : "");
   </svg>
 </div>
 `;
-  function addLoader() {
-    setSessionValue("isLoading", true);
+  function showLoader() {
     const loaderDiv = document.createElement("div");
     loaderDiv.className = "strigo-loader";
     loaderDiv.innerHTML = SPINNER;
     document.body.appendChild(loaderDiv);
   }
   function hideLoader() {
-    const widget = getWidget(getWidgetFlavor());
-    widget.hideLoader();
-  }
-  function isLoading() {
-    return !!getSessionValue("isLoading");
+    const preloader = document.querySelector(".strigo-loader");
+    return new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (!preloader.style.opacity) {
+          preloader.style.opacity = "1";
+        }
+        const opacity = parseFloat(preloader.style.opacity);
+        if (opacity > 0) {
+          preloader.style.opacity = (opacity - 0.1).toString();
+        } else {
+          preloader.style.pointerEvents = "none";
+          clearInterval(interval);
+          resolve();
+        }
+      }, 200);
+    });
   }
 
   // src/modules/events-sender/events-sender.ts
@@ -894,16 +904,20 @@ ${JSON.stringify(context)}` : "");
   }
 
   // src/modules/widgets/overlay.ts
-  var OverlayWidget = {
-    init: function() {
+  function makeOverlayWidgetVisible() {
+    document.getElementById("strigo-widget").classList.add("slide-in");
+    document.getElementById("strigo-widget").classList.add("loaded");
+  }
+  var OverlayWidget = class {
+    init() {
       LoggerInstance.info("overlay init called");
       const config = getConfig();
       if (config) {
         window.Strigo.setup(config);
       }
       return "OVERLAY" /* OVERLAY */;
-    },
-    setup: function({ development, version }) {
+    }
+    setup({ development, version }) {
       LoggerInstance.info("overlay setup called");
       appendCssFile({
         parentElement: getHeadElement(),
@@ -911,29 +925,24 @@ ${JSON.stringify(context)}` : "");
       });
       const academyPlayerFrame = createWidget(generateStrigoIframeURL(getConfig()));
       this.initEventListeners(academyPlayerFrame);
-    },
-    shutdown: function() {
+    }
+    shutdown() {
       LoggerInstance.info("overlay shutdown called");
       removeWidget();
       setPanelClosed();
-    },
-    open: function() {
+    }
+    open() {
       openWidget();
-    },
-    hideLoader: function() {
-      setSessionValue("isLoading", false);
-      document.getElementById("strigo-widget").classList.add("slide-in");
-      document.getElementById("strigo-widget").classList.add("loaded");
-    },
-    initEventListeners: function(academyPlayerFrame) {
-      initStrigoAppEventListeners(academyPlayerFrame);
+    }
+    initEventListeners(academyPlayerFrame) {
+      initAcademyPlayerLoadedListeners(academyPlayerFrame, makeOverlayWidgetVisible);
       initHostEventListeners();
       window.addEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, (customEvent) => {
         storageChanged(customEvent?.detail);
       });
     }
   };
-  var overlay_default = OverlayWidget;
+  var overlay_default = new OverlayWidget();
 
   // src/modules/listeners/listeners.ts
   function storageChanged({ key, oldValue, newValue }) {
@@ -969,16 +978,21 @@ ${JSON.stringify(context)}` : "");
       }
     }, false);
   }
-  function initStrigoAppEventListeners(iframeElement) {
-    iframeElement.addEventListener("load", () => {
-      isLoading() && hideLoader();
+  function initAcademyPlayerLoadedListeners(academyPlayerIframe, onLoadCallback) {
+    academyPlayerIframe.addEventListener("load", async () => {
+      if (!!getSessionValue("isLoading")) {
+        if (onLoadCallback) {
+          await onLoadCallback();
+        }
+        setSessionValue("isLoading", false);
+      }
       postAllEventMessages();
     });
   }
 
   // src/modules/widgets/iframe.ts
-  var IframeWidget = {
-    init: function() {
+  var IframeWidget = class {
+    init() {
       let SDKType;
       if (isPanelOpen()) {
         LoggerInstance.info("Child SDK window");
@@ -993,15 +1007,15 @@ ${JSON.stringify(context)}` : "");
         }
       }
       return SDKType;
-    },
-    setup: function({ development, version }) {
+    }
+    setup({ development, version }) {
       LoggerInstance.info("iframe setup started");
       clearDoc();
       appendCssFile({
         parentElement: getHeadElement(),
         url: generateCssURL(development, version)
       });
-      addLoader();
+      showLoader();
       const mainDiv = generatePageStructure();
       const academyPlayerFrame = appendIFrame({
         parentElement: mainDiv,
@@ -1022,34 +1036,18 @@ ${JSON.stringify(context)}` : "");
         gutterSize: 2
       });
       this.initEventListeners(academyPlayerFrame);
-    },
-    shutdown: function() {
+    }
+    shutdown() {
       LoggerInstance.info("iframe shutdown called");
       reloadPage();
-    },
-    hideLoader: function() {
-      const preloader = document.querySelector(".strigo-loader");
-      const interval = setInterval(() => {
-        if (!preloader.style.opacity) {
-          preloader.style.opacity = "1";
-        }
-        const opacity = parseFloat(preloader.style.opacity);
-        if (opacity > 0) {
-          preloader.style.opacity = (opacity - 0.1).toString();
-        } else {
-          setSessionValue("isLoading", false);
-          preloader.style.pointerEvents = "none";
-          clearInterval(interval);
-        }
-      }, 200);
-    },
-    initEventListeners: function(academyPlayerFrame) {
-      initStrigoAppEventListeners(academyPlayerFrame);
+    }
+    initEventListeners(academyPlayerFrame) {
+      initAcademyPlayerLoadedListeners(academyPlayerFrame, hideLoader);
       initHostEventListeners();
       window.addEventListener("storage" /* STORAGE */, storageChanged);
     }
   };
-  var iframe_default = IframeWidget;
+  var iframe_default = new IframeWidget();
 
   // src/modules/widgets/widget-factory.ts
   function getWidgetFlavor2(selectedWidgetFlavor) {
@@ -1070,8 +1068,8 @@ ${JSON.stringify(context)}` : "");
         break;
       }
       default:
-        LoggerInstance.error("widgetFlavor is not supported", { widgetFlavor });
-        break;
+        LoggerInstance.error("Widget flavor is not supported", { widgetFlavor });
+        throw new Error(`Widget flavor ${widgetFlavor} is not supported`);
     }
     return widget;
   }
@@ -1080,19 +1078,19 @@ ${JSON.stringify(context)}` : "");
   var Strigo;
   ((Strigo2) => {
     function init2() {
-      LoggerInstance.info("Started initialization");
-      init();
-      if (window.Strigo?.initialized) {
-        return;
+      try {
+        LoggerInstance.info("Initializing SDK...");
+        init();
+        if (window.Strigo?.initialized) {
+          return;
+        }
+        window.Strigo.initialized = true;
+        const widget = getWidget(getWidgetFlavor());
+        Strigo2.SDKType = widget.init();
+        LoggerInstance.info("Initialized SDK.");
+      } catch (err) {
+        LoggerInstance.error("Could not initialize SDK", { err });
       }
-      window.Strigo.initialized = true;
-      const widget = getWidget(getWidgetFlavor());
-      if (!widget) {
-        LoggerInstance.error(`Can't finish initialization. widgetFlavor is not supported.`);
-        return;
-      }
-      Strigo2.SDKType = widget.init();
-      LoggerInstance.info("Finished initialization");
     }
     Strigo2.init = init2;
     async function fetchRemoteConfiguration(token, development) {
@@ -1115,69 +1113,67 @@ ${JSON.stringify(context)}` : "");
       }
     }
     async function setup3(data) {
-      const { email, token, development = false, version } = data;
-      if (!token) {
-        LoggerInstance.error("token is not defined - exiting setup");
-        return;
+      try {
+        LoggerInstance.info("Starting to setup SDK...");
+        const { email, token, development = false, version } = data;
+        if (!token) {
+          throw new Error("Token is not defined");
+        }
+        const configuration = await fetchRemoteConfiguration(token, development);
+        if (configuration) {
+          const { loggingConfig } = configuration;
+          LoggerInstance.debug("Configuration fetched from Strigo");
+          LoggerInstance.setup(loggingConfig);
+        }
+        if (Strigo2.SDKType === "CHILD" /* CHILD */ || Strigo2.SDKType === "OVERLAY" /* OVERLAY */ && isPanelOpen()) {
+          LoggerInstance.info("panel is already opened");
+          return;
+        }
+        const { webApiKey, subDomain, selectedWidgetFlavor } = extractInitScriptParams();
+        if (!development && (!email || !token || !webApiKey || !subDomain || !selectedWidgetFlavor)) {
+          throw new Error("Setup data is missing");
+        }
+        setup({
+          email,
+          initSite: getUrlData(),
+          token,
+          webApiKey,
+          subDomain,
+          development,
+          version,
+          selectedWidgetFlavor,
+          loggingConfig: configuration?.loggingConfig
+        });
+        const widgetFlavor = getWidgetFlavor2(selectedWidgetFlavor);
+        setup2({
+          currentUrl: getConfig().initSite.href,
+          isPanelOpen: true,
+          isLoading: true,
+          widgetFlavor
+        });
+        const widget = getWidget(widgetFlavor);
+        widget.setup({ version, development });
+        LoggerInstance.info("Finished SDK setup.");
+      } catch (err) {
+        LoggerInstance.error("Could not setup SDK", { err });
       }
-      const configuration = await fetchRemoteConfiguration(token, development);
-      if (configuration) {
-        const { loggingConfig } = configuration;
-        LoggerInstance.debug("Configuration fetched from Strigo");
-        LoggerInstance.setup(loggingConfig);
-      }
-      if (Strigo2.SDKType === "CHILD" /* CHILD */ || Strigo2.SDKType === "OVERLAY" /* OVERLAY */ && isPanelOpen()) {
-        LoggerInstance.info("panel is already opened");
-        return;
-      }
-      LoggerInstance.info("Started setup");
-      const { webApiKey, subDomain, selectedWidgetFlavor } = extractInitScriptParams();
-      if (!development && (!email || !token || !webApiKey || !subDomain || !selectedWidgetFlavor)) {
-        LoggerInstance.error("setup data missing - exiting setup");
-        return;
-      }
-      setup({
-        email,
-        initSite: getUrlData(),
-        token,
-        webApiKey,
-        subDomain,
-        development,
-        version,
-        selectedWidgetFlavor,
-        loggingConfig: configuration?.loggingConfig
-      });
-      const widgetFlavor = getWidgetFlavor2(selectedWidgetFlavor);
-      setup2({
-        currentUrl: getConfig().initSite.href,
-        isPanelOpen: true,
-        isLoading: true,
-        widgetFlavor
-      });
-      const widget = getWidget(widgetFlavor);
-      if (!widget) {
-        LoggerInstance.error(`Can't finish setup. widgetFlavor is not supported.`);
-        return;
-      }
-      widget.setup({ version, development });
-      LoggerInstance.info("Finished setup");
     }
     Strigo2.setup = setup3;
     function shutdown() {
-      LoggerInstance.info("Started shutdown");
-      if (Strigo2.SDKType === "CHILD" /* CHILD */) {
-        return window.parent.postMessage("close", "*");
+      try {
+        LoggerInstance.info("Shutting down SDK...");
+        if (Strigo2.SDKType === "CHILD" /* CHILD */) {
+          window.parent.postMessage("close" /* SHUTDOWN */, "*");
+          return;
+        }
+        const widget = getWidget(getWidgetFlavor());
+        clearConfig();
+        clearSession();
+        widget.shutdown();
+        LoggerInstance.info("Finished SDK shutdown.");
+      } catch (err) {
+        LoggerInstance.error("Could not shutdown SDK", { err });
       }
-      const widgetFlavor = getWidgetFlavor();
-      clearConfig();
-      clearSession();
-      const widget = getWidget(widgetFlavor);
-      if (!widget) {
-        LoggerInstance.error(`Can't finish shutdown. widgetFlavor is not supported.`);
-        return;
-      }
-      widget.shutdown();
-      LoggerInstance.info("Finished shutdown");
     }
     Strigo2.shutdown = shutdown;
     function sendEvent(eventName) {

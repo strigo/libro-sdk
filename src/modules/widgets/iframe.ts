@@ -2,17 +2,17 @@ import Split from "split.js";
 import { Logger } from "../../../services/logger";
 import * as documentTools from "../document/document";
 import { STRIGO_IFRAME_CLASSES, ORIGINAL_WEBSITE_IFRAME_CLASSES } from "../../strigo/consts";
-import { addLoader } from "../loader/loader";
+import { hideLoader, showLoader } from "../loader/loader";
 import * as configManager from "../config/config";
 import * as sessionManager from "../session/session";
 import * as listeners from "../listeners/listeners";
 import * as urlTools from "../url/url";
 import { SDK_TYPES } from "../../strigo/types";
-import { StrigoWidget } from "./widget.types";
+import { IStrigoWidget } from "./widget.types";
 import { EVENT_TYPES } from "../listeners/listeners.types";
 
-const IframeWidget: StrigoWidget = {
-  init: function () {
+class IframeWidget implements IStrigoWidget {
+  init() {
     let SDKType: SDK_TYPES;
 
     if (sessionManager.isPanelOpen()) {
@@ -33,10 +33,11 @@ const IframeWidget: StrigoWidget = {
         window.Strigo.setup(config);
       }
     }
+
     return SDKType;
-  },
+  }
   
-  setup: function ({ development, version }) {
+  setup({ development, version }) {
     Logger.info("iframe setup started");
 
     // Page manipulation
@@ -47,7 +48,7 @@ const IframeWidget: StrigoWidget = {
       url: urlTools.generateCssURL(development, version)
     });
 
-    addLoader();
+    showLoader();
 
     const mainDiv = documentTools.generatePageStructure();
     // Append academy player Iframe
@@ -74,36 +75,18 @@ const IframeWidget: StrigoWidget = {
     });
 
     this.initEventListeners(academyPlayerFrame);
-  },
+  }
 
-  shutdown: function () {
+  shutdown() {
     Logger.info("iframe shutdown called");
     documentTools.reloadPage();
-  },
+  }
 
-  hideLoader: function() {
-    const preloader = document.querySelector<HTMLElement>(".strigo-loader");
-
-    const interval = setInterval(() => {
-      if (!preloader.style.opacity) {
-        preloader.style.opacity = "1";
-      }
-      const opacity = parseFloat(preloader.style.opacity);
-      if (opacity > 0) {
-        preloader.style.opacity = (opacity - 0.1).toString();
-      } else {
-        sessionManager.setSessionValue("isLoading", false);
-        preloader.style.pointerEvents = "none";
-        clearInterval(interval);
-      }
-    }, 200);
-  },
-
-  initEventListeners: function (academyPlayerFrame: HTMLIFrameElement) {
-    listeners.initStrigoAppEventListeners(academyPlayerFrame);
+  private initEventListeners(academyPlayerFrame: HTMLIFrameElement) {
+    listeners.initAcademyPlayerLoadedListeners(academyPlayerFrame, hideLoader);
     listeners.initHostEventListeners();
     window.addEventListener(EVENT_TYPES.STORAGE, listeners.storageChanged);
   }
 };
 
-export default IframeWidget;
+export default new IframeWidget();

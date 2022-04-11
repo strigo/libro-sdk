@@ -2,7 +2,6 @@ import { EVENT_TYPES, MESSAGE_TYPES } from "./listeners.types";
 import * as eventsSender from "../events-sender/events-sender";
 import * as sessionManager from "../session/session";
 import { STORAGE_NAMES } from "../storage-utils/storage-utils.types";
-import { hideLoader, isLoading } from "../loader/loader";
 import ovelayWidget from "../widgets/overlay";
 import { Logger } from "../../../services/logger";
 import { WIDGET_FLAVORS } from "../widgets/widget.types";
@@ -46,11 +45,6 @@ export function initHostEventListeners() {
 
           break;
         }
-        // case MESSAGE_TYPES.RENDERED: {
-        //   isLoading() && hideLoader();
-
-        //   break;
-        // }
         default: {
           break;
         }
@@ -60,11 +54,17 @@ export function initHostEventListeners() {
   );
 }
 
-// Subscriber event listeners
-export function initStrigoAppEventListeners(iframeElement: HTMLElement) {
-  // Emptying events storage and posting all events
-  iframeElement.addEventListener("load", () => {
-    isLoading() && hideLoader();
+export function initAcademyPlayerLoadedListeners(academyPlayerIframe: HTMLElement, onLoadCallback?: () => Promise<void> | void) {
+  academyPlayerIframe.addEventListener("load", async () => {
+    if (!!sessionManager.getSessionValue("isLoading")) {
+      if (onLoadCallback) {
+        await onLoadCallback();
+      }
+
+      sessionManager.setSessionValue("isLoading", false);
+    }
+    
+    // Emptying events storage and posting all events
     eventsSender.postAllEventMessages();
   });
 }
