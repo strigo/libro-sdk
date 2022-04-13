@@ -120,7 +120,6 @@ export function createWidget(url: string) {
 
   // Create widget div (wrapper)
   const widgetDiv = document.createElement("div");
-  widgetDiv.className = "strigo-widget";
   widgetDiv.id = "strigo-widget";
   widgetDiv.appendChild(collapseDiv);
   widgetDiv.appendChild(strigoExercisesIframe);
