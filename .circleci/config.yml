@@ -21,6 +21,10 @@ jobs:
             - node_modules
 
       - run:
+          name: Typecheck
+          command: npx tsc
+
+      - run:
           name: Update package.json version (master branch only)
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
