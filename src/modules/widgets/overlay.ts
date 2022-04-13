@@ -1,4 +1,4 @@
-import { Logger } from "../../../services/logger";
+import { Logger } from "../../services/logger";
 import * as documentTools from "../document/document";
 import * as urlTools from "../url/url";
 import * as listeners from "../listeners/listeners";

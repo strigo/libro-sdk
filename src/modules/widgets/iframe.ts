@@ -1,5 +1,5 @@
 import Split from "split.js";
-import { Logger } from "../../../services/logger";
+import { Logger } from "../../services/logger";
 import * as documentTools from "../document/document";
 import { STRIGO_IFRAME_CLASSES, ORIGINAL_WEBSITE_IFRAME_CLASSES } from "../../strigo/consts";
 import { hideLoader, showLoader } from "../loader/loader";
