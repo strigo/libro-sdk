@@ -68,7 +68,7 @@
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-widget.min.css`;
   }
 
-  // services/logger.ts
+  // src/services/logger.ts
   var Logger = class {
     constructor(config) {
       this.url = config?.url;
