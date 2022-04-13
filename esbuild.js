@@ -1,10 +1,13 @@
 import esbuild from "esbuild";
+import {sassPlugin} from 'esbuild-sass-plugin'
+
 
 const buildProd = async function () {
   return esbuild.build({
-    entryPoints: ["src/styles/strigo.css", "src/styles/strigo-widget.css", "src/strigo.sdk.ts"],
+    entryPoints: ["src/styles/strigo.scss", "src/styles/strigo-widget.scss", "src/strigo.sdk.ts"],
     outdir: "dist/production",
     platform: "browser",
+    plugins: [sassPlugin()],
     outExtension: { ".js": ".min.js", ".css": ".min.css" },
     bundle: true,
     minify: true
@@ -15,8 +18,9 @@ const buildDev = async function () {
   return esbuild.build({
     logLevel: "debug",
     metafile: true,
-    entryPoints: ["src/styles/strigo.css", "src/styles/strigo-widget.css", "src/strigo.sdk.ts"],
+    entryPoints: ["src/styles/strigo.scss", "src/styles/strigo-widget.scss", "src/strigo.sdk.ts"],
     platform: "browser",
+    plugins: [sassPlugin()],
     outdir: "dist/development",
     bundle: true
   });
