@@ -47,7 +47,7 @@ class OverlayWidget implements IOverlayWidget  {
   private initEventListeners(academyPlayerFrame: HTMLIFrameElement) {
     listeners.initAcademyPlayerLoadedListeners(academyPlayerFrame, makeOverlayWidgetVisible);
     listeners.initHostEventListeners();
-    window.addEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, (customEvent) => {
+    window.addEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, (customEvent: CustomEvent) => {
       listeners.storageChanged(customEvent?.detail);
     });
   }
