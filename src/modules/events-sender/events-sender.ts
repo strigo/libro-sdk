@@ -1,5 +1,5 @@
 import * as eventsStorageManager from "../events-storage/events-storage";
-import { Logger } from "../../../services/logger";
+import { Logger } from "../../services/logger";
 
 export function postEventMessage() {
   const newEvent = eventsStorageManager.getEventValue();

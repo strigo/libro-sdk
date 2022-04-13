@@ -1,5 +1,5 @@
-import { LoggingConfig } from "../src/modules/config/config.types";
-import * as configManager from "../src/modules/config/config";
+import { LoggingConfig } from "../modules/config/config.types";
+import * as configManager from "../modules/config/config";
 
 class Logger {
   url: string;

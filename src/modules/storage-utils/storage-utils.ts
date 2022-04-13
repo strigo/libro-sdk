@@ -1,7 +1,7 @@
 import { StorageOptions, STORAGE_TYPES } from "./storage-utils.types";
 import { StrigoSession } from "../session/session.types";
 import { StrigoConfig } from "../config/config.types";
-import { Logger } from "../../../services/logger";
+import { Logger } from "../../services/logger";
 
 export function initStorage<T extends StrigoSession | StrigoConfig>(
   storageType: STORAGE_TYPES,

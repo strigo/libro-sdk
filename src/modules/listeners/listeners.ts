@@ -3,7 +3,7 @@ import * as eventsSender from "../events-sender/events-sender";
 import * as sessionManager from "../session/session";
 import { STORAGE_NAMES } from "../storage-utils/storage-utils.types";
 import ovelayWidget from "../widgets/overlay";
-import { Logger } from "../../../services/logger";
+import { Logger } from "../../services/logger";
 import { WIDGET_FLAVORS } from "../widgets/widget.types";
 
 // TODO: Remove all existing event listeners

@@ -3,7 +3,7 @@ import * as urlTools from "../modules/url/url";
 import * as configManager from "../modules/config/config";
 import * as sessionManager from "../modules/session/session";
 import * as eventsStorageManager from "../modules/events-storage/events-storage";
-import { Logger } from "../../services/logger";
+import { Logger } from "../services/logger";
 import { StrigoToken } from "../modules/config/config.types";
 import * as widgetFactory from "../modules/widgets/widget-factory";
 import { MESSAGE_TYPES } from "../modules/listeners/listeners.types";

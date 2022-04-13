@@ -1,6 +1,6 @@
 import { STORAGE_NAMES, STORAGE_TYPES } from "../storage-utils/storage-utils.types";
 import { StrigoEventsStorage, StrigoEvent } from "./events-storage.types";
-import { Logger } from "../../../services/logger";
+import { Logger } from "../../services/logger";
 import * as sessionManager from "../session/session";
 import { EVENT_TYPES } from "../listeners/listeners.types";
 import { WIDGET_FLAVORS } from "../widgets/widget.types";

@@ -1,4 +1,4 @@
-import { Logger } from "../../../services/logger";
+import { Logger } from "../../services/logger";
 import { isIframeSupported } from "../document/document";
 import iframeWidget from './iframe';
 import overlayWidget from './overlay';
@@ -25,7 +25,7 @@ export function getWidget(widgetFlavor: WIDGET_FLAVORS): IStrigoWidget | null {
     }
     default:
       Logger.error("Widget flavor is not supported", { widgetFlavor });
-      
+
       throw new Error(`Widget flavor ${widgetFlavor} is not supported`)
   }
 
