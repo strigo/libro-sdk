@@ -23,7 +23,8 @@
     "axios": "^0.26.0",
     "create-serve": "1.0.1",
     "dotenv": "16.0.0",
-    "esbuild": "0.14.16"
+    "esbuild": "0.14.16",
+    "typescript": "4.6.3"
   },
   "dependencies": {
     "split.js": "1.6.5"
