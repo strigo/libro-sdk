@@ -25,6 +25,11 @@ export function setConfigValue(key: string, value: any): StrigoConfig {
   return config as StrigoConfig;
 }
 
+export function getConfigValue(key: string): any {
+  const session = getConfig();
+  return session?.[key];
+}
+
 export function clearConfig() {
   clearStorage(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG);
 }
