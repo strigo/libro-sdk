@@ -5,6 +5,7 @@ import { STORAGE_NAMES } from "../storage-utils/storage-utils.types";
 import ovelayWidget from "../widgets/overlay";
 import { Logger } from "../../services/logger";
 import { WIDGET_FLAVORS } from "../widgets/widget.types";
+import { getConfigValue } from "../config/config";
 
 // TODO: Remove all existing event listeners
 export function removeAllEventListeners() {}
@@ -54,7 +55,10 @@ export function initHostEventListeners() {
   );
 }
 
-export function initAcademyPlayerLoadedListeners(academyPlayerIframe: HTMLElement, onLoadCallback?: () => Promise<void> | void) {
+export function initAcademyPlayerLoadedListeners(
+  academyPlayerIframe: HTMLIFrameElement,
+  onLoadCallback?: () => Promise<void> | void
+) {
   academyPlayerIframe.addEventListener("load", async () => {
     if (!!sessionManager.getSessionValue("isLoading")) {
       if (onLoadCallback) {
@@ -63,8 +67,24 @@ export function initAcademyPlayerLoadedListeners(academyPlayerIframe: HTMLElemen
 
       sessionManager.setSessionValue("isLoading", false);
     }
-    
+
     // Emptying events storage and posting all events
     eventsSender.postAllEventMessages();
+  });
+}
+
+export function initChildEventListeners(childIframe: HTMLIFrameElement) {
+  let originalHost = getConfigValue("initSite")?.host;
+
+  childIframe.addEventListener("load", function () {
+    try {
+      const currentHost = this.contentWindow.location.host;
+      if (currentHost !== originalHost) {
+        window.Strigo.shutdown();
+      }
+    } catch (error) {
+      Logger.error(error);
+      window.Strigo.shutdown();
+    }
   });
 }

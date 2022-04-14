@@ -194,6 +194,10 @@ ${JSON.stringify(context)}` : "");
     const config = getStorageData("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */);
     return config;
   }
+  function getConfigValue(key) {
+    const session = getConfig();
+    return session?.[key];
+  }
   function clearConfig() {
     clearStorage("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */);
   }
@@ -988,6 +992,20 @@ ${JSON.stringify(context)}` : "");
       postAllEventMessages();
     });
   }
+  function initChildEventListeners(childIframe) {
+    let originalHost = getConfigValue("initSite")?.host;
+    childIframe.addEventListener("load", function() {
+      try {
+        const currentHost = this.contentWindow.location.host;
+        if (currentHost !== originalHost) {
+          window.Strigo.shutdown();
+        }
+      } catch (error) {
+        LoggerInstance.error(error);
+        window.Strigo.shutdown();
+      }
+    });
+  }
 
   // src/modules/widgets/iframe.ts
   var IframeWidget = class {
@@ -1022,7 +1040,7 @@ ${JSON.stringify(context)}` : "");
         classNames: STRIGO_IFRAME_CLASSES,
         id: "strigo-exercises"
       });
-      appendIFrame({
+      const childFrame = appendIFrame({
         parentElement: mainDiv,
         url: getConfig().initSite.href,
         classNames: ORIGINAL_WEBSITE_IFRAME_CLASSES,
@@ -1034,14 +1052,15 @@ ${JSON.stringify(context)}` : "");
         minSize: getSplitMinSizes(),
         gutterSize: 2
       });
-      this.initEventListeners(academyPlayerFrame);
+      this.initEventListeners(academyPlayerFrame, childFrame);
     }
     shutdown() {
       LoggerInstance.info("iframe shutdown called");
       reloadPage();
     }
-    initEventListeners(academyPlayerFrame) {
+    initEventListeners(academyPlayerFrame, childFrame) {
       initAcademyPlayerLoadedListeners(academyPlayerFrame, hideLoader);
+      initChildEventListeners(childFrame);
       initHostEventListeners();
       window.addEventListener("storage" /* STORAGE */, storageChanged);
     }

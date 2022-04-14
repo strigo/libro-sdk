@@ -36,7 +36,7 @@ class IframeWidget implements IStrigoWidget {
 
     return SDKType;
   }
-  
+
   setup({ development, version }) {
     Logger.info("iframe setup started");
 
@@ -59,8 +59,8 @@ class IframeWidget implements IStrigoWidget {
       id: "strigo-exercises"
     });
 
-    // Append original website Iframe
-    documentTools.appendIFrame({
+    // Append child website Iframe
+    const childFrame = documentTools.appendIFrame({
       parentElement: mainDiv,
       url: configManager.getConfig().initSite.href,
       classNames: ORIGINAL_WEBSITE_IFRAME_CLASSES,
@@ -74,7 +74,7 @@ class IframeWidget implements IStrigoWidget {
       gutterSize: 2
     });
 
-    this.initEventListeners(academyPlayerFrame);
+    this.initEventListeners(academyPlayerFrame, childFrame);
   }
 
   shutdown() {
@@ -82,11 +82,12 @@ class IframeWidget implements IStrigoWidget {
     documentTools.reloadPage();
   }
 
-  private initEventListeners(academyPlayerFrame: HTMLIFrameElement) {
+  private initEventListeners(academyPlayerFrame: HTMLIFrameElement, childFrame: HTMLIFrameElement) {
     listeners.initAcademyPlayerLoadedListeners(academyPlayerFrame, hideLoader);
+    listeners.initChildEventListeners(childFrame);
     listeners.initHostEventListeners();
     window.addEventListener(EVENT_TYPES.STORAGE, listeners.storageChanged);
   }
-};
+}
 
 export default new IframeWidget();
