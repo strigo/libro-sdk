@@ -33,7 +33,7 @@ jobs:
 
               set_new_version
 
-              if [ -f "semver.env"]; then
+              if [ -f "semver.env" ]; then
                 source semver.env
                 sed -i "s/\"version\": \"0.0.0\"/\"version\": \"$NEW_VERSION\"/g" manifest.json && cat manifest.json
               fi
