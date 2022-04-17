@@ -1,22 +1,24 @@
-import { Logger } from "../../services/logger";
-import * as documentTools from "../document/document";
-import * as urlTools from "../url/url";
-import * as listeners from "../listeners/listeners";
-import * as configManager from "../config/config";
-import * as sessionManager from "../session/session";
-import { IOverlayWidget } from "./widget.types";
-import { SDK_TYPES } from "../../strigo/types";
-import { EVENT_TYPES } from "../listeners/listeners.types";
+import { Logger } from '../../services/logger';
+import * as documentTools from '../document/document';
+import * as urlTools from '../url/url';
+import * as listeners from '../listeners/listeners';
+import * as configManager from '../config/config';
+import * as sessionManager from '../session/session';
+import { SDK_TYPES } from '../../strigo/types';
+import { EVENT_TYPES } from '../listeners/listeners.types';
+
+import { IOverlayWidget } from './widget.types';
 
 function makeOverlayWidgetVisible() {
-  document.getElementById("strigo-widget").classList.add("slide-in"); 
-  document.getElementById("strigo-widget").classList.add("loaded");  
+  document.getElementById('strigo-widget').classList.add('slide-in');
+  document.getElementById('strigo-widget').classList.add('loaded');
 }
 
-class OverlayWidget implements IOverlayWidget  {
-  init(){
-    Logger.info("overlay init called");
+class OverlayWidget implements IOverlayWidget {
+  init() {
+    Logger.info('overlay init called');
     const config = configManager.getConfig();
+
     if (config) {
       window.Strigo.setup(config);
     }
@@ -25,17 +27,17 @@ class OverlayWidget implements IOverlayWidget  {
   }
 
   setup({ development, version }) {
-    Logger.info("overlay setup called");
+    Logger.info('overlay setup called');
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
-      url: urlTools.generateWidgetCssURL(development, version)
+      url: urlTools.generateWidgetCssURL(development, version),
     });
     const academyPlayerFrame = documentTools.createWidget(urlTools.generateStrigoIframeURL(configManager.getConfig()));
     this.initEventListeners(academyPlayerFrame);
   }
 
   shutdown() {
-    Logger.info("overlay shutdown called");
+    Logger.info('overlay shutdown called');
     documentTools.removeWidget();
     sessionManager.setPanelClosed();
   }
@@ -51,6 +53,6 @@ class OverlayWidget implements IOverlayWidget  {
       listeners.storageChanged(customEvent?.detail);
     });
   }
-};
+}
 
 export default new OverlayWidget();

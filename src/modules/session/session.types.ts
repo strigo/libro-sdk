@@ -1,4 +1,4 @@
-import { WIDGET_FLAVORS } from "../widgets/widget.types";
+import { WIDGET_FLAVORS } from '../widgets/widget.types';
 export interface StrigoSession {
   currentUrl: string;
   isPanelOpen: boolean;
