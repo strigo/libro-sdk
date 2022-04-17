@@ -15,6 +15,14 @@ function paramsToObject(entries: IterableIterator<[string, string]>): Record<str
   return result;
 }
 
+export function extractUrlParams(search: string): Record<string, string> {
+  // TODO: Add polyfill for older browsers
+  const urlParams = new URLSearchParams(search);
+  const entries = urlParams.entries();
+
+  return paramsToObject(entries);
+}
+
 export function getUrlData(): SiteConfig {
   const { host, pathname, href, origin, search } = window.location;
 
@@ -26,14 +34,6 @@ export function getUrlData(): SiteConfig {
     search,
     params: extractUrlParams(search),
   };
-}
-
-export function extractUrlParams(search: string): Record<string, string> {
-  // TODO: Add polyfill for older browsers
-  const urlParams = new URLSearchParams(search);
-  const entries = urlParams.entries();
-
-  return paramsToObject(entries);
 }
 
 export function generateStrigoIframeURL(config: StrigoConfig): string {
@@ -54,7 +54,7 @@ export function extractInitScriptParams(): InitScriptParams {
   };
 }
 
-export function generateCssURL(development: boolean, version?: string) {
+export function generateCssURL(development: boolean, version?: string): string {
   if (development) {
     return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
   }
@@ -66,7 +66,7 @@ export function generateCssURL(development: boolean, version?: string) {
   return `${CDN_BASE_PATH}@master/dist/production/styles/strigo.min.css`;
 }
 
-export function generateWidgetCssURL(development: boolean, version?: string) {
+export function generateWidgetCssURL(development: boolean, version?: string): string {
   if (development) {
     return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
   }

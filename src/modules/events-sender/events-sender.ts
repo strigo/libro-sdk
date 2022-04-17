@@ -1,7 +1,7 @@
 import * as eventsStorageManager from '../events-storage/events-storage';
 import { Logger } from '../../services/logger';
 
-export function postEventMessage() {
+export function postEventMessage(): void {
   const newEvent = eventsStorageManager.getEventValue();
 
   if (newEvent) {
@@ -15,7 +15,7 @@ export function postEventMessage() {
   }
 }
 
-export function postAllEventMessages() {
+export function postAllEventMessages(): void {
   while (eventsStorageManager.getEventValue()) {
     postEventMessage();
   }

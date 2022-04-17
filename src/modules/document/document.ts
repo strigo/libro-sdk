@@ -10,7 +10,7 @@ export function getBodyElement(): HTMLElement {
   return document.getElementsByTagName('body')[0];
 }
 
-export function clearDoc() {
+export function clearDoc(): void {
   document.open();
   document.close();
 }
@@ -24,7 +24,7 @@ export function generatePageStructure(): HTMLElement {
   return mainDiv;
 }
 
-export function appendCssFile(params: AppendCSSFileParams) {
+export function appendCssFile(params: AppendCSSFileParams): void {
   const { url, parentElement } = params;
   const cssElement = document.createElement('link');
   cssElement.rel = 'stylesheet';
@@ -32,7 +32,7 @@ export function appendCssFile(params: AppendCSSFileParams) {
   parentElement.appendChild(cssElement);
 }
 
-export function appendIFrame(params: AppendIframeParams) {
+export function appendIFrame(params: AppendIframeParams): HTMLIFrameElement {
   const { url, parentElement, classNames, id } = params;
   const iframe = document.createElement('iframe');
   iframe.classList.add(...classNames);
@@ -88,18 +88,18 @@ export function isIframeSupported(): boolean {
   return true;
 }
 
-export function createWidget(url: string) {
-  const toggleFunction = function () {
-    const widget = document.getElementById('strigo-widget');
-    const isOpen = widget.classList.contains('slide-in');
-    widget.classList.toggle('slide-in');
+function toggleWidget(): void {
+  const widget = document.getElementById('strigo-widget');
+  const isOpen = widget.classList.contains('slide-in');
+  widget.classList.toggle('slide-in');
 
-    setTimeout(() => {
-      const arrow = document.getElementById('strigo-arrow');
-      arrow.innerHTML = isOpen ? CHEVRON_LEFT : CHEVRON_RIGHT;
-    }, 300);
-  };
+  setTimeout(() => {
+    const arrow = document.getElementById('strigo-arrow');
+    arrow.innerHTML = isOpen ? CHEVRON_LEFT : CHEVRON_RIGHT;
+  }, 300);
+}
 
+export function createWidget(url: string): HTMLIFrameElement {
   const arrowDiv = document.createElement('div');
   arrowDiv.className = 'strigo-arrow';
   arrowDiv.id = 'strigo-arrow';
@@ -117,7 +117,7 @@ export function createWidget(url: string) {
   collapseDiv.className = 'strigo-collapse-div';
 
   collapseDiv.onclick = () => {
-    toggleFunction();
+    toggleWidget();
   };
 
   collapseDiv.appendChild(collapseButton);
@@ -139,11 +139,11 @@ export function createWidget(url: string) {
   return strigoExercisesIframe;
 }
 
-export const removeWidget = function () {
+export function removeWidget(): void {
   document.getElementById('strigo-widget').remove();
-};
+}
 
-export const openWidget = function () {
+export function openWidget(): void {
   const widget = document.getElementById('strigo-widget');
 
   if (widget.classList.contains('slide-in')) {
@@ -151,4 +151,4 @@ export const openWidget = function () {
   }
 
   widget.classList.add('slide-in');
-};
+}

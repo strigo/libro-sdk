@@ -9,13 +9,13 @@ import { EVENT_TYPES } from '../listeners/listeners.types';
 
 import { IOverlayWidget } from './widget.types';
 
-function makeOverlayWidgetVisible() {
+function makeOverlayWidgetVisible(): void {
   document.getElementById('strigo-widget').classList.add('slide-in');
   document.getElementById('strigo-widget').classList.add('loaded');
 }
 
 class OverlayWidget implements IOverlayWidget {
-  init() {
+  init(): SDK_TYPES {
     Logger.info('overlay init called');
     const config = configManager.getConfig();
 
@@ -26,7 +26,7 @@ class OverlayWidget implements IOverlayWidget {
     return SDK_TYPES.OVERLAY;
   }
 
-  setup({ development, version }) {
+  setup({ development, version }): void {
     Logger.info('overlay setup called');
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
@@ -36,17 +36,17 @@ class OverlayWidget implements IOverlayWidget {
     this.initEventListeners(academyPlayerFrame);
   }
 
-  shutdown() {
+  shutdown(): void {
     Logger.info('overlay shutdown called');
     documentTools.removeWidget();
     sessionManager.setPanelClosed();
   }
 
-  open() {
+  open(): void {
     documentTools.openWidget();
   }
 
-  private initEventListeners(academyPlayerFrame: HTMLIFrameElement) {
+  private initEventListeners(academyPlayerFrame: HTMLIFrameElement): void {
     listeners.initAcademyPlayerLoadedListeners(academyPlayerFrame, makeOverlayWidgetVisible);
     listeners.initHostEventListeners();
     window.addEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, (customEvent: CustomEvent) => {

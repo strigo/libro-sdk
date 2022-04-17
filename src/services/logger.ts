@@ -8,14 +8,15 @@ class Logger {
     this.url = config?.url;
   }
 
-  setup(config: LoggingConfig) {
+  setup(config: LoggingConfig): void {
     this.url = config.url;
   }
 
-  logToRemote(level: string, message: string, context: {}) {
-    fetch(this.url, {
+  logToRemote(level: string, message: string, context: Record<string, any>): Promise<void> {
+    return fetch(this.url, {
       method: 'PUT',
       headers: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -34,12 +35,12 @@ class Logger {
       });
   }
 
-  logToConsole(level: string, message: string, context: {}) {
+  logToConsole(level: string, message: string, context: Record<string, any>): void {
     const enrichedMessage = `${new Date().toISOString()} - ${message}`;
     console[level](enrichedMessage, context ? `\n${JSON.stringify(context)}` : '');
   }
 
-  getDefaultContext() {
+  getDefaultContext(): Record<string, any> {
     const config = configManager.getConfig();
 
     if (!config) {
@@ -66,7 +67,7 @@ class Logger {
    * @param {String} message the message to convey.
    * @param {Object} context the object to provide as context.
    */
-  log(level: string, message: string, context: {}) {
+  log(level: string, message: string, context: Record<string, any>): void {
     const enrichedContext = { ...this.getDefaultContext(), ...context };
 
     try {
@@ -77,23 +78,23 @@ class Logger {
       // also console.log always
       this.logToConsole(level, `Academy - ${message}`, enrichedContext);
     } catch (err) {
-      console.log('Logging error:', { err: err });
+      console.log('Logging error:', { err });
     }
   }
 
-  debug(message: string, context = {}) {
+  debug(message: string, context: Record<string, any> = {}): void {
     this.log('debug', message, context);
   }
 
-  info(message: string, context = {}) {
+  info(message: string, context: Record<string, any> = {}): void {
     this.log('info', message, context);
   }
 
-  warn(message: string, context = {}) {
+  warn(message: string, context: Record<string, any> = {}): void {
     this.log('warn', message, context);
   }
 
-  error(message: string, context = {}) {
+  error(message: string, context: Record<string, any> = {}): void {
     this.log('error', message, context);
   }
 }
