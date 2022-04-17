@@ -14,7 +14,7 @@ import { EVENT_TYPES } from '../listeners/listeners.types';
 import { IStrigoWidget } from './widget.types';
 
 class IframeWidget implements IStrigoWidget {
-  init() {
+  init(): SDK_TYPES {
     let SDKType: SDK_TYPES;
 
     if (sessionManager.isPanelOpen()) {
@@ -40,7 +40,7 @@ class IframeWidget implements IStrigoWidget {
     return SDKType;
   }
 
-  setup({ development, version }) {
+  setup({ development, version }): void {
     Logger.info('iframe setup started');
 
     // Page manipulation
@@ -80,12 +80,12 @@ class IframeWidget implements IStrigoWidget {
     this.initEventListeners(academyPlayerFrame);
   }
 
-  shutdown() {
+  shutdown(): void {
     Logger.info('iframe shutdown called');
     documentTools.reloadPage();
   }
 
-  private initEventListeners(academyPlayerFrame: HTMLIFrameElement) {
+  private initEventListeners(academyPlayerFrame: HTMLIFrameElement): void {
     listeners.initAcademyPlayerLoadedListeners(academyPlayerFrame, hideLoader);
     listeners.initHostEventListeners();
     window.addEventListener(EVENT_TYPES.STORAGE, listeners.storageChanged);

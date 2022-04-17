@@ -13,6 +13,10 @@ export interface LoggingConfig {
   url: string;
 }
 
+export interface StrigoProtectedConfig {
+  loggingConfig: LoggingConfig;
+}
+
 export interface StrigoConfig {
   email: string;
   webApiKey: string;

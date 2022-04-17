@@ -14,7 +14,7 @@ const SPINNER = `
 </div>
 `;
 
-export function showLoader() {
+export function showLoader(): void {
   // Add Spinner
   const loaderDiv = document.createElement('div');
   loaderDiv.className = 'strigo-loader';

@@ -6,6 +6,16 @@ import { WIDGET_FLAVORS } from '../widgets/widget.types';
 
 import { StrigoEventsStorage, StrigoEvent } from './events-storage.types';
 
+export function getEventsStorageData(): StrigoEventsStorage {
+  try {
+    return JSON.parse(window[STORAGE_TYPES.LOCAL_STORAGE].getItem(STORAGE_NAMES.STRIGO_EVENTS));
+  } catch (error) {
+    Logger.error('Get events storage error', { error });
+
+    return null;
+  }
+}
+
 export function init(): StrigoEventsStorage {
   try {
     const currentEventsStorage = getEventsStorageData();
@@ -40,16 +50,6 @@ export function setup(initialStorage?: StrigoEvent): StrigoEventsStorage {
   }
 }
 
-export function getEventsStorageData(): StrigoEventsStorage {
-  try {
-    return JSON.parse(window[STORAGE_TYPES.LOCAL_STORAGE].getItem(STORAGE_NAMES.STRIGO_EVENTS));
-  } catch (error) {
-    Logger.error('Get events storage error', { error });
-
-    return null;
-  }
-}
-
 export function pushEventValue(event: StrigoEvent): StrigoEventsStorage {
   try {
     const initialState = getEventsStorageData();
@@ -64,7 +64,7 @@ export function pushEventValue(event: StrigoEvent): StrigoEventsStorage {
     window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_EVENTS, JSON.stringify(initialState));
 
     if (sessionManager.getWidgetFlavor() === WIDGET_FLAVORS.OVERLAY) {
-      const event = new CustomEvent(EVENT_TYPES.OVERLAY_WIDGET_EVENT, {
+      const customEvent = new CustomEvent(EVENT_TYPES.OVERLAY_WIDGET_EVENT, {
         bubbles: true,
         detail: {
           key: 'strigoEvents',
@@ -72,7 +72,7 @@ export function pushEventValue(event: StrigoEvent): StrigoEventsStorage {
           newValue: JSON.stringify(initialState),
         },
       });
-      window.dispatchEvent(event);
+      window.dispatchEvent(customEvent);
     }
 
     return initialState;

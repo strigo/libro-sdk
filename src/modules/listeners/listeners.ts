@@ -4,19 +4,17 @@ import { STORAGE_NAMES } from '../storage-utils/storage-utils.types';
 import ovelayWidget from '../widgets/overlay';
 import { Logger } from '../../services/logger';
 import { WIDGET_FLAVORS } from '../widgets/widget.types';
+import { StrigoEventsStorage } from '../events-storage/events-storage.types';
 
 import { EVENT_TYPES, MESSAGE_TYPES } from './listeners.types';
 
-// TODO: Remove all existing event listeners
-export function removeAllEventListeners() {}
-
-export function storageChanged({ key, oldValue, newValue }) {
+export function storageChanged({ key, oldValue, newValue }): void {
   if (key !== STORAGE_NAMES.STRIGO_EVENTS) {
     return;
   }
 
-  const newEventsStorage = JSON.parse(newValue)?.events;
-  const oldEventsStorage = JSON.parse(oldValue)?.events;
+  const newEventsStorage = (JSON.parse(newValue) as StrigoEventsStorage)?.events;
+  const oldEventsStorage = (JSON.parse(oldValue) as StrigoEventsStorage)?.events;
   const difference = newEventsStorage.filter(
     ({ eventName: newEventName }) =>
       !oldEventsStorage.some(({ eventName: oldEventName }) => newEventName === oldEventName)
@@ -28,7 +26,7 @@ export function storageChanged({ key, oldValue, newValue }) {
 }
 
 // Host event listeners
-export function initHostEventListeners() {
+export function initHostEventListeners(): void {
   window.addEventListener(
     EVENT_TYPES.MESSAGE,
     (ev) => {
@@ -38,7 +36,7 @@ export function initHostEventListeners() {
 
       switch (ev.data) {
         case MESSAGE_TYPES.SHUTDOWN: {
-          window.Strigo && window.Strigo.shutdown();
+          window.Strigo?.shutdown();
 
           break;
         }
@@ -65,7 +63,7 @@ export function initHostEventListeners() {
 export function initAcademyPlayerLoadedListeners(
   academyPlayerIframe: HTMLElement,
   onLoadCallback?: () => Promise<void> | void
-) {
+): void {
   academyPlayerIframe.addEventListener('load', async () => {
     if (!!sessionManager.getSessionValue('isLoading')) {
       if (onLoadCallback) {

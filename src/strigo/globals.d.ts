@@ -4,5 +4,5 @@ declare global {
     Strigo: any;
   }
 
-  declare var SDK_HOSTING_PORT: string;
+  declare const SDK_HOSTING_PORT: string;
 }

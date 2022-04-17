@@ -3,16 +3,15 @@ import * as configManager from '../modules/config/config';
 import * as sessionManager from '../modules/session/session';
 import * as eventsStorageManager from '../modules/events-storage/events-storage';
 import { Logger } from '../services/logger';
-import { StrigoToken } from '../modules/config/config.types';
 import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MESSAGE_TYPES } from '../modules/listeners/listeners.types';
 
 import { SDKSetupData, SDK_TYPES } from './types';
 
-export namespace Strigo {
-  export let SDKType: SDK_TYPES;
+export const Strigo = {
+  SDKType: SDK_TYPES,
 
-  export function init() {
+  init() {
     try {
       Logger.info('Initializing SDK...');
       eventsStorageManager.init();
@@ -25,37 +24,14 @@ export namespace Strigo {
 
       const widget = widgetFactory.getWidget(sessionManager.getWidgetFlavor());
 
-      SDKType = widget.init();
+      this.SDKType = widget.init();
       Logger.info('Initialized SDK.');
     } catch (err) {
       Logger.error('Could not initialize SDK', { err });
     }
-  }
+  },
 
-  async function fetchRemoteConfiguration(token: StrigoToken, development: boolean) {
-    try {
-      const configDomain = development ? 'http://localhost:3000' : 'https://app.strigo.io';
-      const response = await fetch(`${configDomain}/api/internal/academy/v1/config`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token.token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch remote configuration: ${response.statusText}`);
-      }
-
-      const configuration = await response.json();
-
-      return configuration.data;
-    } catch (err) {
-      Logger.warn('Error fetching configuration from Strigo', { err: err });
-    }
-  }
-
-  export async function setup(data: SDKSetupData) {
+  async setup(data: SDKSetupData) {
     try {
       Logger.info('Starting to setup SDK...');
       const { email, token, development = false, version } = data;
@@ -64,7 +40,7 @@ export namespace Strigo {
         throw new Error('Token is not defined');
       }
 
-      const configuration = await fetchRemoteConfiguration(token, development);
+      const configuration = await configManager.fetchRemoteConfiguration(token, development);
 
       if (configuration) {
         const { loggingConfig } = configuration;
@@ -73,7 +49,7 @@ export namespace Strigo {
       }
 
       // Setup won't do anything for now (child will only be able to send events later)
-      if (SDKType === SDK_TYPES.CHILD || (SDKType === SDK_TYPES.OVERLAY && sessionManager.isPanelOpen())) {
+      if (this.SDKType === SDK_TYPES.CHILD || (this.SDKType === SDK_TYPES.OVERLAY && sessionManager.isPanelOpen())) {
         Logger.info('panel is already opened');
 
         return;
@@ -112,13 +88,13 @@ export namespace Strigo {
     } catch (err) {
       Logger.error('Could not setup SDK', { err });
     }
-  }
+  },
 
-  export function shutdown() {
+  shutdown() {
     try {
       Logger.info('Shutting down SDK...');
 
-      if (SDKType === SDK_TYPES.CHILD) {
+      if (this.SDKType === SDK_TYPES.CHILD) {
         window.parent.postMessage(MESSAGE_TYPES.SHUTDOWN, '*');
 
         return;
@@ -133,10 +109,10 @@ export namespace Strigo {
     } catch (err) {
       Logger.error('Could not shutdown SDK', { err });
     }
-  }
+  },
 
-  export function sendEvent(eventName) {
+  sendEvent(eventName) {
     eventsStorageManager.pushEventValue({ eventName });
     Logger.debug('sendEvent called', { eventName });
-  }
-}
+  },
+};
