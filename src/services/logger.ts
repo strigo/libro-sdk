@@ -1,5 +1,5 @@
-import { LoggingConfig } from "../modules/config/config.types";
-import * as configManager from "../modules/config/config";
+import { LoggingConfig } from '../modules/config/config.types';
+import * as configManager from '../modules/config/config';
 
 class Logger {
   url: string;
@@ -14,36 +14,38 @@ class Logger {
 
   logToRemote(level: string, message: string, context: {}) {
     fetch(this.url, {
-      method: "PUT",
+      method: 'PUT',
       headers: {
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         level,
         message,
-        context
-      })
+        context,
+      }),
     })
       .then((result) => {
         if (!result.ok) {
-          console.warn("Logging to Strigo failed", { result });
+          console.warn('Logging to Strigo failed', { result });
         }
       })
       .catch((error) => {
-        console.warn("Logging to Strigo failed", { err: error });
+        console.warn('Logging to Strigo failed', { err: error });
       });
   }
 
   logToConsole(level: string, message: string, context: {}) {
     const enrichedMessage = `${new Date().toISOString()} - ${message}`;
-    console[level](enrichedMessage, context ? `\n${JSON.stringify(context)}` : "");
+    console[level](enrichedMessage, context ? `\n${JSON.stringify(context)}` : '');
   }
 
   getDefaultContext() {
     const config = configManager.getConfig();
+
     if (!config) {
       return {};
     }
+
     const { token, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
 
     // Explicitly not adding email and webApiKey because of GDPR and privacy concerns
@@ -53,7 +55,7 @@ class Logger {
       subDomain,
       development,
       version,
-      selectedWidgetFlavor
+      selectedWidgetFlavor,
     };
   }
 
@@ -66,6 +68,7 @@ class Logger {
    */
   log(level: string, message: string, context: {}) {
     const enrichedContext = { ...this.getDefaultContext(), ...context };
+
     try {
       if (this.url && !configManager.getConfig()?.development) {
         this.logToRemote(level, message, enrichedContext);
@@ -74,24 +77,24 @@ class Logger {
       // also console.log always
       this.logToConsole(level, `Academy - ${message}`, enrichedContext);
     } catch (err) {
-      console.log("Logging error:", { err: err });
+      console.log('Logging error:', { err: err });
     }
   }
 
   debug(message: string, context = {}) {
-    this.log("debug", message, context);
+    this.log('debug', message, context);
   }
 
   info(message: string, context = {}) {
-    this.log("info", message, context);
+    this.log('info', message, context);
   }
 
   warn(message: string, context = {}) {
-    this.log("warn", message, context);
+    this.log('warn', message, context);
   }
 
   error(message: string, context = {}) {
-    this.log("error", message, context);
+    this.log('error', message, context);
   }
 }
 
