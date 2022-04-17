@@ -13,6 +13,15 @@ export enum SDK_TYPES {
   OVERLAY = 'OVERLAY',
 }
 
+export interface IStrigoSDK {
+  initialized?: boolean;
+  sdkType?: SDK_TYPES;
+  init: () => void;
+  setup: (data: SDKSetupData) => Promise<void>;
+  shutdown: () => void;
+  sendEvent: (eventName: string) => void;
+}
+
 export interface StrigoWindow extends Window {
-  Strigo: any;
+  Strigo: IStrigoSDK;
 }

@@ -6,32 +6,34 @@ import { Logger } from '../services/logger';
 import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MESSAGE_TYPES } from '../modules/listeners/listeners.types';
 
-import { SDKSetupData, SDK_TYPES } from './types';
+import { SDKSetupData, SDK_TYPES, IStrigoSDK } from './types';
 
-export const Strigo = {
-  SDKType: SDK_TYPES,
+class StrigoSDK implements IStrigoSDK {
+  initialized = false;
 
-  init() {
+  sdkType = undefined;
+
+  init(): void {
     try {
       Logger.info('Initializing SDK...');
       eventsStorageManager.init();
 
-      if (window.Strigo?.initialized) {
+      if (this.initialized) {
         return;
       }
 
-      window.Strigo.initialized = true;
+      this.initialized = true;
 
       const widget = widgetFactory.getWidget(sessionManager.getWidgetFlavor());
 
-      this.SDKType = widget.init();
+      this.sdkType = widget.init();
       Logger.info('Initialized SDK.');
     } catch (err) {
       Logger.error('Could not initialize SDK', { err });
     }
-  },
+  }
 
-  async setup(data: SDKSetupData) {
+  async setup(data: SDKSetupData): Promise<void> {
     try {
       Logger.info('Starting to setup SDK...');
       const { email, token, development = false, version } = data;
@@ -49,7 +51,7 @@ export const Strigo = {
       }
 
       // Setup won't do anything for now (child will only be able to send events later)
-      if (this.SDKType === SDK_TYPES.CHILD || (this.SDKType === SDK_TYPES.OVERLAY && sessionManager.isPanelOpen())) {
+      if (this.sdkType === SDK_TYPES.CHILD || (this.sdkType === SDK_TYPES.OVERLAY && sessionManager.isPanelOpen())) {
         Logger.info('panel is already opened');
 
         return;
@@ -88,13 +90,13 @@ export const Strigo = {
     } catch (err) {
       Logger.error('Could not setup SDK', { err });
     }
-  },
+  }
 
-  shutdown() {
+  shutdown(): void {
     try {
       Logger.info('Shutting down SDK...');
 
-      if (this.SDKType === SDK_TYPES.CHILD) {
+      if (this.sdkType === SDK_TYPES.CHILD) {
         window.parent.postMessage(MESSAGE_TYPES.SHUTDOWN, '*');
 
         return;
@@ -109,10 +111,12 @@ export const Strigo = {
     } catch (err) {
       Logger.error('Could not shutdown SDK', { err });
     }
-  },
+  }
 
-  sendEvent(eventName) {
+  sendEvent(eventName: string): void {
     eventsStorageManager.pushEventValue({ eventName });
     Logger.debug('sendEvent called', { eventName });
-  },
-};
+  }
+}
+
+export const Strigo = new StrigoSDK();
