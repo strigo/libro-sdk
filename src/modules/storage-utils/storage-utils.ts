@@ -1,29 +1,8 @@
-import { StrigoSession } from '../session/session.types';
-import { StrigoConfig } from '../config/config.types';
 import { Logger } from '../../services/logger';
 
 import { StorageOptions, STORAGE_TYPES } from './storage-utils.types';
 
-export function initStorage<T extends StrigoSession | StrigoConfig>(
-  storageType: STORAGE_TYPES,
-  storageName: string,
-  initialStorage: StrigoSession | StrigoConfig
-): StorageOptions<T> {
-  try {
-    window[storageType].setItem(storageName, JSON.stringify(initialStorage));
-
-    return initialStorage;
-  } catch (error) {
-    Logger.error('init storage error', { err: error });
-
-    return null;
-  }
-}
-
-export function getStorageData<T extends StrigoSession | StrigoConfig>(
-  storageType: STORAGE_TYPES,
-  storageName: string
-): StorageOptions<T> {
+export function getStorageData<T extends StorageOptions>(storageType: STORAGE_TYPES, storageName: string): T | null {
   try {
     const value = JSON.parse(window[storageType].getItem(storageName));
 
@@ -35,11 +14,11 @@ export function getStorageData<T extends StrigoSession | StrigoConfig>(
   }
 }
 
-export function setupStorage<T extends StrigoSession | StrigoConfig>(
+export function setupStorage<T extends StorageOptions>(
   storageType: STORAGE_TYPES,
   storageName: string,
-  data: StrigoSession | StrigoConfig
-): StorageOptions<T> {
+  data: T
+): T | null {
   try {
     window[storageType].setItem(storageName, JSON.stringify(data));
 
@@ -51,14 +30,14 @@ export function setupStorage<T extends StrigoSession | StrigoConfig>(
   }
 }
 
-export function setStorageValue<T extends StrigoSession | StrigoConfig>(
+export function setStorageValue<T extends StorageOptions>(
   storageType: STORAGE_TYPES,
   storageName: string,
   key: string,
-  value: string
-): StorageOptions<T> {
+  value: any
+): T | null {
   try {
-    const initialState = getStorageData(storageType, storageName);
+    const initialState = getStorageData<T>(storageType, storageName);
 
     if (!initialState) {
       throw new Error("Can't find initial state");
