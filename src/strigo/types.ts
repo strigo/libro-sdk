@@ -1,4 +1,4 @@
-import { StrigoToken } from "../modules/config/config.types";
+import { StrigoToken } from '../modules/config/config.types';
 
 export interface SDKSetupData {
   email: string;
@@ -8,9 +8,9 @@ export interface SDKSetupData {
 }
 
 export enum SDK_TYPES {
-  PARENT = "PARENT",
-  CHILD = "CHILD",
-  OVERLAY = "OVERLAY"
+  PARENT = 'PARENT',
+  CHILD = 'CHILD',
+  OVERLAY = 'OVERLAY',
 }
 
 export interface StrigoWindow extends Window {

@@ -1,34 +1,37 @@
-import Split from "split.js";
-import { Logger } from "../../services/logger";
-import * as documentTools from "../document/document";
-import { STRIGO_IFRAME_CLASSES, ORIGINAL_WEBSITE_IFRAME_CLASSES } from "../../strigo/consts";
-import { hideLoader, showLoader } from "../loader/loader";
-import * as configManager from "../config/config";
-import * as sessionManager from "../session/session";
-import * as listeners from "../listeners/listeners";
-import * as urlTools from "../url/url";
-import { SDK_TYPES } from "../../strigo/types";
-import { IStrigoWidget } from "./widget.types";
-import { EVENT_TYPES } from "../listeners/listeners.types";
+import Split from 'split.js';
+
+import { Logger } from '../../services/logger';
+import * as documentTools from '../document/document';
+import { STRIGO_IFRAME_CLASSES, ORIGINAL_WEBSITE_IFRAME_CLASSES } from '../../strigo/consts';
+import { hideLoader, showLoader } from '../loader/loader';
+import * as configManager from '../config/config';
+import * as sessionManager from '../session/session';
+import * as listeners from '../listeners/listeners';
+import * as urlTools from '../url/url';
+import { SDK_TYPES } from '../../strigo/types';
+import { EVENT_TYPES } from '../listeners/listeners.types';
+
+import { IStrigoWidget } from './widget.types';
 
 class IframeWidget implements IStrigoWidget {
   init() {
     let SDKType: SDK_TYPES;
 
     if (sessionManager.isPanelOpen()) {
-      Logger.info("Child SDK window");
+      Logger.info('Child SDK window');
 
       // Start as a subscriber
       SDKType = SDK_TYPES.CHILD;
 
       // Dispatch opened event
-      window.dispatchEvent(new Event("strigo-opened"));
+      window.dispatchEvent(new Event('strigo-opened'));
     } else {
-      Logger.info("Parent SDK window");
+      Logger.info('Parent SDK window');
 
       SDKType = SDK_TYPES.PARENT;
       // Auto setup if the config exists
       const config = configManager.getConfig();
+
       if (config) {
         window.Strigo.setup(config);
       }
@@ -36,16 +39,16 @@ class IframeWidget implements IStrigoWidget {
 
     return SDKType;
   }
-  
+
   setup({ development, version }) {
-    Logger.info("iframe setup started");
+    Logger.info('iframe setup started');
 
     // Page manipulation
     documentTools.clearDoc();
 
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
-      url: urlTools.generateCssURL(development, version)
+      url: urlTools.generateCssURL(development, version),
     });
 
     showLoader();
@@ -56,7 +59,7 @@ class IframeWidget implements IStrigoWidget {
       parentElement: mainDiv,
       url: urlTools.generateStrigoIframeURL(configManager.getConfig()),
       classNames: STRIGO_IFRAME_CLASSES,
-      id: "strigo-exercises"
+      id: 'strigo-exercises',
     });
 
     // Append original website Iframe
@@ -64,21 +67,21 @@ class IframeWidget implements IStrigoWidget {
       parentElement: mainDiv,
       url: configManager.getConfig().initSite.href,
       classNames: ORIGINAL_WEBSITE_IFRAME_CLASSES,
-      id: "original-site"
+      id: 'original-site',
     });
 
-    Split(["#strigo-exercises", "#original-site"], {
+    Split(['#strigo-exercises', '#original-site'], {
       sizes: [25, 75],
       maxSize: documentTools.getSplitMaxSizes(),
       minSize: documentTools.getSplitMinSizes(),
-      gutterSize: 2
+      gutterSize: 2,
     });
 
     this.initEventListeners(academyPlayerFrame);
   }
 
   shutdown() {
-    Logger.info("iframe shutdown called");
+    Logger.info('iframe shutdown called');
     documentTools.reloadPage();
   }
 
@@ -87,6 +90,6 @@ class IframeWidget implements IStrigoWidget {
     listeners.initHostEventListeners();
     window.addEventListener(EVENT_TYPES.STORAGE, listeners.storageChanged);
   }
-};
+}
 
 export default new IframeWidget();

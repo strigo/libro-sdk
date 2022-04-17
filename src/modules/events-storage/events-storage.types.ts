@@ -1,5 +1,5 @@
 export interface StrigoEventsStorage {
-  events: Array<StrigoEvent>;
+  events: StrigoEvent[];
 }
 
 export interface StrigoEvent {

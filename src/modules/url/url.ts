@@ -1,26 +1,30 @@
-import { BASE_STRIGO_URL, CDN_BASE_PATH, INIT_SCRIPT_ID, LOCAL_STRIGO_URL } from "../../strigo/consts";
-import { StrigoConfig, SiteConfig } from "../config/config.types";
-import { WIDGET_FLAVORS } from "../widgets/widget.types";
-import { InitScriptParams } from "./url.types";
+import { BASE_STRIGO_URL, CDN_BASE_PATH, INIT_SCRIPT_ID, LOCAL_STRIGO_URL } from '../../strigo/consts';
+import { StrigoConfig, SiteConfig } from '../config/config.types';
+import { WIDGET_FLAVORS } from '../widgets/widget.types';
+
+import { InitScriptParams } from './url.types';
 
 function paramsToObject(entries: IterableIterator<[string, string]>): Record<string, string> {
   const result = {};
+
   for (const [key, value] of entries) {
     // each 'entry' is a [key, value] tupple
     result[key] = value;
   }
+
   return result;
 }
 
 export function getUrlData(): SiteConfig {
   const { host, pathname, href, origin, search } = window.location;
+
   return {
     host,
     pathName: pathname,
     href,
     origin,
     search,
-    params: extractUrlParams(search)
+    params: extractUrlParams(search),
   };
 }
 
@@ -28,6 +32,7 @@ export function extractUrlParams(search: string): Record<string, string> {
   // TODO: Add polyfill for older browsers
   const urlParams = new URLSearchParams(search);
   const entries = urlParams.entries();
+
   return paramsToObject(entries);
 }
 
@@ -41,10 +46,11 @@ export function generateStrigoIframeURL(config: StrigoConfig): string {
 
 export function extractInitScriptParams(): InitScriptParams {
   const initScript = document.getElementById(INIT_SCRIPT_ID);
+
   return {
-    webApiKey: initScript?.getAttribute("data-web-api-key") || "",
-    subDomain: initScript?.getAttribute("data-subdomain") || "",
-    selectedWidgetFlavor: (initScript?.getAttribute("data-layout-flavor") as WIDGET_FLAVORS) || WIDGET_FLAVORS.DYNAMIC
+    webApiKey: initScript?.getAttribute('data-web-api-key') || '',
+    subDomain: initScript?.getAttribute('data-subdomain') || '',
+    selectedWidgetFlavor: (initScript?.getAttribute('data-layout-flavor') as WIDGET_FLAVORS) || WIDGET_FLAVORS.DYNAMIC,
   };
 }
 
