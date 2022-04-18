@@ -21,6 +21,11 @@
     }
     return result;
   }
+  function extractUrlParams(search) {
+    const urlParams = new URLSearchParams(search);
+    const entries = urlParams.entries();
+    return paramsToObject(entries);
+  }
   function getUrlData() {
     const { host, pathname, href, origin, search } = window.location;
     return {
@@ -31,11 +36,6 @@
       search,
       params: extractUrlParams(search)
     };
-  }
-  function extractUrlParams(search) {
-    const urlParams = new URLSearchParams(search);
-    const entries = urlParams.entries();
-    return paramsToObject(entries);
   }
   function generateStrigoIframeURL(config) {
     const { subDomain, token, webApiKey, development } = config;
@@ -51,7 +51,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -60,7 +60,7 @@
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -77,7 +77,7 @@
       this.url = config.url;
     }
     logToRemote(level, message, context) {
-      fetch(this.url, {
+      return fetch(this.url, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -197,10 +197,34 @@ ${JSON.stringify(context)}` : "");
   function clearConfig() {
     clearStorage("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */);
   }
+  async function fetchRemoteConfiguration(token, development) {
+    try {
+      const configDomain = development ? "http://localhost:3000" : "https://app.strigo.io";
+      const response = await fetch(`${configDomain}/api/internal/academy/v1/config`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token.token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch remote configuration: ${response.statusText}`);
+      }
+      const configuration = await response.json();
+      return configuration.data;
+    } catch (err) {
+      LoggerInstance.warn("Error fetching configuration from Strigo", { err });
+      return null;
+    }
+  }
 
   // src/modules/session/session.ts
   function setup2(initialSession) {
     const session = setupStorage("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */, initialSession);
+    return session;
+  }
+  function getSession() {
+    const session = getStorageData("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */);
     return session;
   }
   function isPanelOpen() {
@@ -208,10 +232,6 @@ ${JSON.stringify(context)}` : "");
   }
   function getWidgetFlavor() {
     return getSession()?.widgetFlavor;
-  }
-  function getSession() {
-    const session = getStorageData("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */);
-    return session;
   }
   function setSessionValue(key, value) {
     const session = setStorageValue("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */, key, value);
@@ -232,6 +252,14 @@ ${JSON.stringify(context)}` : "");
   };
 
   // src/modules/events-storage/events-storage.ts
+  function getEventsStorageData() {
+    try {
+      return JSON.parse(window["localStorage" /* LOCAL_STORAGE */].getItem("strigoEvents" /* STRIGO_EVENTS */));
+    } catch (error) {
+      LoggerInstance.error("Get events storage error", { error });
+      return null;
+    }
+  }
   function init() {
     try {
       const currentEventsStorage = getEventsStorageData();
@@ -247,14 +275,6 @@ ${JSON.stringify(context)}` : "");
       return null;
     }
   }
-  function getEventsStorageData() {
-    try {
-      return JSON.parse(window["localStorage" /* LOCAL_STORAGE */].getItem("strigoEvents" /* STRIGO_EVENTS */));
-    } catch (error) {
-      LoggerInstance.error("Get events storage error", { error });
-      return null;
-    }
-  }
   function pushEventValue(event) {
     try {
       const initialState = getEventsStorageData();
@@ -265,7 +285,7 @@ ${JSON.stringify(context)}` : "");
       initialState.events.push(event);
       window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(initialState));
       if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
-        const event2 = new CustomEvent("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, {
+        const customEvent = new CustomEvent("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, {
           bubbles: true,
           detail: {
             key: "strigoEvents",
@@ -273,7 +293,7 @@ ${JSON.stringify(context)}` : "");
             newValue: JSON.stringify(initialState)
           }
         });
-        window.dispatchEvent(event2);
+        window.dispatchEvent(customEvent);
       }
       return initialState;
     } catch (error) {
@@ -372,16 +392,16 @@ ${JSON.stringify(context)}` : "");
     }
     return true;
   }
+  function toggleWidget() {
+    const widget = document.getElementById("strigo-widget");
+    const isOpen = widget.classList.contains("slide-in");
+    widget.classList.toggle("slide-in");
+    setTimeout(() => {
+      const arrow = document.getElementById("strigo-arrow");
+      arrow.innerHTML = isOpen ? CHEVRON_LEFT : CHEVRON_RIGHT;
+    }, 300);
+  }
   function createWidget(url) {
-    const toggleFunction = function() {
-      const widget = document.getElementById("strigo-widget");
-      const isOpen = widget.classList.contains("slide-in");
-      widget.classList.toggle("slide-in");
-      setTimeout(() => {
-        const arrow = document.getElementById("strigo-arrow");
-        arrow.innerHTML = isOpen ? CHEVRON_LEFT : CHEVRON_RIGHT;
-      }, 300);
-    };
     const arrowDiv = document.createElement("div");
     arrowDiv.className = "strigo-arrow";
     arrowDiv.id = "strigo-arrow";
@@ -393,7 +413,7 @@ ${JSON.stringify(context)}` : "");
     const collapseDiv = document.createElement("div");
     collapseDiv.className = "strigo-collapse-div";
     collapseDiv.onclick = () => {
-      toggleFunction();
+      toggleWidget();
     };
     collapseDiv.appendChild(collapseButton);
     const strigoExercisesIframe = document.createElement("iframe");
@@ -407,16 +427,16 @@ ${JSON.stringify(context)}` : "");
     document.body.appendChild(widgetDiv);
     return strigoExercisesIframe;
   }
-  var removeWidget = function() {
+  function removeWidget() {
     document.getElementById("strigo-widget").remove();
-  };
-  var openWidget = function() {
+  }
+  function openWidget() {
     const widget = document.getElementById("strigo-widget");
     if (widget.classList.contains("slide-in")) {
       return;
     }
     widget.classList.add("slide-in");
-  };
+  }
 
   // node_modules/split.js/dist/split.es.js
   var global = typeof window !== "undefined" ? window : null;
@@ -957,11 +977,12 @@ ${JSON.stringify(context)}` : "");
   }
   function initHostEventListeners() {
     window.addEventListener("message" /* MESSAGE */, (ev) => {
-      if (!ev || !ev.data)
+      if (!ev || !ev.data) {
         return;
+      }
       switch (ev.data) {
         case "close" /* SHUTDOWN */: {
-          window.Strigo && window.Strigo.shutdown();
+          window.Strigo?.shutdown();
           break;
         }
         case "challenge-success" /* CHALLENGE_SUCCESS */: {
@@ -1074,44 +1095,27 @@ ${JSON.stringify(context)}` : "");
   }
 
   // src/strigo/index.ts
-  var Strigo;
-  ((Strigo2) => {
-    function init2() {
+  var StrigoSDK = class {
+    constructor() {
+      this.initialized = false;
+      this.sdkType = void 0;
+    }
+    init() {
       try {
         LoggerInstance.info("Initializing SDK...");
         init();
-        if (window.Strigo?.initialized) {
+        if (this.initialized) {
           return;
         }
-        window.Strigo.initialized = true;
+        this.initialized = true;
         const widget = getWidget(getWidgetFlavor());
-        Strigo2.SDKType = widget.init();
+        this.sdkType = widget.init();
         LoggerInstance.info("Initialized SDK.");
       } catch (err) {
         LoggerInstance.error("Could not initialize SDK", { err });
       }
     }
-    Strigo2.init = init2;
-    async function fetchRemoteConfiguration(token, development) {
-      try {
-        const configDomain = development ? "http://localhost:3000" : "https://app.strigo.io";
-        const response = await fetch(`${configDomain}/api/internal/academy/v1/config`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token.token}`
-          }
-        });
-        if (!response.ok) {
-          throw new Error(`Failed to fetch remote configuration: ${response.statusText}`);
-        }
-        const configuration = await response.json();
-        return configuration.data;
-      } catch (err) {
-        LoggerInstance.warn("Error fetching configuration from Strigo", { err });
-      }
-    }
-    async function setup3(data) {
+    async setup(data) {
       try {
         LoggerInstance.info("Starting to setup SDK...");
         const { email, token, development = false, version } = data;
@@ -1124,7 +1128,7 @@ ${JSON.stringify(context)}` : "");
           LoggerInstance.debug("Configuration fetched from Strigo");
           LoggerInstance.setup(loggingConfig);
         }
-        if (Strigo2.SDKType === "CHILD" /* CHILD */ || Strigo2.SDKType === "OVERLAY" /* OVERLAY */ && isPanelOpen()) {
+        if (this.sdkType === "CHILD" /* CHILD */ || this.sdkType === "OVERLAY" /* OVERLAY */ && isPanelOpen()) {
           LoggerInstance.info("panel is already opened");
           return;
         }
@@ -1157,11 +1161,10 @@ ${JSON.stringify(context)}` : "");
         LoggerInstance.error("Could not setup SDK", { err });
       }
     }
-    Strigo2.setup = setup3;
-    function shutdown() {
+    shutdown() {
       try {
         LoggerInstance.info("Shutting down SDK...");
-        if (Strigo2.SDKType === "CHILD" /* CHILD */) {
+        if (this.sdkType === "CHILD" /* CHILD */) {
           window.parent.postMessage("close" /* SHUTDOWN */, "*");
           return;
         }
@@ -1174,13 +1177,12 @@ ${JSON.stringify(context)}` : "");
         LoggerInstance.error("Could not shutdown SDK", { err });
       }
     }
-    Strigo2.shutdown = shutdown;
-    function sendEvent(eventName) {
+    sendEvent(eventName) {
       pushEventValue({ eventName });
       LoggerInstance.debug("sendEvent called", { eventName });
     }
-    Strigo2.sendEvent = sendEvent;
-  })(Strigo || (Strigo = {}));
+  };
+  var Strigo = new StrigoSDK();
 
   // src/strigo.sdk.ts
   window.Strigo = Strigo;
