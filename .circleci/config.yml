@@ -25,6 +25,10 @@ jobs:
           command: npx tsc
 
       - run:
+          name: Linting
+          command: npm run lint:ci
+
+      - run:
           name: Update package.json version (master branch only)
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
