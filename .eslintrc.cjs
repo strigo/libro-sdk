@@ -2,15 +2,16 @@ module.exports = {
   root: true,
   env: {
     es6: true,
-    node: true,
+    browser: true,
   },
   extends: [
     'airbnb-typescript/base',
+    'plugin:import/recommended',
+    'plugin:import/errors',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'plugin:prettier/recommended',
   ],
-  plugins: ['import'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: './tsconfig.json',
