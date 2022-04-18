@@ -14,7 +14,7 @@ module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: './tsconfig.json',
-    tsconfigRootDir: __dirname,
+    tsconfigRootDir: __dirname
   },
   rules: {
     'prettier/prettier': 'warn',
@@ -120,5 +120,5 @@ module.exports = {
     'curly': ['error', 'all'],
     'no-plusplus': 'off',
   },
-  ignorePatterns: ['node_modules/', '*.js'],
+  ignorePatterns: ['node_modules/', '*.js', '*.cjs'],
 };
