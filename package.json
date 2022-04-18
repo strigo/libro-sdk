@@ -7,7 +7,9 @@
   "scripts": {
     "build": "node esbuild.js",
     "start": "node esbuild-dev.js -w",
-    "purge": "node purge-jsdelivr"
+    "purge": "node purge-jsdelivr",
+    "lint": "eslint --cache src",
+    "lint:ci": "eslint --config .eslintrc.ci.cjs src"
   },
   "repository": {
     "type": "git",
