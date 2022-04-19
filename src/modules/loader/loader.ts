@@ -17,32 +17,13 @@ const SPINNER = `
 export function showLoader(): void {
   // Add Spinner
   const loaderDiv = document.createElement('div');
-  loaderDiv.className = 'strigo-loader';
+  loaderDiv.id = 'strigo-loader';
   loaderDiv.innerHTML = SPINNER;
 
   document.body.appendChild(loaderDiv);
 }
 
-export function hideLoader(): Promise<void> {
-  const preloader = document.querySelector<HTMLElement>('.strigo-loader');
-
-  // Temporarily create a promise to make this function usable externally
-  // until we rewrite the loader effect with css only.
-  return new Promise<void>((resolve) => {
-    const interval = setInterval(() => {
-      if (!preloader.style.opacity) {
-        preloader.style.opacity = '1';
-      }
-
-      const opacity = parseFloat(preloader.style.opacity);
-
-      if (opacity > 0) {
-        preloader.style.opacity = (opacity - 0.1).toString();
-      } else {
-        preloader.style.pointerEvents = 'none';
-        clearInterval(interval);
-        resolve();
-      }
-    }, 200);
-  });
+export function hideLoader(): void {
+  const preloader = document.querySelector<HTMLElement>('#strigo-loader');
+  preloader.classList.add('loaded');
 }

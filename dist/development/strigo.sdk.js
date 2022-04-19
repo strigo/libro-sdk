@@ -51,7 +51,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -60,7 +60,7 @@
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -881,27 +881,13 @@ ${JSON.stringify(context)}` : "");
 `;
   function showLoader() {
     const loaderDiv = document.createElement("div");
-    loaderDiv.className = "strigo-loader";
+    loaderDiv.id = "strigo-loader";
     loaderDiv.innerHTML = SPINNER;
     document.body.appendChild(loaderDiv);
   }
   function hideLoader() {
-    const preloader = document.querySelector(".strigo-loader");
-    return new Promise((resolve) => {
-      const interval = setInterval(() => {
-        if (!preloader.style.opacity) {
-          preloader.style.opacity = "1";
-        }
-        const opacity = parseFloat(preloader.style.opacity);
-        if (opacity > 0) {
-          preloader.style.opacity = (opacity - 0.1).toString();
-        } else {
-          preloader.style.pointerEvents = "none";
-          clearInterval(interval);
-          resolve();
-        }
-      }, 200);
-    });
+    const preloader = document.querySelector("#strigo-loader");
+    preloader.classList.add("loaded");
   }
 
   // src/modules/events-sender/events-sender.ts
