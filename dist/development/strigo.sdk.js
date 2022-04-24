@@ -51,7 +51,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -60,7 +60,7 @@
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -1014,7 +1014,7 @@ ${JSON.stringify(context)}` : "");
     });
   }
   function initChildEventListeners(childIframe) {
-    let originalHost = getConfigValue("initSite")?.host;
+    const originalHost = getConfigValue("initSite")?.host;
     childIframe.addEventListener("load", function() {
       try {
         const currentHost = this.contentWindow.location.host;
