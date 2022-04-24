@@ -5,6 +5,7 @@ import ovelayWidget from '../widgets/overlay';
 import { Logger } from '../../services/logger';
 import { WIDGET_FLAVORS } from '../widgets/widget.types';
 import { StrigoEventsStorage } from '../events-storage/events-storage.types';
+import * as configManager from '../config/config';
 
 import { EVENT_TYPES, MESSAGE_TYPES } from './listeners.types';
 
@@ -78,8 +79,8 @@ export function initAcademyPlayerLoadedListeners(
   });
 }
 
-export function initChildEventListeners(childIframe: HTMLIFrameElement) {
-  const originalHost = getConfigValue('initSite')?.host;
+export function initChildEventListeners(childIframe: HTMLIFrameElement): void {
+  const originalHost = configManager.getConfigValue('initSite')?.host;
 
   childIframe.addEventListener('load', function () {
     try {
