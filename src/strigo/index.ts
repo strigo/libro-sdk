@@ -2,6 +2,7 @@ import * as urlTools from '../modules/url/url';
 import * as configManager from '../modules/config/config';
 import * as sessionManager from '../modules/session/session';
 import * as eventsStorageManager from '../modules/events-storage/events-storage';
+import * as assessmentsStorage from '../modules/assessments-storage/assessments-storage';
 import { Logger } from '../services/logger';
 import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MESSAGE_TYPES } from '../modules/listeners/listeners.types';
@@ -22,6 +23,7 @@ class StrigoSDK implements IStrigoSDK {
       }
 
       eventsStorageManager.init();
+      assessmentsStorage.init();
 
       // Get init script parameters
       const { webApiKey, subDomain, selectedWidgetFlavor } = urlTools.extractInitScriptParams();
@@ -75,9 +77,11 @@ class StrigoSDK implements IStrigoSDK {
       const configuration = await configManager.fetchRemoteConfiguration(token, development);
 
       if (configuration) {
-        const { loggingConfig } = configuration;
+        const { loggingConfig, userAssessments } = configuration;
         Logger.debug('Configuration fetched from Strigo');
         Logger.setup(loggingConfig);
+
+        assessmentsStorage.setup(userAssessments);
       }
 
       configManager.setup({
@@ -139,7 +143,7 @@ class StrigoSDK implements IStrigoSDK {
       Logger.info('Closing academy panel...');
 
       if (this.config.sdkType === SDK_TYPES.CHILD) {
-        window.parent.postMessage(MESSAGE_TYPES.SHUTDOWN, '*');
+        window.parent.postMessage(JSON.stringify({ messageType: MESSAGE_TYPES.SHUTDOWN }), '*');
         Logger.info('Notified parent frame to close academy panel.');
 
         return;
@@ -167,7 +171,7 @@ class StrigoSDK implements IStrigoSDK {
       Logger.info('Destroying SDK...');
 
       if (this.config.sdkType === SDK_TYPES.CHILD) {
-        window.parent.postMessage(MESSAGE_TYPES.DESTROY, '*');
+        window.parent.postMessage(JSON.stringify({ messageType: MESSAGE_TYPES.DESTROY }), '*');
         Logger.info('Notified parent frame to destroy SDK.');
 
         return;
@@ -177,6 +181,7 @@ class StrigoSDK implements IStrigoSDK {
       // the config will be erased even for iframe widget that reloads the page on shutdown.
       configManager.clearConfig();
       eventsStorageManager.clearEventsStorage();
+      assessmentsStorage.clearAssessmentStorage();
       this.shutdown();
 
       this.config = {};

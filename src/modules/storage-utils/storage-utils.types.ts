@@ -5,6 +5,7 @@ export enum STORAGE_NAMES {
   STRIGO_CONFIG = 'strigoConfig',
   STRIGO_SESSION = 'strigoSession',
   STRIGO_EVENTS = 'strigoEvents',
+  STRIGO_ASSESSMENTS = 'strigoAssessments',
 }
 
 export enum STORAGE_TYPES {
