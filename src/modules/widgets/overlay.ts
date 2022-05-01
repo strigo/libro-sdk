@@ -1,5 +1,6 @@
 import { Logger } from '../../services/logger';
 import * as documentTools from '../document/document';
+import * as noCodeAssessment from '../no-code-assessment/no-code-assessment';
 import * as urlTools from '../url/url';
 import * as listeners from '../listeners/listeners';
 import * as configManager from '../config/config';
@@ -28,6 +29,7 @@ class OverlayWidget implements IOverlayWidget {
     });
     const academyPlayerFrame = documentTools.createWidget(urlTools.generateStrigoIframeURL(configManager.getConfig()));
     this.initEventListeners(academyPlayerFrame);
+    noCodeAssessment.addDocumentObserver(window);
   }
 
   shutdown(): void {

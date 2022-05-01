@@ -67,7 +67,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
+      return `http://localhost:${"7005"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -76,7 +76,7 @@
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
+      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -359,6 +359,48 @@ ${JSON.stringify(parsedContext)}` : "");
       window["localStorage" /* LOCAL_STORAGE */].removeItem("strigoEvents" /* STRIGO_EVENTS */);
     } catch (error) {
       LoggerInstance.error("Clear events storage error", { error });
+    }
+  }
+
+  // src/modules/assessments-storage/assessments-storage.ts
+  function getAssessmentsStorageData() {
+    try {
+      return JSON.parse(window["localStorage" /* LOCAL_STORAGE */].getItem("strigoAssessments" /* STRIGO_ASSESSMENTS */));
+    } catch (error) {
+      LoggerInstance.error("Get assessments storage error", { error });
+      return null;
+    }
+  }
+  function init3() {
+    try {
+      const currentAssessmentsStorage = getAssessmentsStorageData();
+      if (currentAssessmentsStorage) {
+        LoggerInstance.debug("Assessments storage already exists");
+        return currentAssessmentsStorage;
+      }
+      const strigoAssessments = { assessments: [] };
+      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoAssessments" /* STRIGO_ASSESSMENTS */, JSON.stringify(strigoAssessments));
+      return strigoAssessments;
+    } catch (error) {
+      LoggerInstance.error("Init assessments storage error", { error });
+      return null;
+    }
+  }
+  function setup3(initialStorage) {
+    try {
+      const strigoAssessments = initialStorage ? { assessments: [...initialStorage] } : { assessments: [] };
+      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoAssessments" /* STRIGO_ASSESSMENTS */, JSON.stringify(strigoAssessments));
+      return strigoAssessments;
+    } catch (error) {
+      LoggerInstance.error("Assessments storage setup error", { error });
+      return null;
+    }
+  }
+  function clearAssessmentStorage() {
+    try {
+      window["localStorage" /* LOCAL_STORAGE */].removeItem("strigoAssessments" /* STRIGO_ASSESSMENTS */);
+    } catch (error) {
+      LoggerInstance.error("Clear assessments storage error", { error });
     }
   }
 
@@ -956,6 +998,29 @@ ${JSON.stringify(parsedContext)}` : "");
     }
   }
 
+  // src/modules/no-code-assessment/no-code-assessment.ts
+  var addDocumentObserver = function(windowElement) {
+    const documentElement = windowElement.document;
+    const assessments = getAssessmentsStorageData().assessments;
+    const observerHandler = function() {
+      assessments.forEach((assessment) => {
+        const { eventName, expectedResult, selector } = assessment;
+        const element = documentElement.querySelector(selector);
+        if (element?.innerText?.includes(expectedResult) || element?.value?.includes(expectedResult)) {
+          windowElement.Strigo.sendEvent(eventName);
+        }
+      });
+    };
+    const observer = new MutationObserver(observerHandler);
+    observer.observe(documentElement, {
+      subtree: true,
+      attributes: true,
+      attributeOldValue: true,
+      characterDataOldValue: true,
+      characterData: true
+    });
+  };
+
   // src/modules/widgets/overlay.ts
   function makeOverlayWidgetVisible() {
     document.getElementById("strigo-widget").classList.add("slide-in");
@@ -979,6 +1044,7 @@ ${JSON.stringify(parsedContext)}` : "");
       });
       const academyPlayerFrame = createWidget(generateStrigoIframeURL(getConfig()));
       this.initEventListeners(academyPlayerFrame);
+      addDocumentObserver(window);
     }
     shutdown() {
       this.removeEventListeners();
@@ -1017,10 +1083,12 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     switch (ev.data) {
       case "close" /* SHUTDOWN */: {
+        LoggerInstance.info("Shutdown message received");
         window.Strigo?.shutdown();
         break;
       }
       case "destroy" /* DESTROY */: {
+        LoggerInstance.info("Destroy message received");
         window.Strigo?.destroy();
         break;
       }
@@ -1056,6 +1124,7 @@ ${JSON.stringify(parsedContext)}` : "");
   function initChildEventListeners(childIframe) {
     const originalHost = getConfigValue("initSite")?.host;
     childIframe.addEventListener("load", function() {
+      addDocumentObserver(childIframe.contentWindow);
       try {
         const currentHost = this.contentWindow.location.host;
         if (currentHost !== originalHost) {
@@ -1164,6 +1233,7 @@ ${JSON.stringify(parsedContext)}` : "");
           return;
         }
         init2();
+        init3();
         const { webApiKey, subDomain, selectedWidgetFlavor } = extractInitScriptParams();
         if (!webApiKey || !subDomain || !selectedWidgetFlavor) {
           throw new Error("Init data is missing");
@@ -1198,9 +1268,10 @@ ${JSON.stringify(parsedContext)}` : "");
         }
         const configuration = await fetchRemoteConfiguration(token, development);
         if (configuration) {
-          const { loggingConfig } = configuration;
+          const { loggingConfig, userAssessments } = configuration;
           LoggerInstance.debug("Configuration fetched from Strigo");
           LoggerInstance.setup(loggingConfig);
+          setup3(userAssessments);
         }
         setup({
           user: {
@@ -1250,7 +1321,7 @@ ${JSON.stringify(parsedContext)}` : "");
       try {
         LoggerInstance.info("Closing academy panel...");
         if (this.config.sdkType === "CHILD" /* CHILD */) {
-          window.parent.postMessage("close" /* SHUTDOWN */, "*");
+          window.parent.postMessage(JSON.stringify({ messageType: "close" /* SHUTDOWN */ }), "*");
           LoggerInstance.info("Notified parent frame to close academy panel.");
           return;
         }
@@ -1271,12 +1342,13 @@ ${JSON.stringify(parsedContext)}` : "");
       try {
         LoggerInstance.info("Destroying SDK...");
         if (this.config.sdkType === "CHILD" /* CHILD */) {
-          window.parent.postMessage("destroy" /* DESTROY */, "*");
+          window.parent.postMessage(JSON.stringify({ messageType: "destroy" /* DESTROY */ }), "*");
           LoggerInstance.info("Notified parent frame to destroy SDK.");
           return;
         }
         clearConfig();
         clearEventsStorage();
+        clearAssessmentStorage();
         this.shutdown();
         this.config = {};
         LoggerInstance.info("Destroyed SDK.");

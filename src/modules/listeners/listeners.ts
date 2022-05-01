@@ -1,11 +1,12 @@
 import * as eventsSender from '../events-sender/events-sender';
 import * as sessionManager from '../session/session';
+import * as configManager from '../config/config';
+import * as noCodeAssessment from '../no-code-assessment/no-code-assessment';
 import { STORAGE_NAMES } from '../storage-utils/storage-utils.types';
 import ovelayWidget from '../widgets/overlay';
 import { Logger } from '../../services/logger';
 import { WIDGET_FLAVORS } from '../widgets/widget.types';
 import { StrigoEventsStorage } from '../events-storage/events-storage.types';
-import * as configManager from '../config/config';
 
 import { EVENT_TYPES, MESSAGE_TYPES } from './listeners.types';
 
@@ -33,12 +34,14 @@ function onHostEventHandler(ev: MessageEvent<any>): void {
 
   switch (ev.data) {
     case MESSAGE_TYPES.SHUTDOWN: {
+      Logger.info('Shutdown message received');
       window.Strigo?.shutdown();
 
       break;
     }
 
     case MESSAGE_TYPES.DESTROY: {
+      Logger.info('Destroy message received');
       window.Strigo?.destroy();
 
       break;
@@ -91,6 +94,8 @@ export function initChildEventListeners(childIframe: HTMLIFrameElement): void {
   const originalHost = configManager.getConfigValue('initSite')?.host;
 
   childIframe.addEventListener('load', function () {
+    noCodeAssessment.addDocumentObserver(childIframe.contentWindow);
+
     try {
       const currentHost = this.contentWindow.location.host;
 
