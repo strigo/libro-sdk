@@ -3,8 +3,9 @@ import { StrigoToken } from '../modules/config/config.types';
 export interface SDKSetupData {
   email: string;
   token: StrigoToken;
-  development: boolean;
+  development?: boolean;
   version?: string;
+  openWidget?: boolean;
 }
 
 export enum SDK_TYPES {
@@ -14,10 +15,9 @@ export enum SDK_TYPES {
 }
 
 export interface IStrigoSDK {
-  initialized?: boolean;
-  sdkType?: SDK_TYPES;
   init: () => void;
-  setup: (data: SDKSetupData) => Promise<void>;
+  setup: (data?: SDKSetupData) => Promise<void>;
+  open: () => void;
   shutdown: () => void;
   sendEvent: (eventName: string) => void;
 }

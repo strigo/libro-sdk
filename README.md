@@ -84,7 +84,7 @@ To shut the Strigo experience down, simply call:
 window.Strigo.shutdown();
 ```
 
-The `localStorage` and `sessionStorage` will be erased and the page will refresh.
+The `sessionStorage` will be erased and the page will refresh.
 
 # Development
 
@@ -179,7 +179,9 @@ The `setup` method creates two storage sessions / types:
 ```js
 {
   "currentUrl": "https://strigo-demo.web.app/",
-  "isPanelOpen": true
+  "isPanelOpen": true,
+  "isLoading": false,
+  "widgetFlavor": "iframe"
 }
 ```
 

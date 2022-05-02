@@ -17,13 +17,31 @@ export interface StrigoProtectedConfig {
   loggingConfig: LoggingConfig;
 }
 
-export interface StrigoConfig {
+export interface User {
   email: string;
-  webApiKey: string;
   token: StrigoToken;
-  initSite: SiteConfig;
+}
+
+export interface StrigoInitConfig {
+  webApiKey: string;
   subDomain: string;
+  selectedWidgetFlavor: WIDGET_FLAVORS;
+}
+
+export interface StrigoSetupConfig {
+  user: User;
+  initSite: SiteConfig;
   development: boolean;
+  version?: string;
+  loggingConfig?: LoggingConfig;
+}
+
+export interface StrigoConfig {
+  user?: User;
+  webApiKey: string;
+  initSite?: SiteConfig;
+  subDomain: string;
+  development?: boolean;
   version?: string;
   selectedWidgetFlavor: WIDGET_FLAVORS;
   loggingConfig?: LoggingConfig;

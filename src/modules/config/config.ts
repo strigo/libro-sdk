@@ -2,34 +2,43 @@ import { Logger } from '../../services/logger';
 import { clearStorage, getStorageData, setStorageValue, setupStorage } from '../storage-utils/storage-utils';
 import { STORAGE_NAMES, STORAGE_TYPES } from '../storage-utils/storage-utils.types';
 
-import { StrigoConfig, StrigoProtectedConfig, StrigoToken } from './config.types';
+import { StrigoConfig, StrigoInitConfig, StrigoProtectedConfig, StrigoSetupConfig, StrigoToken } from './config.types';
 
-export function init(): StrigoConfig {
-  // Get the state from local storage
-  const config = getStorageData(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG);
-
-  return config as StrigoConfig;
-}
-
-export function setup(initialConfig: StrigoConfig): StrigoConfig {
-  const config = setupStorage<StrigoConfig>(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG, initialConfig);
+export function getConfig(): StrigoConfig {
+  const config = getStorageData<StrigoConfig>(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG);
 
   return config;
 }
 
-export function getConfig(): StrigoConfig {
-  const config = getStorageData(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG);
+export function init(initConfig: StrigoInitConfig): StrigoConfig {
+  const config = getConfig();
 
-  return config as StrigoConfig;
+  const initializedConfig = setupStorage<StrigoConfig>(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG, {
+    ...initConfig,
+    ...config,
+  });
+
+  return initializedConfig;
 }
 
-export function setConfigValue(key: string, value: any): StrigoConfig {
+export function setup(setupConfig: StrigoSetupConfig): StrigoConfig {
+  const currentConfig = getConfig();
+
+  const config = setupStorage<StrigoConfig>(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG, {
+    ...currentConfig,
+    ...setupConfig,
+  });
+
+  return config;
+}
+
+export function setConfigValue(key: keyof StrigoConfig, value: any): StrigoConfig {
   const config = setStorageValue(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG, key, value);
 
   return config as StrigoConfig;
 }
 
-export function getConfigValue(key: string): any {
+export function getConfigValue(key: keyof StrigoConfig): any {
   const session = getConfig();
 
   return session?.[key];

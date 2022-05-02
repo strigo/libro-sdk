@@ -17,11 +17,6 @@ function makeOverlayWidgetVisible(): void {
 class OverlayWidget implements IOverlayWidget {
   init(): SDK_TYPES {
     Logger.info('overlay init called');
-    const config = configManager.getConfig();
-
-    if (config) {
-      window.Strigo.setup(config);
-    }
 
     return SDK_TYPES.OVERLAY;
   }

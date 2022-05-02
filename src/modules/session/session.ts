@@ -34,7 +34,7 @@ export function getWidgetFlavor(): WIDGET_FLAVORS {
   return getSession()?.widgetFlavor;
 }
 
-export function setSessionValue(key: string, value: any): StrigoSession {
+export function setSessionValue(key: keyof StrigoSession, value: any): StrigoSession {
   const session = setStorageValue<StrigoSession>(
     STORAGE_TYPES.SESSION_STORAGE,
     STORAGE_NAMES.STRIGO_SESSION,
@@ -45,7 +45,7 @@ export function setSessionValue(key: string, value: any): StrigoSession {
   return session;
 }
 
-export function getSessionValue(key: string): any {
+export function getSessionValue(key: keyof StrigoSession): any {
   const session = getSession();
 
   return session?.[key];
@@ -58,7 +58,3 @@ export function clearSession(): void {
 export function setPanelClosed(): void {
   setSessionValue('isPanelOpen', false);
 }
-
-window.onunload = function () {
-  setPanelClosed();
-};
