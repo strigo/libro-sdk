@@ -5,7 +5,6 @@ import * as documentTools from '../document/document';
 import { STRIGO_IFRAME_CLASSES, ORIGINAL_WEBSITE_IFRAME_CLASSES } from '../../strigo/consts';
 import { hideLoader, showLoader } from '../loader/loader';
 import * as configManager from '../config/config';
-import * as sessionManager from '../session/session';
 import * as listeners from '../listeners/listeners';
 import * as urlTools from '../url/url';
 import { SDK_TYPES } from '../../strigo/types';
@@ -17,7 +16,7 @@ class IframeWidget implements IStrigoWidget {
   init(): SDK_TYPES {
     let SDKType: SDK_TYPES;
 
-    if (sessionManager.isPanelOpen()) {
+    if (urlTools.isStrigoChildIframe()) {
       Logger.info('Child SDK window');
 
       // Start as a subscriber
@@ -29,12 +28,6 @@ class IframeWidget implements IStrigoWidget {
       Logger.info('Parent SDK window');
 
       SDKType = SDK_TYPES.PARENT;
-      // Auto setup if the config exists
-      const config = configManager.getConfig();
-
-      if (config) {
-        window.Strigo.setup(config);
-      }
     }
 
     return SDKType;
@@ -53,11 +46,13 @@ class IframeWidget implements IStrigoWidget {
 
     showLoader();
 
+    const config = configManager.getConfig();
+
     const mainDiv = documentTools.generatePageStructure();
     // Append academy player Iframe
     const academyPlayerFrame = documentTools.appendIFrame({
       parentElement: mainDiv,
-      url: urlTools.generateStrigoIframeURL(configManager.getConfig()),
+      url: urlTools.generateStrigoIframeURL(config),
       classNames: STRIGO_IFRAME_CLASSES,
       id: 'strigo-exercises',
     });
@@ -65,7 +60,7 @@ class IframeWidget implements IStrigoWidget {
     // Append child website Iframe
     const childFrame = documentTools.appendIFrame({
       parentElement: mainDiv,
-      url: configManager.getConfig().initSite.href,
+      url: urlTools.generateStrigoChildIframeURL(config.initSite.href),
       classNames: ORIGINAL_WEBSITE_IFRAME_CLASSES,
       id: 'original-site',
     });

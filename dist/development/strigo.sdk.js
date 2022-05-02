@@ -38,8 +38,16 @@
     };
   }
   function generateStrigoIframeURL(config) {
-    const { subDomain, token, webApiKey, development } = config;
-    return development ? `http://${LOCAL_STRIGO_URL}/academy/courses?token=${token.token}&webApiKey=${webApiKey}` : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${token.token}&webApiKey=${webApiKey}`;
+    const { subDomain, user, webApiKey, development } = config;
+    return development ? `http://${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}` : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`;
+  }
+  function generateStrigoChildIframeURL(url) {
+    const currentUrl = new URL(url);
+    currentUrl.searchParams.set("strigoChildIframe", "true");
+    return currentUrl.toString();
+  }
+  function isStrigoChildIframe() {
+    return window.location.search.includes("strigoChildIframe");
   }
   function extractInitScriptParams() {
     const initScript = document.getElementById(INIT_SCRIPT_ID);
@@ -105,10 +113,10 @@ ${JSON.stringify(context)}` : "");
       if (!config) {
         return {};
       }
-      const { token, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
+      const { user, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
       return {
-        token: token.token,
-        initSite: initSite.href,
+        token: user?.token.token,
+        initSite: initSite?.href,
         subDomain,
         development,
         version,
@@ -186,20 +194,29 @@ ${JSON.stringify(context)}` : "");
   }
 
   // src/modules/config/config.ts
-  function setup(initialConfig) {
-    const config = setupStorage("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */, initialConfig);
-    return config;
-  }
   function getConfig() {
     const config = getStorageData("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */);
+    return config;
+  }
+  function init(initConfig) {
+    const config = getConfig();
+    const initializedConfig = setupStorage("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */, {
+      ...initConfig,
+      ...config
+    });
+    return initializedConfig;
+  }
+  function setup(setupConfig) {
+    const currentConfig = getConfig();
+    const config = setupStorage("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */, {
+      ...currentConfig,
+      ...setupConfig
+    });
     return config;
   }
   function getConfigValue(key) {
     const session = getConfig();
     return session?.[key];
-  }
-  function clearConfig() {
-    clearStorage("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */);
   }
   async function fetchRemoteConfiguration(token, development) {
     try {
@@ -251,9 +268,6 @@ ${JSON.stringify(context)}` : "");
   function setPanelClosed() {
     setSessionValue("isPanelOpen", false);
   }
-  window.onunload = function() {
-    setPanelClosed();
-  };
 
   // src/modules/events-storage/events-storage.ts
   function getEventsStorageData() {
@@ -264,7 +278,7 @@ ${JSON.stringify(context)}` : "");
       return null;
     }
   }
-  function init() {
+  function init2() {
     try {
       const currentEventsStorage = getEventsStorageData();
       if (currentEventsStorage) {
@@ -934,10 +948,6 @@ ${JSON.stringify(context)}` : "");
   var OverlayWidget = class {
     init() {
       LoggerInstance.info("overlay init called");
-      const config = getConfig();
-      if (config) {
-        window.Strigo.setup(config);
-      }
       return "OVERLAY" /* OVERLAY */;
     }
     setup({ development, version }) {
@@ -1032,17 +1042,13 @@ ${JSON.stringify(context)}` : "");
   var IframeWidget = class {
     init() {
       let SDKType;
-      if (isPanelOpen()) {
+      if (isStrigoChildIframe()) {
         LoggerInstance.info("Child SDK window");
         SDKType = "CHILD" /* CHILD */;
         window.dispatchEvent(new Event("strigo-opened"));
       } else {
         LoggerInstance.info("Parent SDK window");
         SDKType = "PARENT" /* PARENT */;
-        const config = getConfig();
-        if (config) {
-          window.Strigo.setup(config);
-        }
       }
       return SDKType;
     }
@@ -1054,16 +1060,17 @@ ${JSON.stringify(context)}` : "");
         url: generateCssURL(development, version)
       });
       showLoader();
+      const config = getConfig();
       const mainDiv = generatePageStructure();
       const academyPlayerFrame = appendIFrame({
         parentElement: mainDiv,
-        url: generateStrigoIframeURL(getConfig()),
+        url: generateStrigoIframeURL(config),
         classNames: STRIGO_IFRAME_CLASSES,
         id: "strigo-exercises"
       });
       const childFrame = appendIFrame({
         parentElement: mainDiv,
-        url: getConfig().initSite.href,
+        url: generateStrigoChildIframeURL(config.initSite.href),
         classNames: ORIGINAL_WEBSITE_IFRAME_CLASSES,
         id: "original-site"
       });
@@ -1117,19 +1124,31 @@ ${JSON.stringify(context)}` : "");
   var StrigoSDK = class {
     constructor() {
       this.initialized = false;
+      this.configured = false;
+      this.isOpen = false;
       this.sdkType = void 0;
     }
     init() {
       try {
         LoggerInstance.info("Initializing SDK...");
-        init();
         if (this.initialized) {
+          LoggerInstance.info("SDK was already initialized");
           return;
         }
-        this.initialized = true;
-        const widget = getWidget(getWidgetFlavor());
+        init2();
+        const { webApiKey, subDomain, selectedWidgetFlavor } = extractInitScriptParams();
+        if (!webApiKey || !subDomain || !selectedWidgetFlavor) {
+          throw new Error("Init data is missing");
+        }
+        const widgetFlavor = getWidgetFlavor2(selectedWidgetFlavor);
+        init({ webApiKey, subDomain, selectedWidgetFlavor: widgetFlavor });
+        const widget = getWidget(widgetFlavor);
         this.sdkType = widget.init();
+        this.initialized = true;
         LoggerInstance.info("Initialized SDK.");
+        if (this.sdkType !== "CHILD" /* CHILD */ && isPanelOpen()) {
+          this.setup();
+        }
       } catch (err) {
         LoggerInstance.error("Could not initialize SDK", { err });
       }
@@ -1137,9 +1156,17 @@ ${JSON.stringify(context)}` : "");
     async setup(data) {
       try {
         LoggerInstance.info("Starting to setup SDK...");
-        const { email, token, development = false, version } = data;
-        if (!token) {
-          throw new Error("Token is not defined");
+        if (this.isOpen || this.sdkType === "CHILD" /* CHILD */) {
+          LoggerInstance.info("panel is already opened");
+          return;
+        }
+        const config = getConfig();
+        if (!config) {
+          throw new Error("SDK was not initialized");
+        }
+        const { email, token, development = false, version, openWidget: openWidget2 = true } = { ...config.user, ...config, ...data };
+        if (!development && (!email || !token)) {
+          throw new Error("Setup data is missing");
         }
         const configuration = await fetchRemoteConfiguration(token, development);
         if (configuration) {
@@ -1147,37 +1174,46 @@ ${JSON.stringify(context)}` : "");
           LoggerInstance.debug("Configuration fetched from Strigo");
           LoggerInstance.setup(loggingConfig);
         }
-        if (this.sdkType === "CHILD" /* CHILD */ || this.sdkType === "OVERLAY" /* OVERLAY */ && isPanelOpen()) {
-          LoggerInstance.info("panel is already opened");
-          return;
-        }
-        const { webApiKey, subDomain, selectedWidgetFlavor } = extractInitScriptParams();
-        if (!development && (!email || !token || !webApiKey || !subDomain || !selectedWidgetFlavor)) {
-          throw new Error("Setup data is missing");
-        }
         setup({
-          email,
+          user: {
+            email,
+            token
+          },
           initSite: getUrlData(),
-          token,
-          webApiKey,
-          subDomain,
           development,
           version,
-          selectedWidgetFlavor,
           loggingConfig: configuration?.loggingConfig
         });
-        const widgetFlavor = getWidgetFlavor2(selectedWidgetFlavor);
-        setup2({
-          currentUrl: getConfig().initSite.href,
-          isPanelOpen: true,
-          isLoading: true,
-          widgetFlavor
-        });
-        const widget = getWidget(widgetFlavor);
-        widget.setup({ version, development });
+        this.configured = true;
         LoggerInstance.info("Finished SDK setup.");
+        if (openWidget2) {
+          this.open();
+        }
       } catch (err) {
         LoggerInstance.error("Could not setup SDK", { err });
+      }
+    }
+    open() {
+      try {
+        if (!this.configured) {
+          throw new Error("SDK was not set up");
+        }
+        if (this.isOpen || this.sdkType === "CHILD" /* CHILD */) {
+          LoggerInstance.info("Panel is already opened");
+          return;
+        }
+        const config = getConfig();
+        setup2({
+          currentUrl: config.initSite.href,
+          isPanelOpen: true,
+          isLoading: true,
+          widgetFlavor: config.selectedWidgetFlavor
+        });
+        const widget = getWidget(config.selectedWidgetFlavor);
+        widget.setup({ version: config.version, development: config.development });
+        this.isOpen = true;
+      } catch (err) {
+        LoggerInstance.error("Could not open Strigo widget", { err });
       }
     }
     shutdown() {
@@ -1188,9 +1224,9 @@ ${JSON.stringify(context)}` : "");
           return;
         }
         const widget = getWidget(getWidgetFlavor());
-        clearConfig();
         clearSession();
         widget.shutdown();
+        this.isOpen = false;
         LoggerInstance.info("Finished SDK shutdown.");
       } catch (err) {
         LoggerInstance.error("Could not shutdown SDK", { err });

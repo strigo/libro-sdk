@@ -37,11 +37,23 @@ export function getUrlData(): SiteConfig {
 }
 
 export function generateStrigoIframeURL(config: StrigoConfig): string {
-  const { subDomain, token, webApiKey, development } = config;
+  const { subDomain, user, webApiKey, development } = config;
 
   return development
-    ? `http://${LOCAL_STRIGO_URL}/academy/courses?token=${token.token}&webApiKey=${webApiKey}`
-    : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${token.token}&webApiKey=${webApiKey}`;
+    ? `http://${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`
+    : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`;
+}
+
+export function generateStrigoChildIframeURL(url: string): string {
+  const currentUrl = new URL(url);
+
+  currentUrl.searchParams.set('strigoChildIframe', 'true');
+
+  return currentUrl.toString();
+}
+
+export function isStrigoChildIframe(): boolean {
+  return window.location.search.includes('strigoChildIframe');
 }
 
 export function extractInitScriptParams(): InitScriptParams {
