@@ -24,6 +24,9 @@ class IframeWidget implements IStrigoWidget {
 
       // Dispatch opened event
       window.dispatchEvent(new Event('strigo-opened'));
+
+      // Remove child iframe query param from the url for it to be less intrusive into customer's application
+      urlTools.removeStrigoChildIframeParam();
     } else {
       Logger.info('Parent SDK window');
 

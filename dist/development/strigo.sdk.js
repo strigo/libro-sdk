@@ -14,6 +14,7 @@
   var CDN_BASE_PATH = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk";
 
   // src/modules/url/url.ts
+  var STRIGO_CHILD_IFRAME_PARAM = "strigoChildIframe";
   function paramsToObject(entries) {
     const result = {};
     for (const [key, value] of entries) {
@@ -43,11 +44,18 @@
   }
   function generateStrigoChildIframeURL(url) {
     const currentUrl = new URL(url);
-    currentUrl.searchParams.set("strigoChildIframe", "true");
+    currentUrl.searchParams.set(STRIGO_CHILD_IFRAME_PARAM, "true");
     return currentUrl.toString();
   }
   function isStrigoChildIframe() {
-    return window.location.search.includes("strigoChildIframe");
+    return window.location.search.includes(STRIGO_CHILD_IFRAME_PARAM);
+  }
+  function removeStrigoChildIframeParam() {
+    const url = new URL(window.location.href);
+    const searchParams = new URLSearchParams(url.search);
+    searchParams.delete(STRIGO_CHILD_IFRAME_PARAM);
+    url.search = searchParams.toString();
+    window.history.replaceState(window.history.state, "", url);
   }
   function extractInitScriptParams() {
     const initScript = document.getElementById(INIT_SCRIPT_ID);
@@ -1046,6 +1054,7 @@ ${JSON.stringify(context)}` : "");
         LoggerInstance.info("Child SDK window");
         SDKType = "CHILD" /* CHILD */;
         window.dispatchEvent(new Event("strigo-opened"));
+        removeStrigoChildIframeParam();
       } else {
         LoggerInstance.info("Parent SDK window");
         SDKType = "PARENT" /* PARENT */;
@@ -1160,10 +1169,10 @@ ${JSON.stringify(context)}` : "");
           LoggerInstance.info("panel is already opened");
           return;
         }
-        const config = getConfig();
-        if (!config) {
+        if (!this.initialized) {
           throw new Error("SDK was not initialized");
         }
+        const config = getConfig();
         const { email, token, development = false, version, openWidget: openWidget2 = true } = { ...config.user, ...config, ...data };
         if (!development && (!email || !token)) {
           throw new Error("Setup data is missing");
