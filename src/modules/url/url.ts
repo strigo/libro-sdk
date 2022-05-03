@@ -4,6 +4,8 @@ import { WIDGET_FLAVORS } from '../widgets/widget.types';
 
 import { InitScriptParams } from './url.types';
 
+const STRIGO_CHILD_IFRAME_PARAM = 'strigoChildIframe';
+
 function paramsToObject(entries: IterableIterator<[string, string]>): Record<string, string> {
   const result = {};
 
@@ -47,13 +49,21 @@ export function generateStrigoIframeURL(config: StrigoConfig): string {
 export function generateStrigoChildIframeURL(url: string): string {
   const currentUrl = new URL(url);
 
-  currentUrl.searchParams.set('strigoChildIframe', 'true');
+  currentUrl.searchParams.set(STRIGO_CHILD_IFRAME_PARAM, 'true');
 
   return currentUrl.toString();
 }
 
 export function isStrigoChildIframe(): boolean {
-  return window.location.search.includes('strigoChildIframe');
+  return window.location.search.includes(STRIGO_CHILD_IFRAME_PARAM);
+}
+
+export function removeStrigoChildIframeParam(): void {
+  const url = new URL(window.location.href);
+  const searchParams = new URLSearchParams(url.search);
+  searchParams.delete(STRIGO_CHILD_IFRAME_PARAM);
+  url.search = searchParams.toString();
+  window.history.replaceState(window.history.state, '', url);
 }
 
 export function extractInitScriptParams(): InitScriptParams {

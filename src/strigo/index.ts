@@ -66,11 +66,11 @@ class StrigoSDK implements IStrigoSDK {
         return;
       }
 
-      const config = configManager.getConfig();
-
-      if (!config) {
+      if (!this.initialized) {
         throw new Error('SDK was not initialized');
       }
+
+      const config = configManager.getConfig();
 
       const { email, token, development = false, version, openWidget = true } = { ...config.user, ...config, ...data };
 
