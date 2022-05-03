@@ -23,6 +23,7 @@
   transform: translate3d(0, 0, 0);
 }
 #strigo-widget .strigo-iframe {
+  margin: unset !important;
   position: relative;
   height: 100%;
   width: 100%;
