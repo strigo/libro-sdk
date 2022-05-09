@@ -116,6 +116,12 @@ npm run build
 
 Will bundle and minify both `js` and `css` files to `dist/production` directory.
 
+## Release
+
+We use a [script](https://gist.github.com/nir0s/ed262afd6a20d20af7be095e5004af9c) to automatically advance versions based on [semver](https://semver.org/).
+
+Merging to master alone does not create a new GitHub release. To actually create a release, you must provide a prefix in the last merged commit of your branch in the form of `[semver:patch|minor|major]`. Merging to master will then update the `latest` release and create a new versioned release as well.
+
 ## Serve
 
 The files in the `dist/production` directory can be fetched by the free CDN at [JSDelivr](https://www.jsdelivr.com/).
