@@ -14,8 +14,8 @@ export function init(initConfig: StrigoInitConfig): StrigoConfig {
   const config = getConfig();
 
   const initializedConfig = setupStorage<StrigoConfig>(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG, {
-    ...initConfig,
     ...config,
+    ...initConfig,
   });
 
   return initializedConfig;
