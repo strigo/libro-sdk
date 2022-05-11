@@ -209,8 +209,8 @@ ${JSON.stringify(context)}` : "");
   function init(initConfig) {
     const config = getConfig();
     const initializedConfig = setupStorage("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */, {
-      ...initConfig,
-      ...config
+      ...config,
+      ...initConfig
     });
     return initializedConfig;
   }
@@ -225,6 +225,9 @@ ${JSON.stringify(context)}` : "");
   function getConfigValue(key) {
     const session = getConfig();
     return session?.[key];
+  }
+  function clearConfig() {
+    clearStorage("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */);
   }
   async function fetchRemoteConfiguration(token, development) {
     try {
@@ -272,9 +275,6 @@ ${JSON.stringify(context)}` : "");
   }
   function clearSession() {
     clearStorage("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */);
-  }
-  function setPanelClosed() {
-    setSessionValue("isPanelOpen", false);
   }
 
   // src/modules/events-storage/events-storage.ts
@@ -954,6 +954,11 @@ ${JSON.stringify(context)}` : "");
     document.getElementById("strigo-widget").classList.add("loaded");
   }
   var OverlayWidget = class {
+    constructor() {
+      this.onStrigoEventHandler = (customEvent) => {
+        storageChanged(customEvent?.detail);
+      };
+    }
     init() {
       LoggerInstance.info("overlay init called");
       return "OVERLAY" /* OVERLAY */;
@@ -968,9 +973,8 @@ ${JSON.stringify(context)}` : "");
       this.initEventListeners(academyPlayerFrame);
     }
     shutdown() {
-      LoggerInstance.info("overlay shutdown called");
+      this.removeEventListeners();
       removeWidget();
-      setPanelClosed();
     }
     open() {
       openWidget();
@@ -978,9 +982,11 @@ ${JSON.stringify(context)}` : "");
     initEventListeners(academyPlayerFrame) {
       initAcademyPlayerLoadedListeners(academyPlayerFrame, makeOverlayWidgetVisible);
       initHostEventListeners();
-      window.addEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, (customEvent) => {
-        storageChanged(customEvent?.detail);
-      });
+      window.addEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
+    }
+    removeEventListeners() {
+      removeHostEventListeners();
+      window.removeEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
     }
   };
   var overlay_default = new OverlayWidget();
@@ -997,28 +1003,32 @@ ${JSON.stringify(context)}` : "");
       postEventMessage();
     }
   }
+  function onHostEventHandler(ev) {
+    if (!ev || !ev.data) {
+      return;
+    }
+    switch (ev.data) {
+      case "close" /* SHUTDOWN */: {
+        window.Strigo?.shutdown();
+        break;
+      }
+      case "challenge-success" /* CHALLENGE_SUCCESS */: {
+        LoggerInstance.info("Challenge event success received");
+        if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
+          overlay_default.open();
+        }
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  }
   function initHostEventListeners() {
-    window.addEventListener("message" /* MESSAGE */, (ev) => {
-      if (!ev || !ev.data) {
-        return;
-      }
-      switch (ev.data) {
-        case "close" /* SHUTDOWN */: {
-          window.Strigo?.shutdown();
-          break;
-        }
-        case "challenge-success" /* CHALLENGE_SUCCESS */: {
-          LoggerInstance.info("Challenge event success received");
-          if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
-            overlay_default.open();
-          }
-          break;
-        }
-        default: {
-          break;
-        }
-      }
-    }, false);
+    window.addEventListener("message" /* MESSAGE */, onHostEventHandler, false);
+  }
+  function removeHostEventListeners() {
+    window.removeEventListener("message" /* MESSAGE */, onHostEventHandler);
   }
   function initAcademyPlayerLoadedListeners(academyPlayerIframe, onLoadCallback) {
     academyPlayerIframe.addEventListener("load", async () => {
@@ -1132,15 +1142,12 @@ ${JSON.stringify(context)}` : "");
   // src/strigo/index.ts
   var StrigoSDK = class {
     constructor() {
-      this.initialized = false;
-      this.configured = false;
-      this.isOpen = false;
-      this.sdkType = void 0;
+      this.config = {};
     }
     init() {
       try {
         LoggerInstance.info("Initializing SDK...");
-        if (this.initialized) {
+        if (this.config.initialized) {
           LoggerInstance.info("SDK was already initialized");
           return;
         }
@@ -1152,10 +1159,10 @@ ${JSON.stringify(context)}` : "");
         const widgetFlavor = getWidgetFlavor2(selectedWidgetFlavor);
         init({ webApiKey, subDomain, selectedWidgetFlavor: widgetFlavor });
         const widget = getWidget(widgetFlavor);
-        this.sdkType = widget.init();
-        this.initialized = true;
+        this.config.sdkType = widget.init();
+        this.config.initialized = true;
         LoggerInstance.info("Initialized SDK.");
-        if (this.sdkType !== "CHILD" /* CHILD */ && isPanelOpen()) {
+        if (this.config.sdkType !== "CHILD" /* CHILD */ && isPanelOpen()) {
           this.setup();
         }
       } catch (err) {
@@ -1165,11 +1172,11 @@ ${JSON.stringify(context)}` : "");
     async setup(data) {
       try {
         LoggerInstance.info("Starting to setup SDK...");
-        if (this.isOpen || this.sdkType === "CHILD" /* CHILD */) {
+        if (this.config.isOpen || this.config.sdkType === "CHILD" /* CHILD */) {
           LoggerInstance.info("panel is already opened");
           return;
         }
-        if (!this.initialized) {
+        if (!this.config.initialized) {
           throw new Error("SDK was not initialized");
         }
         const config = getConfig();
@@ -1193,7 +1200,7 @@ ${JSON.stringify(context)}` : "");
           version,
           loggingConfig: configuration?.loggingConfig
         });
-        this.configured = true;
+        this.config.configured = true;
         LoggerInstance.info("Finished SDK setup.");
         if (openWidget2) {
           this.open();
@@ -1204,10 +1211,11 @@ ${JSON.stringify(context)}` : "");
     }
     open() {
       try {
-        if (!this.configured) {
+        LoggerInstance.info("Opening academy panel...");
+        if (!this.config.configured) {
           throw new Error("SDK was not set up");
         }
-        if (this.isOpen || this.sdkType === "CHILD" /* CHILD */) {
+        if (this.config.isOpen || this.config.sdkType === "CHILD" /* CHILD */) {
           LoggerInstance.info("Panel is already opened");
           return;
         }
@@ -1220,25 +1228,37 @@ ${JSON.stringify(context)}` : "");
         });
         const widget = getWidget(config.selectedWidgetFlavor);
         widget.setup({ version: config.version, development: config.development });
-        this.isOpen = true;
+        this.config.isOpen = true;
+        LoggerInstance.info("Opened academy panel.");
       } catch (err) {
-        LoggerInstance.error("Could not open Strigo widget", { err });
+        LoggerInstance.error("Could not open academy panel", { err });
       }
     }
     shutdown() {
       try {
-        LoggerInstance.info("Shutting down SDK...");
-        if (this.sdkType === "CHILD" /* CHILD */) {
+        LoggerInstance.info("Closing academy panel...");
+        if (this.config.sdkType === "CHILD" /* CHILD */) {
           window.parent.postMessage("close" /* SHUTDOWN */, "*");
           return;
         }
         const widget = getWidget(getWidgetFlavor());
         clearSession();
         widget.shutdown();
-        this.isOpen = false;
-        LoggerInstance.info("Finished SDK shutdown.");
+        this.config.isOpen = false;
+        LoggerInstance.info("Closed academy panel.");
       } catch (err) {
-        LoggerInstance.error("Could not shutdown SDK", { err });
+        LoggerInstance.error("Could not close academy panel", { err });
+      }
+    }
+    destroy() {
+      try {
+        LoggerInstance.info("Destroying SDK...");
+        clearConfig();
+        this.config = {};
+        this.shutdown();
+        LoggerInstance.info("Destroyed SDK.");
+      } catch (err) {
+        LoggerInstance.error("Could not destroy SDK", { err });
       }
     }
     sendEvent(eventName) {
