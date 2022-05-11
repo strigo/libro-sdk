@@ -37,7 +37,13 @@ class Logger {
 
   logToConsole(level: string, message: string, context: Record<string, any>): void {
     const enrichedMessage = `${new Date().toISOString()} - ${message}`;
-    console[level](enrichedMessage, context ? `\n${JSON.stringify(context)}` : '');
+
+    const parsedContext =
+      context.err instanceof Error
+        ? { ...context, err: { message: context.err.message, name: context.err.name, stack: context.err.stack } }
+        : context;
+
+    console[level](enrichedMessage, context ? `\n${JSON.stringify(parsedContext)}` : '');
   }
 
   getDefaultContext(): Record<string, any> {
