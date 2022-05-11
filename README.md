@@ -78,13 +78,23 @@ window.addEventListener("strigo-opened", () => {
 
 ### Shutdown
 
-To shut the Strigo experience down, simply call:
+To shut down the Strigo academy, simply call:
 
 ```js
 window.Strigo.shutdown();
 ```
 
 The `sessionStorage` will be erased and the page will refresh.
+
+### Destroy
+
+To completely destroy the Strigo academy, use:
+
+```js
+window.Strigo.destroy();
+```
+
+The academy panel will be closed, `sessionStorage` and `localStorage` configuration will be erased.
 
 # Development
 

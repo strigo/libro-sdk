@@ -14,11 +14,19 @@ export enum SDK_TYPES {
   OVERLAY = 'OVERLAY',
 }
 
+export interface SdkConfig {
+  initialized?: boolean;
+  configured?: boolean;
+  isOpen?: boolean;
+  sdkType?: SDK_TYPES;
+}
+
 export interface IStrigoSDK {
   init: () => void;
   setup: (data?: SDKSetupData) => Promise<void>;
   open: () => void;
   shutdown: () => void;
+  destroy: () => void;
   sendEvent: (eventName: string) => void;
 }
 
