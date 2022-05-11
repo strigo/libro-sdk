@@ -54,7 +54,3 @@ export function getSessionValue(key: keyof StrigoSession): any {
 export function clearSession(): void {
   clearStorage(STORAGE_TYPES.SESSION_STORAGE, STORAGE_NAMES.STRIGO_SESSION);
 }
-
-export function setPanelClosed(): void {
-  setSessionValue('isPanelOpen', false);
-}

@@ -26,39 +26,41 @@ export function storageChanged({ key, oldValue, newValue }): void {
   }
 }
 
+function onHostEventHandler(ev: MessageEvent<any>): void {
+  if (!ev || !ev.data) {
+    return;
+  }
+
+  switch (ev.data) {
+    case MESSAGE_TYPES.SHUTDOWN: {
+      window.Strigo?.shutdown();
+
+      break;
+    }
+
+    case MESSAGE_TYPES.CHALLENGE_SUCCESS: {
+      Logger.info('Challenge event success received');
+
+      if (sessionManager.getWidgetFlavor() === WIDGET_FLAVORS.OVERLAY) {
+        ovelayWidget.open();
+      }
+
+      break;
+    }
+
+    default: {
+      break;
+    }
+  }
+}
+
 // Host event listeners
 export function initHostEventListeners(): void {
-  window.addEventListener(
-    EVENT_TYPES.MESSAGE,
-    (ev) => {
-      if (!ev || !ev.data) {
-        return;
-      }
+  window.addEventListener(EVENT_TYPES.MESSAGE, onHostEventHandler, false);
+}
 
-      switch (ev.data) {
-        case MESSAGE_TYPES.SHUTDOWN: {
-          window.Strigo?.shutdown();
-
-          break;
-        }
-
-        case MESSAGE_TYPES.CHALLENGE_SUCCESS: {
-          Logger.info('Challenge event success received');
-
-          if (sessionManager.getWidgetFlavor() === WIDGET_FLAVORS.OVERLAY) {
-            ovelayWidget.open();
-          }
-
-          break;
-        }
-
-        default: {
-          break;
-        }
-      }
-    },
-    false
-  );
+export function removeHostEventListeners(): void {
+  window.removeEventListener(EVENT_TYPES.MESSAGE, onHostEventHandler);
 }
 
 export function initAcademyPlayerLoadedListeners(
