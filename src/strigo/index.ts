@@ -6,22 +6,16 @@ import { Logger } from '../services/logger';
 import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MESSAGE_TYPES } from '../modules/listeners/listeners.types';
 
-import { SDKSetupData, SDK_TYPES, IStrigoSDK } from './types';
+import { SDKSetupData, SDK_TYPES, IStrigoSDK, SdkConfig } from './types';
 
 class StrigoSDK implements IStrigoSDK {
-  private initialized = false;
-
-  private configured = false;
-
-  private isOpen = false;
-
-  private sdkType = undefined;
+  private config: SdkConfig = {};
 
   init(): void {
     try {
       Logger.info('Initializing SDK...');
 
-      if (this.initialized) {
+      if (this.config.initialized) {
         Logger.info('SDK was already initialized');
 
         return;
@@ -41,13 +35,13 @@ class StrigoSDK implements IStrigoSDK {
       configManager.init({ webApiKey, subDomain, selectedWidgetFlavor: widgetFlavor });
 
       const widget = widgetFactory.getWidget(widgetFlavor);
-      this.sdkType = widget.init();
-      this.initialized = true;
+      this.config.sdkType = widget.init();
+      this.config.initialized = true;
 
       Logger.info('Initialized SDK.');
 
       // Auto open academy if it was opened in this session before.
-      if (this.sdkType !== SDK_TYPES.CHILD && sessionManager.isPanelOpen()) {
+      if (this.config.sdkType !== SDK_TYPES.CHILD && sessionManager.isPanelOpen()) {
         this.setup();
       }
     } catch (err) {
@@ -60,13 +54,13 @@ class StrigoSDK implements IStrigoSDK {
       Logger.info('Starting to setup SDK...');
 
       // Setup won't do anything for now (child will only be able to send events later)
-      if (this.isOpen || this.sdkType === SDK_TYPES.CHILD) {
+      if (this.config.isOpen || this.config.sdkType === SDK_TYPES.CHILD) {
         Logger.info('panel is already opened');
 
         return;
       }
 
-      if (!this.initialized) {
+      if (!this.config.initialized) {
         throw new Error('SDK was not initialized');
       }
 
@@ -97,7 +91,7 @@ class StrigoSDK implements IStrigoSDK {
         loggingConfig: configuration?.loggingConfig,
       });
 
-      this.configured = true;
+      this.config.configured = true;
       Logger.info('Finished SDK setup.');
 
       if (openWidget) {
@@ -110,11 +104,13 @@ class StrigoSDK implements IStrigoSDK {
 
   open(): void {
     try {
-      if (!this.configured) {
+      Logger.info('Opening academy panel...');
+
+      if (!this.config.configured) {
         throw new Error('SDK was not set up');
       }
 
-      if (this.isOpen || this.sdkType === SDK_TYPES.CHILD) {
+      if (this.config.isOpen || this.config.sdkType === SDK_TYPES.CHILD) {
         Logger.info('Panel is already opened');
 
         return;
@@ -131,17 +127,18 @@ class StrigoSDK implements IStrigoSDK {
 
       const widget = widgetFactory.getWidget(config.selectedWidgetFlavor);
       widget.setup({ version: config.version, development: config.development });
-      this.isOpen = true;
+      this.config.isOpen = true;
+      Logger.info('Opened academy panel.');
     } catch (err) {
-      Logger.error('Could not open Strigo widget', { err });
+      Logger.error('Could not open academy panel', { err });
     }
   }
 
   shutdown(): void {
     try {
-      Logger.info('Shutting down SDK...');
+      Logger.info('Closing academy panel...');
 
-      if (this.sdkType === SDK_TYPES.CHILD) {
+      if (this.config.sdkType === SDK_TYPES.CHILD) {
         window.parent.postMessage(MESSAGE_TYPES.SHUTDOWN, '*');
 
         return;
@@ -151,10 +148,24 @@ class StrigoSDK implements IStrigoSDK {
       sessionManager.clearSession();
 
       widget.shutdown();
-      this.isOpen = false;
-      Logger.info('Finished SDK shutdown.');
+      this.config.isOpen = false;
+      Logger.info('Closed academy panel.');
     } catch (err) {
-      Logger.error('Could not shutdown SDK', { err });
+      Logger.error('Could not close academy panel', { err });
+    }
+  }
+
+  destroy(): void {
+    try {
+      Logger.info('Destroying SDK...');
+
+      configManager.clearConfig();
+      this.config = {};
+      this.shutdown();
+
+      Logger.info('Destroyed SDK.');
+    } catch (err) {
+      Logger.error('Could not destroy SDK', { err });
     }
   }
 
