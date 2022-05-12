@@ -140,6 +140,13 @@ class StrigoSDK implements IStrigoSDK {
 
       if (this.config.sdkType === SDK_TYPES.CHILD) {
         window.parent.postMessage(MESSAGE_TYPES.SHUTDOWN, '*');
+        Logger.info('Notified parent frame to close academy panel.');
+
+        return;
+      }
+
+      if (!this.config.isOpen) {
+        Logger.info('Tried to close unopened academy panel');
 
         return;
       }
@@ -159,9 +166,20 @@ class StrigoSDK implements IStrigoSDK {
     try {
       Logger.info('Destroying SDK...');
 
+      if (this.config.sdkType === SDK_TYPES.CHILD) {
+        window.parent.postMessage(MESSAGE_TYPES.DESTROY, '*');
+        Logger.info('Notified parent frame to destroy SDK.');
+
+        return;
+      }
+
+      // Clear the local storage configs before widget shutdown to ensure that
+      // the config will be erased even for iframe widget that reloads the page on shutdown.
       configManager.clearConfig();
-      this.config = {};
+      eventsStorageManager.clearEventsStorage();
       this.shutdown();
+
+      this.config = {};
 
       Logger.info('Destroyed SDK.');
     } catch (err) {
