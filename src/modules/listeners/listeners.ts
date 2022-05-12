@@ -38,6 +38,12 @@ function onHostEventHandler(ev: MessageEvent<any>): void {
       break;
     }
 
+    case MESSAGE_TYPES.DESTROY: {
+      window.Strigo?.destroy();
+
+      break;
+    }
+
     case MESSAGE_TYPES.CHALLENGE_SUCCESS: {
       Logger.info('Challenge event success received');
 

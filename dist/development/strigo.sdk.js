@@ -113,8 +113,9 @@
     }
     logToConsole(level, message, context) {
       const enrichedMessage = `${new Date().toISOString()} - ${message}`;
+      const parsedContext = context.err instanceof Error ? { ...context, err: { message: context.err.message, name: context.err.name, stack: context.err.stack } } : context;
       console[level](enrichedMessage, context ? `
-${JSON.stringify(context)}` : "");
+${JSON.stringify(parsedContext)}` : "");
     }
     getDefaultContext() {
       const config = getConfig();
@@ -351,6 +352,13 @@ ${JSON.stringify(context)}` : "");
     } catch (error) {
       LoggerInstance.error("Get event from storage error", { error });
       return null;
+    }
+  }
+  function clearEventsStorage() {
+    try {
+      window["localStorage" /* LOCAL_STORAGE */].removeItem("strigoEvents" /* STRIGO_EVENTS */);
+    } catch (error) {
+      LoggerInstance.error("Clear events storage error", { error });
     }
   }
 
@@ -1012,6 +1020,10 @@ ${JSON.stringify(context)}` : "");
         window.Strigo?.shutdown();
         break;
       }
+      case "destroy" /* DESTROY */: {
+        window.Strigo?.destroy();
+        break;
+      }
       case "challenge-success" /* CHALLENGE_SUCCESS */: {
         LoggerInstance.info("Challenge event success received");
         if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
@@ -1239,6 +1251,11 @@ ${JSON.stringify(context)}` : "");
         LoggerInstance.info("Closing academy panel...");
         if (this.config.sdkType === "CHILD" /* CHILD */) {
           window.parent.postMessage("close" /* SHUTDOWN */, "*");
+          LoggerInstance.info("Notified parent frame to close academy panel.");
+          return;
+        }
+        if (!this.config.isOpen) {
+          LoggerInstance.info("Tried to close unopened academy panel");
           return;
         }
         const widget = getWidget(getWidgetFlavor());
@@ -1253,9 +1270,15 @@ ${JSON.stringify(context)}` : "");
     destroy() {
       try {
         LoggerInstance.info("Destroying SDK...");
+        if (this.config.sdkType === "CHILD" /* CHILD */) {
+          window.parent.postMessage("destroy" /* DESTROY */, "*");
+          LoggerInstance.info("Notified parent frame to destroy SDK.");
+          return;
+        }
         clearConfig();
-        this.config = {};
+        clearEventsStorage();
         this.shutdown();
+        this.config = {};
         LoggerInstance.info("Destroyed SDK.");
       } catch (err) {
         LoggerInstance.error("Could not destroy SDK", { err });
