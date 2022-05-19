@@ -1,3 +1,5 @@
+import * as rrweb from 'rrweb';
+
 import * as urlTools from '../modules/url/url';
 import * as configManager from '../modules/config/config';
 import * as sessionManager from '../modules/session/session';
@@ -129,6 +131,58 @@ class StrigoSDK implements IStrigoSDK {
       widget.setup({ version: config.version, development: config.development });
       this.config.isOpen = true;
       Logger.info('Opened academy panel.');
+
+      //------- RRWEB POC
+      let counter = 0;
+      let firstSnapshot = { str: '', raw: [] };
+      let events = [];
+      console.log('------- RRWEB POC INIT');
+      rrweb.record({
+        emit(event) {
+          // push event into the events array
+          events.push(event);
+        },
+        hooks: {
+          mouseInteraction: (params) => {
+            const idString = `"id":${params.id}`;
+            console.log('---mouse interaction--', { params });
+            console.log(
+              '----- is in firstSnapshot',
+              idString,
+              firstSnapshot.str.includes(idString),
+              firstSnapshot.str.search(idString),
+              firstSnapshot.str.slice(firstSnapshot.str.search(idString) - 50, firstSnapshot.str.search(idString) + 50)
+            );
+            console.log(
+              '--------',
+              firstSnapshot.raw.find((el) => {
+                console.log(el);
+
+                return el.id === params.id;
+              })
+            );
+          },
+        },
+      });
+
+      // this function will send events to the backend and reset the events array
+      function save(): void {
+        const body = JSON.stringify({ events });
+
+        if (counter === 0) {
+          firstSnapshot = { str: body, raw: events };
+        }
+
+        console.log('Last events recorded:', body);
+        events = [];
+
+        counter++;
+      }
+
+      // save events every 10 seconds
+      setInterval(save, 2 * 1000);
+
+      //----End RRWEB POC
     } catch (err) {
       Logger.error('Could not open academy panel', { err });
     }
