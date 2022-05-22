@@ -35,6 +35,7 @@ class OverlayWidget implements IOverlayWidget {
   }
 
   shutdown(): void {
+    Logger.info('overlay shutdown called');
     this.removeEventListeners();
     this.documentObserver.disconnect();
     documentTools.removeWidget();

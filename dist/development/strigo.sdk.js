@@ -67,7 +67,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
+      return `http://localhost:${"7005"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -76,7 +76,7 @@
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
+      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -1048,6 +1048,7 @@ ${JSON.stringify(parsedContext)}` : "");
       this.documentObserver = addDocumentObserver(window);
     }
     shutdown() {
+      LoggerInstance.info("overlay shutdown called");
       this.removeEventListeners();
       this.documentObserver.disconnect();
       removeWidget();
