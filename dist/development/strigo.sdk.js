@@ -67,7 +67,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -76,7 +76,7 @@
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -1019,6 +1019,7 @@ ${JSON.stringify(parsedContext)}` : "");
       characterDataOldValue: true,
       characterData: true
     });
+    return observer;
   };
 
   // src/modules/widgets/overlay.ts
@@ -1044,10 +1045,11 @@ ${JSON.stringify(parsedContext)}` : "");
       });
       const academyPlayerFrame = createWidget(generateStrigoIframeURL(getConfig()));
       this.initEventListeners(academyPlayerFrame);
-      addDocumentObserver(window);
+      this.documentObserver = addDocumentObserver(window);
     }
     shutdown() {
       this.removeEventListeners();
+      this.documentObserver.disconnect();
       removeWidget();
     }
     open() {
