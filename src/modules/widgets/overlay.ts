@@ -15,6 +15,8 @@ function makeOverlayWidgetVisible(): void {
 }
 
 class OverlayWidget implements IOverlayWidget {
+  private documentObserver: MutationObserver;
+
   init(): SDK_TYPES {
     Logger.info('overlay init called');
 
@@ -29,11 +31,12 @@ class OverlayWidget implements IOverlayWidget {
     });
     const academyPlayerFrame = documentTools.createWidget(urlTools.generateStrigoIframeURL(configManager.getConfig()));
     this.initEventListeners(academyPlayerFrame);
-    noCodeAssessment.addDocumentObserver(window);
+    this.documentObserver = noCodeAssessment.addDocumentObserver(window);
   }
 
   shutdown(): void {
     this.removeEventListeners();
+    this.documentObserver.disconnect();
     documentTools.removeWidget();
   }
 

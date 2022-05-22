@@ -5,7 +5,7 @@
 
 import { getAssessmentsStorageData } from '../assessments-storage/assessments-storage';
 
-export const addDocumentObserver = function (windowElement: Window): void {
+export const addDocumentObserver = function (windowElement: Window): MutationObserver {
   const documentElement = windowElement.document;
   const assessments = getAssessmentsStorageData().assessments;
 
@@ -29,4 +29,6 @@ export const addDocumentObserver = function (windowElement: Window): void {
     characterDataOldValue: true,
     characterData: true,
   });
+  
+  return observer;
 };
