@@ -6,7 +6,8 @@ export function postEventMessage(): void {
 
   if (newEvent) {
     Logger.info('Posting event', newEvent);
-    window.frames[0].postMessage(newEvent, '*');
+    const strigoIframe = document.getElementById('strigo-exercises') as HTMLIFrameElement;
+    strigoIframe.contentWindow.postMessage(newEvent, '*');
     const poppedEvent = eventsStorageManager.popEventValue();
 
     if (newEvent.eventName !== poppedEvent.eventName) {

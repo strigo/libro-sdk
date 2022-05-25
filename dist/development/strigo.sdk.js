@@ -67,7 +67,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -76,7 +76,7 @@
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -985,7 +985,8 @@ ${JSON.stringify(parsedContext)}` : "");
     const newEvent = getEventValue();
     if (newEvent) {
       LoggerInstance.info("Posting event", newEvent);
-      window.frames[0].postMessage(newEvent, "*");
+      const strigoIframe = document.getElementById("strigo-exercises");
+      strigoIframe.contentWindow.postMessage(newEvent, "*");
       const poppedEvent = popEventValue();
       if (newEvent.eventName !== poppedEvent.eventName) {
         console.error("Events storage error: popped event doesn't match new event", { newEvent, poppedEvent });
