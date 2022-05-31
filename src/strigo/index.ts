@@ -3,10 +3,11 @@ import * as configManager from '../modules/config/config';
 import * as sessionManager from '../modules/session/session';
 import * as eventsStorageManager from '../modules/events-storage/events-storage';
 import * as assessmentsStorage from '../modules/assessments-storage/assessments-storage';
+import * as assessmentRecorderModule from '../modules/assessment-recorder/assessment-recorder';
 import { Logger } from '../services/logger';
 import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MESSAGE_TYPES } from '../modules/listeners/listeners.types';
-import { startElementSelector } from "../modules/element-selector/element-selector";
+import { startElementSelector } from '../modules/element-selector/element-selector';
 
 import { SDKSetupData, SDK_TYPES, IStrigoSDK, SdkConfig } from './types';
 
@@ -16,6 +17,14 @@ class StrigoSDK implements IStrigoSDK {
   init(): void {
     try {
       Logger.info('Initializing SDK...');
+
+      if (urlTools.isInRecordingMode()) {
+        this.config.sdkType = SDK_TYPES.RECORDER;
+        this.config.initialized = true;
+        this.assessmentRecorder();
+
+        return;
+      }
 
       if (this.config.initialized) {
         Logger.info('SDK was already initialized');
@@ -198,14 +207,14 @@ class StrigoSDK implements IStrigoSDK {
     Logger.debug('sendEvent called', { eventName });
   }
 
-  startElementSelector(): void {
+  startElementSelector(onElementProfileCreated: any, rootElementSelector?: string): void {
     Logger.debug('startElementSelector called');
+    const rootElement = rootElementSelector ? window.document.querySelector(rootElementSelector) : window.document.body;
+    startElementSelector(window.document, { onElementProfileCreated, zIndex: 9999999999, rootElement });
+  }
 
-    function onElementProfileCreated(elementProfile): void {
-      Logger.debug('onElementProfileCreated', { elementProfile });
-    }
-
-    startElementSelector(window.document,{ onElementProfileCreated, zIndex: 9999999999 });
+  assessmentRecorder(): void {
+    assessmentRecorderModule.addAssessmentRecorderIframe(true);
   }
 }
 

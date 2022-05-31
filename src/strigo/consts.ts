@@ -17,3 +17,5 @@ export const CDN_BASE_PATH = 'https://cdn.jsdelivr.net/gh/strigo/strigo-sdk';
 
 export const PAGE_LISTENER_INTERVAL = 3000
 export const PAGE_LISTENER_MAX_TIMEOUT = 50000
+
+export const ASSESSMENT_RECORDER_URL = 'https://assessment-recorder.web.app'
