@@ -12,6 +12,7 @@ export enum SDK_TYPES {
   PARENT = 'PARENT',
   CHILD = 'CHILD',
   OVERLAY = 'OVERLAY',
+  RECORDER = 'RECORDER',
 }
 
 export interface SdkConfig {
@@ -28,6 +29,7 @@ export interface IStrigoSDK {
   shutdown: () => void;
   destroy: () => void;
   sendEvent: (eventName: string) => void;
+  startElementSelector: (onElementProfileCreated: any, rootElementSelector?: string) => void;
 }
 
 export interface StrigoWindow extends Window {

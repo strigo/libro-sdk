@@ -334,7 +334,7 @@ export function getElementProfiler() {
       }
     }
   }
-  function same(path, nodeInfo) {
+  function same(path, input) {
     return rootDocument.querySelector(selector(path)) === input;
   }
   const regexAnySingleEscape = /[ -,\.\/:-@\[-\^`\{-~]/;
