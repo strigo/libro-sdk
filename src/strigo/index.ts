@@ -6,6 +6,7 @@ import * as assessmentsStorage from '../modules/assessments-storage/assessments-
 import { Logger } from '../services/logger';
 import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MESSAGE_TYPES } from '../modules/listeners/listeners.types';
+import { startElementSelector } from "../modules/element-selector/element-selector";
 
 import { SDKSetupData, SDK_TYPES, IStrigoSDK, SdkConfig } from './types';
 
@@ -195,6 +196,16 @@ class StrigoSDK implements IStrigoSDK {
   sendEvent(eventName: string): void {
     eventsStorageManager.pushEventValue({ eventName });
     Logger.debug('sendEvent called', { eventName });
+  }
+
+  startElementSelector(): void {
+    Logger.debug('startElementSelector called');
+
+    function onElementProfileCreated(elementProfile): void {
+      Logger.debug('onElementProfileCreated', { elementProfile });
+    }
+
+    startElementSelector(window.document,{ onElementProfileCreated, zIndex: 9999999999 });
   }
 }
 
