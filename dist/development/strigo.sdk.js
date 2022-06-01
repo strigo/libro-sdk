@@ -1224,6 +1224,477 @@ ${JSON.stringify(parsedContext)}` : "");
     return widget;
   }
 
+  // src/modules/element-selector/element-profiler.js
+  function getElementProfiler() {
+    var Limit;
+    (function(Limit2) {
+      Limit2[Limit2["All"] = 0] = "All";
+      Limit2[Limit2["Two"] = 1] = "Two";
+      Limit2[Limit2["One"] = 2] = "One";
+    })(Limit || (Limit = {}));
+    let config;
+    let rootDocument;
+    function getElementProfileNodesInfo(input2, options) {
+      if (input2.nodeType !== Node.ELEMENT_NODE) {
+        throw new Error(`Can't generate CSS selector for non-element node type.`);
+      }
+      if (input2.tagName.toLowerCase() === "html") {
+        return "html";
+      }
+      const defaults = {
+        root: document.body,
+        idName: (name) => true,
+        className: (name) => true,
+        tagName: (name) => true,
+        attr: (name, value) => false,
+        seedMinLength: 1,
+        optimizedMinLength: 2,
+        threshold: 1e3,
+        maxNumberOfTries: 1e4
+      };
+      config = Object.assign(Object.assign({}, defaults), options);
+      rootDocument = findRootDocument(config.root, defaults);
+      let nodesInfo = bottomUpSearch(input2);
+      return nodesInfo;
+    }
+    function generateSelectorFromNodesInfo(nodesInfo, options) {
+      const defaults = {
+        root: document.body,
+        idName: (name) => true,
+        className: (name) => true,
+        tagName: (name) => true,
+        attr: (name, value) => false,
+        seedMinLength: 1,
+        optimizedMinLength: 2,
+        threshold: 1e3,
+        maxNumberOfTries: 1e4
+      };
+      config = Object.assign(Object.assign({}, defaults), options);
+      rootDocument = findRootDocument(config.root, defaults);
+      let pathToProduceSelectorsFrom = generateUniquePath(nodesInfo, Limit.All, () => generateUniquePath(nodesInfo, Limit.Two, () => generateUniquePath(nodesInfo, Limit.One)));
+      if (pathToProduceSelectorsFrom) {
+        let selectorToFindElementBy = selector(pathToProduceSelectorsFrom);
+        const element = rootDocument.querySelector(selectorToFindElementBy);
+        const optimized = sort(optimize(pathToProduceSelectorsFrom, element));
+        if (optimized.length > 0) {
+          pathToProduceSelectorsFrom = optimized[0];
+        }
+        return selector(pathToProduceSelectorsFrom);
+      } else {
+        throw new Error(`Selector was not found.`);
+      }
+    }
+    function getLevelPath(nodeIdentifiers, limit) {
+      const id2 = maybe(nodeIdentifiers.find((node) => node.identifier === "id"));
+      const attributes = maybe(...nodeIdentifiers.filter((node) => node.identifier === "attribute"));
+      const classNames2 = maybe(...nodeIdentifiers.filter((node) => node.identifier === "className"));
+      const tagName2 = maybe(...nodeIdentifiers.filter((node) => node.identifier === "tagName"));
+      const nth = nodeIdentifiers.find((node) => node.identifier === "index").index;
+      let levelPath = id2 || attributes || classNames2 || tagName2 || [any()];
+      if (limit === Limit.All) {
+        if (nth) {
+          levelPath = levelPath.concat(levelPath.filter(dispensableNth).map((node) => nthChild(node, nth)));
+        }
+      } else if (limit === Limit.Two) {
+        levelPath = levelPath.slice(0, 1);
+        if (nth) {
+          levelPath = levelPath.concat(levelPath.filter(dispensableNth).map((node) => nthChild(node, nth)));
+        }
+      } else if (limit === Limit.One) {
+        const [node] = levelPath = levelPath.slice(0, 1);
+        if (nth && dispensableNth(node)) {
+          levelPath = [nthChild(node, nth)];
+        }
+      }
+      return levelPath;
+    }
+    function generatePathStack(nodesInfo, limit) {
+      let stack = nodesInfo.map(({ nodeIdentifiers, level }) => {
+        let levelPath = getLevelPath(nodeIdentifiers, limit);
+        for (let node of levelPath) {
+          node.level = level;
+        }
+        return levelPath;
+      });
+      return stack;
+    }
+    function findRootDocument(rootNode, defaults) {
+      if (rootNode.nodeType === Node.DOCUMENT_NODE) {
+        return rootNode;
+      }
+      if (rootNode === defaults.root) {
+        return rootNode.ownerDocument;
+      }
+      return rootNode;
+    }
+    function bottomUpSearch(input2) {
+      let nodesInfo = [];
+      let current = input2;
+      let i = 0;
+      while (current && current !== config.root.parentElement) {
+        const nodeIdentifiers = [
+          maybe(id(current)),
+          maybe(tagName(current)),
+          maybe(...attr(current)),
+          maybe(...classNames(current)),
+          maybe(index(current))
+        ].filter(notEmpty).flat().sort((a, b) => a.penalty - b.penalty);
+        nodesInfo.push({ nodeIdentifiers, level: i });
+        if (nodesInfo.length >= config.seedMinLength) {
+          let pathToProduceSelectorsFrom = generateUniquePath(nodesInfo, Limit.All, () => generateUniquePath(nodesInfo, Limit.Two, () => generateUniquePath(nodesInfo, Limit.One)));
+          if (pathToProduceSelectorsFrom) {
+            break;
+          }
+        }
+        current = current.parentElement;
+        i++;
+      }
+      return nodesInfo;
+    }
+    function generateUniquePath(nodesInfo, limit, fallback) {
+      const pathStack = generatePathStack(nodesInfo, limit);
+      return findUniquePath(pathStack, fallback);
+    }
+    function findUniquePath(stack, fallback) {
+      const paths = sort(combinations(stack));
+      if (paths.length > config.threshold) {
+        return fallback ? fallback() : null;
+      }
+      for (let candidate of paths) {
+        if (unique(candidate)) {
+          return candidate;
+        }
+      }
+      return null;
+    }
+    function selector(path) {
+      let node = path[0];
+      let query = node.name;
+      for (let i = 1; i < path.length; i++) {
+        const level = path[i].level || 0;
+        if (node.level === level - 1) {
+          query = `${path[i].name} > ${query}`;
+        } else {
+          query = `${path[i].name} ${query}`;
+        }
+        node = path[i];
+      }
+      return query;
+    }
+    function penalty(path) {
+      return path.map((node) => node.penalty).reduce((acc, i) => acc + i, 0);
+    }
+    function unique(path) {
+      switch (rootDocument.querySelectorAll(selector(path)).length) {
+        case 0:
+          throw new Error(`Can't select any node with this selector: ${selector(path)}`);
+        case 1:
+          return true;
+        default:
+          return false;
+      }
+    }
+    function id(input2) {
+      if (!input2?.getAttribute) {
+        alert(JSON.stringify(input2));
+      }
+      const elementId = input2.getAttribute("id");
+      if (elementId && config.idName(elementId)) {
+        return {
+          name: "#" + cssesc(elementId, { isIdentifier: true }),
+          penalty: 0,
+          identifier: "id"
+        };
+      }
+      return null;
+    }
+    function attr(input2) {
+      const attrs = Array.from(input2.attributes).filter((attr2) => config.attr(attr2.name, attr2.value));
+      return attrs.map((attr2) => ({
+        name: "[" + cssesc(attr2.name, { isIdentifier: true }) + '="' + cssesc(attr2.value) + '"]',
+        penalty: 0.5,
+        identifier: "attribute"
+      }));
+    }
+    function classNames(input2) {
+      const names = Array.from(input2.classList).filter(config.className);
+      return names.map((name) => ({
+        name: "." + cssesc(name, { isIdentifier: true }),
+        penalty: 1,
+        identifier: "className"
+      }));
+    }
+    function tagName(input2) {
+      const name = input2.tagName.toLowerCase();
+      if (config.tagName(name)) {
+        return {
+          name,
+          penalty: 2,
+          identifier: "tagName"
+        };
+      }
+      return null;
+    }
+    function any() {
+      return {
+        name: "*",
+        penalty: 3,
+        identifier: "any"
+      };
+    }
+    function index(input2) {
+      const parent = input2.parentNode;
+      if (!parent) {
+        return null;
+      }
+      let child = parent.firstChild;
+      if (!child) {
+        return null;
+      }
+      let i = 0;
+      while (child) {
+        if (child.nodeType === Node.ELEMENT_NODE) {
+          i++;
+        }
+        if (child === input2) {
+          break;
+        }
+        child = child.nextSibling;
+      }
+      return {
+        index: i,
+        outOf: parent.childElementCount,
+        penalty: 4,
+        identifier: "index"
+      };
+    }
+    function nthChild(node, i) {
+      return {
+        name: node.name + `:nth-child(${i})`,
+        penalty: node.penalty + 1
+      };
+    }
+    function dispensableNth(node) {
+      return node.name !== "html" && !node.name.startsWith("#");
+    }
+    function maybe(...level) {
+      const list = level.filter(notEmpty);
+      if (list.length > 0) {
+        return list;
+      }
+      return null;
+    }
+    function notEmpty(value) {
+      return value !== null && value !== void 0;
+    }
+    function* combinations(stack, path = []) {
+      if (stack.length > 0) {
+        for (let node of stack[0]) {
+          yield* combinations(stack.slice(1, stack.length), path.concat(node));
+        }
+      } else {
+        yield path;
+      }
+    }
+    function sort(paths) {
+      return Array.from(paths).sort((a, b) => penalty(a) - penalty(b));
+    }
+    function* optimize(path, input2, scope = {
+      counter: 0,
+      visited: /* @__PURE__ */ new Map()
+    }) {
+      if (path.length > 2 && path.length > config.optimizedMinLength) {
+        for (let i = 1; i < path.length - 1; i++) {
+          if (scope.counter > config.maxNumberOfTries) {
+            return;
+          }
+          scope.counter += 1;
+          const newPath = [...path];
+          newPath.splice(i, 1);
+          const newPathKey = selector(newPath);
+          if (scope.visited.has(newPathKey)) {
+            return;
+          }
+          if (unique(newPath) && same(newPath, input2)) {
+            yield newPath;
+            scope.visited.set(newPathKey, true);
+            yield* optimize(newPath, input2, scope);
+          }
+        }
+      }
+    }
+    function same(path, nodeInfo) {
+      return rootDocument.querySelector(selector(path)) === input;
+    }
+    const regexAnySingleEscape = /[ -,\.\/:-@\[-\^`\{-~]/;
+    const regexSingleEscape = /[ -,\.\/:-@\[\]\^`\{-~]/;
+    const regexExcessiveSpaces = /(^|\\+)?(\\[A-F0-9]{1,6})\x20(?![a-fA-F0-9\x20])/g;
+    const defaultOptions = {
+      escapeEverything: false,
+      isIdentifier: false,
+      quotes: "single",
+      wrap: false
+    };
+    function cssesc(string, opt = {}) {
+      const options = Object.assign(Object.assign({}, defaultOptions), opt);
+      if (options.quotes != "single" && options.quotes != "double") {
+        options.quotes = "single";
+      }
+      const quote = options.quotes == "double" ? '"' : "'";
+      const isIdentifier = options.isIdentifier;
+      const firstChar = string.charAt(0);
+      let output = "";
+      let counter = 0;
+      const length = string.length;
+      while (counter < length) {
+        const character = string.charAt(counter++);
+        let codePoint = character.charCodeAt(0);
+        let value = void 0;
+        if (codePoint < 32 || codePoint > 126) {
+          if (codePoint >= 55296 && codePoint <= 56319 && counter < length) {
+            const extra = string.charCodeAt(counter++);
+            if ((extra & 64512) == 56320) {
+              codePoint = ((codePoint & 1023) << 10) + (extra & 1023) + 65536;
+            } else {
+              counter--;
+            }
+          }
+          value = "\\" + codePoint.toString(16).toUpperCase() + " ";
+        } else {
+          if (options.escapeEverything) {
+            if (regexAnySingleEscape.test(character)) {
+              value = "\\" + character;
+            } else {
+              value = "\\" + codePoint.toString(16).toUpperCase() + " ";
+            }
+          } else if (/[\t\n\f\r\x0B]/.test(character)) {
+            value = "\\" + codePoint.toString(16).toUpperCase() + " ";
+          } else if (character == "\\" || !isIdentifier && (character == '"' && quote == character || character == "'" && quote == character) || isIdentifier && regexSingleEscape.test(character)) {
+            value = "\\" + character;
+          } else {
+            value = character;
+          }
+        }
+        output += value;
+      }
+      if (isIdentifier) {
+        if (/^-[-\d]/.test(output)) {
+          output = "\\-" + output.slice(1);
+        } else if (/\d/.test(firstChar)) {
+          output = "\\3" + firstChar + " " + output.slice(1);
+        }
+      }
+      output = output.replace(regexExcessiveSpaces, function($0, $1, $2) {
+        if ($1 && $1.length % 2) {
+          return $0;
+        }
+        return ($1 || "") + $2;
+      });
+      if (!isIdentifier && options.wrap) {
+        return quote + output + quote;
+      }
+      return output;
+    }
+    return { getElementProfileNodesInfo, generateSelectorFromNodesInfo };
+  }
+
+  // src/modules/element-selector/element-selector.js
+  function getElementProfile(e, { dataAttribute } = {}) {
+    const elementProfiler = getElementProfiler();
+    const options = {
+      seedMinLength: 6,
+      optimizedMinLength: e.target.id ? 2 : 10,
+      threshold: 2e3,
+      attr: (name) => name === dataAttribute
+    };
+    const nodesInfo = elementProfiler.getElementProfileNodesInfo(e.target, options);
+    console.log("Just FYI - this is how it can generate css selector:", elementProfiler.generateSelectorFromNodesInfo(nodesInfo, options));
+    return nodesInfo;
+  }
+  function startElementSelector(rootDocument, options) {
+    this.saveSelectedSelector = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log("Removing mouse over event listener from the selected element.");
+      rootDocument.removeEventListener("mouseover", this.mouseOverEvent);
+      const elementProfile = getElementProfile(e, {
+        dataAttribute: "some-custom-strigo-attribute"
+      });
+      this.elementProfile = elementProfile || {};
+      const selectorOverlay2 = rootDocument.getElementById("element-selector-overlay");
+      if (!selectorOverlay2) {
+        console.error("Missing selector overlay element!");
+      }
+      rootDocument?.body?.removeChild(selectorOverlay2);
+      console.log("Selected element with elementProfile:", this.elementProfile);
+      options.onElementProfileCreated(this.elementProfile);
+    };
+    function setStyle(el, propertyObject) {
+      for (const property in propertyObject) {
+        el.style[property] = propertyObject[property];
+      }
+    }
+    this.move = (e, overlayElement, skippedSelectors = []) => {
+      if (overlayElement === e.target) {
+        return;
+      }
+      const element = e.target;
+      if (skippedSelectors.includes(element.id)) {
+        return;
+      }
+      const calcDimensions = {
+        top: -window.scrollY,
+        left: -window.scrollX
+      };
+      let elem = e.target;
+      while (elem && elem !== rootDocument.body) {
+        calcDimensions.top += elem.offsetTop;
+        calcDimensions.left += elem.offsetLeft;
+        elem = elem.offsetParent;
+      }
+      const width = element.offsetWidth + 2;
+      const height = element.offsetHeight + 2;
+      const newDimensions = {
+        top: calcDimensions.top - 2 + "px",
+        left: calcDimensions.left - 2 + "px",
+        width: width + "px",
+        height: height + "px"
+      };
+      setStyle(overlayElement, newDimensions);
+    };
+    this.mouseOverEvent = (e) => {
+      const overlayElement = rootDocument.getElementById("element-selector-overlay");
+      this.move(e, overlayElement, ["#element-selector-overlay"]);
+      const hoveredElement = e.target;
+      hoveredElement.addEventListener("click", this.saveSelectedSelector);
+    };
+    this.removeClickListenerFromHoveredElement = (e) => {
+      const hoveredElement = e.target;
+      hoveredElement.removeEventListener("click", this.saveSelectedSelector);
+    };
+    const selectorOverlay = rootDocument.createElement("div");
+    selectorOverlay.setAttribute("id", "element-selector-overlay");
+    selectorOverlay.setAttribute("style", `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: ${options.zIndex || 2147483646};
+      padding: 1px;
+      position: fixed;
+      background: rgba(105, 108, 191, 0.2);
+      border: 2px dashed #696CBF;
+      box-sizing: border-box;
+      border-radius: 4px;
+    `);
+    console.log("Appending overlay selector element.");
+    rootDocument.body.appendChild(selectorOverlay);
+    rootDocument.addEventListener("mouseover", this.mouseOverEvent);
+    rootDocument.addEventListener("mouseout", this.removeClickListenerFromHoveredElement);
+  }
+
   // src/strigo/index.ts
   var StrigoSDK = class {
     constructor() {
@@ -1363,6 +1834,13 @@ ${JSON.stringify(parsedContext)}` : "");
     sendEvent(eventName) {
       pushEventValue({ eventName });
       LoggerInstance.debug("sendEvent called", { eventName });
+    }
+    startElementSelector() {
+      LoggerInstance.debug("startElementSelector called");
+      function onElementProfileCreated(elementProfile) {
+        LoggerInstance.debug("onElementProfileCreated", { elementProfile });
+      }
+      startElementSelector(window.document, { onElementProfileCreated, zIndex: 9999999999 });
     }
   };
   var Strigo = new StrigoSDK();
