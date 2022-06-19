@@ -125,3 +125,10 @@ export function isInRecordingMode(): boolean {
 
   return 'strigoAssessmentRecorder' in urlParams;
 }
+
+export function isDevelopment(): boolean {
+  const { search } = window.location;
+  const urlParams = extractUrlParams(search);
+
+  return 'development' in urlParams;
+}
