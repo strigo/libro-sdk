@@ -7573,7 +7573,6 @@
     const { search } = window.location;
     const urlParams = extractUrlParams(search);
     return "strigoAssessmentRecorder" in urlParams;
-    ;
   }
 
   // src/services/logger.ts
