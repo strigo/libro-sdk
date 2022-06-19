@@ -56,7 +56,7 @@ export function addAssessmentRecorderIframe(development: boolean): void {
             recorederIframe.classList.remove('semi-open');
             recorederIframe.classList.add('is-open');
 
-            html2canvas(document.querySelector(elementSelector)).then((canvas) => {
+            html2canvas(document.querySelector(elementSelector), { backgroundColor: '#3d408f' }).then((canvas) => {
               const selectedElement: SelectedElement = {
                 imageData: canvas.toDataURL(),
                 profile: elementProfile,

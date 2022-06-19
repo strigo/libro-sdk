@@ -18,14 +18,6 @@ class StrigoSDK implements IStrigoSDK {
     try {
       Logger.info('Initializing SDK...');
 
-      if (urlTools.isInRecordingMode()) {
-        this.config.sdkType = SDK_TYPES.RECORDER;
-        this.config.initialized = true;
-        this.assessmentRecorder();
-
-        return;
-      }
-
       if (this.config.initialized) {
         Logger.info('SDK was already initialized');
 
@@ -213,8 +205,8 @@ class StrigoSDK implements IStrigoSDK {
     startElementSelector(window.document, { onElementProfileCreated, zIndex: 9999999999, rootElement });
   }
 
-  assessmentRecorder(): void {
-    assessmentRecorderModule.addAssessmentRecorderIframe(true);
+  assessmentRecorder(development: boolean): void {
+    assessmentRecorderModule.addAssessmentRecorderIframe(development);
   }
 }
 

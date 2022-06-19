@@ -11,8 +11,7 @@ export interface SDKSetupData {
 export enum SDK_TYPES {
   PARENT = 'PARENT',
   CHILD = 'CHILD',
-  OVERLAY = 'OVERLAY',
-  RECORDER = 'RECORDER',
+  OVERLAY = 'OVERLAY'
 }
 
 export interface SdkConfig {
@@ -29,6 +28,7 @@ export interface IStrigoSDK {
   shutdown: () => void;
   destroy: () => void;
   sendEvent: (eventName: string) => void;
+  assessmentRecorder: (development: boolean) => void;
   startElementSelector: (onElementProfileCreated: any, rootElementSelector?: string) => void;
 }
 

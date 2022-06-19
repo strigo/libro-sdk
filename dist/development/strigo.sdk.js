@@ -7574,6 +7574,11 @@
     const urlParams = extractUrlParams(search);
     return "strigoAssessmentRecorder" in urlParams;
   }
+  function isDevelopment() {
+    const { search } = window.location;
+    const urlParams = extractUrlParams(search);
+    return "development" in urlParams;
+  }
 
   // src/services/logger.ts
   var Logger = class {
@@ -8525,7 +8530,7 @@ ${JSON.stringify(parsedContext)}` : "");
             const elementSelector = getElementSelector(elementProfile);
             recorederIframe.classList.remove("semi-open");
             recorederIframe.classList.add("is-open");
-            (0, import_html2canvas.default)(document.querySelector(elementSelector)).then((canvas) => {
+            (0, import_html2canvas.default)(document.querySelector(elementSelector), { backgroundColor: "#3d408f" }).then((canvas) => {
               const selectedElement = {
                 imageData: canvas.toDataURL(),
                 profile: elementProfile,
@@ -9276,12 +9281,6 @@ ${JSON.stringify(parsedContext)}` : "");
     init() {
       try {
         LoggerInstance.info("Initializing SDK...");
-        if (isInRecordingMode()) {
-          this.config.sdkType = "RECORDER" /* RECORDER */;
-          this.config.initialized = true;
-          this.assessmentRecorder();
-          return;
-        }
         if (this.config.initialized) {
           LoggerInstance.info("SDK was already initialized");
           return;
@@ -9419,15 +9418,22 @@ ${JSON.stringify(parsedContext)}` : "");
       const rootElement = rootElementSelector ? window.document.querySelector(rootElementSelector) : window.document.body;
       startElementSelector(window.document, { onElementProfileCreated, zIndex: 9999999999, rootElement });
     }
-    assessmentRecorder() {
-      addAssessmentRecorderIframe(true);
+    assessmentRecorder(development) {
+      addAssessmentRecorderIframe(development);
     }
   };
   var Strigo = new StrigoSDK();
 
   // src/strigo.sdk.ts
   window.Strigo = Strigo;
-  window.Strigo.init();
+  if (isInRecordingMode()) {
+    console.log("In recording mode");
+    const development = isDevelopment();
+    console.log({ development });
+    window.Strigo.assessmentRecorder(development);
+  } else {
+    window.Strigo.init();
+  }
 })();
 /*!
  * html2canvas 1.4.1 <https://html2canvas.hertzen.com>
