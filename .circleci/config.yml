@@ -56,9 +56,12 @@ jobs:
             cp dist/production/strigo.sdk.min.js ~/workspace/strigo.sdk.min.js
             cp dist/production/styles/strigo.min.css ~/workspace/strigo.min.css
             cp dist/production/styles/strigo-widget.min.css ~/workspace/strigo-widget.min.css
+            cp dist/production/styles/strigo-assessment-recorder.min.css ~/workspace/strigo-assessment-recorder.min.css
             cp dist/development/strigo.sdk.js ~/workspace/strigo.sdk.js
             cp dist/development/styles/strigo.css ~/workspace/strigo.css
             cp dist/development/styles/strigo-widget.css ~/workspace/strigo-widget.css
+            cp dist/development/styles/strigo-assessment-recorder.css ~/workspace/strigo-assessment-recorder.css
+
 
       - persist_to_workspace:
           root: ~/workspace
@@ -66,9 +69,11 @@ jobs:
             - strigo.sdk.min.js
             - strigo.min.css
             - strigo-widget.min.css
+            - strigo-assessment-recorder.min.css
             - strigo.sdk.js
             - strigo.css
             - strigo-widget.css
+            - strigo-assessment-recorder.css
 
   publish:
     docker:
