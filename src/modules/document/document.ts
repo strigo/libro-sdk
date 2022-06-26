@@ -99,7 +99,7 @@ function toggleWidget(): void {
   }, 300);
 }
 
-export function createWidget(url: string): HTMLIFrameElement {
+export function createWidget(url: string, strigoMain: HTMLElement): HTMLIFrameElement {
   const arrowDiv = document.createElement('div');
   arrowDiv.className = 'strigo-arrow';
   arrowDiv.id = 'strigo-arrow';
@@ -131,10 +131,10 @@ export function createWidget(url: string): HTMLIFrameElement {
   // Create widget div (wrapper)
   const widgetDiv = document.createElement('div');
   widgetDiv.id = 'strigo-widget';
-  widgetDiv.appendChild(collapseDiv);
+  // widgetDiv.appendChild(collapseDiv);
   widgetDiv.appendChild(strigoExercisesIframe);
 
-  document.body.appendChild(widgetDiv);
+  strigoMain.appendChild(widgetDiv);
 
   return strigoExercisesIframe;
 }

@@ -1,3 +1,6 @@
+import Split from 'split.js';
+import $ from 'jquery';
+
 import { Logger } from '../../services/logger';
 import * as documentTools from '../document/document';
 import * as noCodeAssessment from '../no-code-assessment/no-code-assessment';
@@ -29,9 +32,32 @@ class OverlayWidget implements IOverlayWidget {
       parentElement: documentTools.getHeadElement(),
       url: urlTools.generateWidgetCssURL(development, version),
     });
-    const academyPlayerFrame = documentTools.createWidget(urlTools.generateStrigoIframeURL(configManager.getConfig()));
+
+    const strigoMain = document.createElement('div');
+    strigoMain.id = 'strigo-main';
+    strigoMain.className = 'strigo-main';
+    document.body.appendChild(strigoMain);
+
+    const myDiv = document.createElement('div');
+    myDiv.id = 'strigo-transparent';
+    myDiv.className = 'strigo-transparent';
+    strigoMain.appendChild(myDiv);
+
+    const academyPlayerFrame = documentTools.createWidget(
+      urlTools.generateStrigoIframeURL(configManager.getConfig()),
+      strigoMain
+    );
+
     this.initEventListeners(academyPlayerFrame);
     this.documentObserver = noCodeAssessment.addDocumentObserver(window);
+    console.log('-----------Slitting the page----------------', $('#strigo-widget'), $('#root'));
+    const spliterr = Split(['#strigo-transparent', '#strigo-widget'], {
+      sizes: [75, 25],
+      // maxSize: documentTools.getSplitMaxSizes(),
+      // minSize: documentTools.getSplitMinSizes(),
+      gutterSize: 20,
+    });
+    spliterr.pairs.gutter.style.pointerEvents = 'all';
   }
 
   shutdown(): void {

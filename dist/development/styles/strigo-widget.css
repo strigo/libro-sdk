@@ -1,26 +1,26 @@
 /* src/styles/strigo-widget.scss */
-#strigo-widget {
-  opacity: 0;
+.strigo-transparent {
   height: 100vh;
-  width: 500px;
+  width: 100vw;
+  background: transparent;
+  z-index: 0;
+  pointer-events: none;
+}
+.strigo-main {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: row;
   position: fixed;
   top: 0;
-  right: 0;
-  z-index: 99999;
-  -webkit-transition: -webkit-transform 0.3s 0.3s;
-  transition: -webkit-transform 0.3s 0.3s;
-  transition: transform 0.3s 0.3s;
-  transition: transform 0.3s 0.3s, -webkit-transform 0.3s 0.3s;
-  -webkit-transform: translate3d(100%, 0, 0), translate3d(-6px, 0, 0);
-  transform: translate3d(100%, 0, 0) translate3d(-6px, 0, 0);
-  display: flex;
 }
-#strigo-widget.loaded {
+#strigo-widget {
   opacity: 1;
-}
-#strigo-widget.slide-in {
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
+  height: 100vh;
+  width: 100vw;
+  top: 0;
+  z-index: 99999;
+  display: flex;
 }
 #strigo-widget .strigo-iframe {
   margin: unset !important;

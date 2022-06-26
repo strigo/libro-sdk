@@ -72,7 +72,7 @@ class IframeWidget implements IStrigoWidget {
       sizes: [25, 75],
       maxSize: documentTools.getSplitMaxSizes(),
       minSize: documentTools.getSplitMinSizes(),
-      gutterSize: 2,
+      gutterSize: 20,
     });
 
     this.initEventListeners(academyPlayerFrame, childFrame);
