@@ -11,7 +11,7 @@ export interface SDKSetupData {
 export enum SDK_TYPES {
   PARENT = 'PARENT',
   CHILD = 'CHILD',
-  OVERLAY = 'OVERLAY'
+  OVERLAY = 'OVERLAY',
 }
 
 export interface SdkConfig {

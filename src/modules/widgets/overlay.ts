@@ -45,6 +45,10 @@ class OverlayWidget implements IOverlayWidget {
     documentTools.openWidget();
   }
 
+  move(): void {
+    documentTools.move();
+  }
+
   private onStrigoEventHandler = (customEvent: CustomEvent): void => {
     listeners.storageChanged(customEvent?.detail);
   };

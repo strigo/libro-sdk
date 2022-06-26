@@ -7541,7 +7541,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7002"}/styles/strigo.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -7967,6 +7967,10 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     return true;
   }
+  function move() {
+    const widget = document.getElementById("strigo-widget");
+    widget.classList.toggle("align-left");
+  }
   function toggleWidget() {
     const widget = document.getElementById("strigo-widget");
     const isOpen = widget.classList.contains("slide-in");
@@ -7981,16 +7985,11 @@ ${JSON.stringify(parsedContext)}` : "");
     arrowDiv.className = "strigo-arrow";
     arrowDiv.id = "strigo-arrow";
     arrowDiv.innerHTML = CHEVRON_RIGHT;
-    const collapseButton = document.createElement("div");
-    collapseButton.className = "strigo-collapse-button";
-    collapseButton.id = "strigo-toggle";
-    collapseButton.appendChild(arrowDiv);
     const collapseDiv = document.createElement("div");
     collapseDiv.className = "strigo-collapse-div";
     collapseDiv.onclick = () => {
       toggleWidget();
     };
-    collapseDiv.appendChild(collapseButton);
     const strigoExercisesIframe = document.createElement("iframe");
     strigoExercisesIframe.className = "strigo-iframe";
     strigoExercisesIframe.id = "strigo-exercises";
@@ -9111,6 +9110,9 @@ ${JSON.stringify(parsedContext)}` : "");
     open() {
       openWidget();
     }
+    move() {
+      move();
+    }
     initEventListeners(academyPlayerFrame) {
       initAcademyPlayerLoadedListeners(academyPlayerFrame, makeOverlayWidgetVisible);
       initHostEventListeners();
@@ -9140,6 +9142,13 @@ ${JSON.stringify(parsedContext)}` : "");
       return;
     }
     switch (ev.data) {
+      case "move" /* MOVE */: {
+        LoggerInstance.info("Panel move message received");
+        if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
+          overlay_default.move();
+        }
+        break;
+      }
       case "close" /* SHUTDOWN */: {
         LoggerInstance.info("Shutdown message received");
         window.Strigo?.shutdown();

@@ -33,69 +33,26 @@
 #strigo-widget .strigo-widget_small {
   width: 8px;
 }
+#strigo-widget.align-left {
+  right: unset;
+  left: 0;
+  order: 1;
+}
+#strigo-widget.align-left .strigo-collapse-div {
+  order: 2;
+  border-left: unset;
+  border-right: 2px #adafdc solid;
+}
 #strigo-widget .strigo-collapse-div {
   width: 6px;
   height: 100%;
   background: #3d408f;
-  border-style: solid;
-  border-left-color: #adafdc;
-  border-left-width: 2px;
-  border-right: none;
-  border-top: none;
-  border-bottom: none;
+  border-left: 2px #adafdc solid;
   box-shadow: 0px 1px 4px 1px rgba(0, 0, 0, 0.3);
   cursor: pointer;
 }
 #strigo-widget .strigo-collapse-div:hover {
   background: #696cbf;
-}
-#strigo-widget .strigo-collapse-div:hover .strigo-collapse-button {
-  background: #696cbf;
-}
-#strigo-widget .strigo-collapse-div .strigo-collapse-button {
-  position: relative;
-  padding-top: 3px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 4px;
-  border-width: 2px;
-  height: 32px;
-  width: 16px;
-  right: 16px;
-  top: 32px;
-  background: #3d408f;
-  border-style: solid;
-  border-left-color: #adafdc;
-  border-right: none;
-  border-top-left-radius: 16px;
-  border-bottom-left-radius: 16px;
-  border-top-color: #adafdc;
-  border-bottom-color: #adafdc;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  appearance: auto;
-  writing-mode: horizontal-tb;
-  font-style: unset;
-  font-variant-ligatures: unset;
-  font-variant-caps: unset;
-  font-variant-numeric: unset;
-  font-variant-east-asian: unset;
-  font-weight: unset;
-  font-stretch: unset;
-  font-size: unset;
-  font-family: unset;
-  text-rendering: auto;
-  letter-spacing: normal;
-  word-spacing: normal;
-  line-height: normal;
-  text-transform: none;
-  text-indent: 0px;
-  text-shadow: none;
-  text-align: center;
-  align-items: flex-start;
-  box-sizing: border-box;
 }
 #strigo-widget .strigo-collapse-div:hover {
   background: #696cbf;

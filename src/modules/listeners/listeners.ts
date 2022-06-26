@@ -33,6 +33,16 @@ function onHostEventHandler(ev: MessageEvent<any>): void {
   }
 
   switch (ev.data) {
+    case MESSAGE_TYPES.MOVE: {
+      Logger.info('Panel move message received');
+
+      if (sessionManager.getWidgetFlavor() === WIDGET_FLAVORS.OVERLAY) {
+        ovelayWidget.move();
+      }
+
+      break;
+    }
+
     case MESSAGE_TYPES.SHUTDOWN: {
       Logger.info('Shutdown message received');
       window.Strigo?.shutdown();
