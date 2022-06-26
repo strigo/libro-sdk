@@ -50,6 +50,13 @@ function onHostEventHandler(ev: MessageEvent<any>): void {
       break;
     }
 
+    case MESSAGE_TYPES.COLLAPSE: {
+      Logger.info('Collapse message received', { strigo: window.Strigo });
+      window.Strigo?.collapse();
+
+      break;
+    }
+
     case MESSAGE_TYPES.DESTROY: {
       Logger.info('Destroy message received');
       window.Strigo?.destroy();

@@ -78,6 +78,10 @@ class IframeWidget implements IStrigoWidget {
     this.initEventListeners(academyPlayerFrame, childFrame);
   }
 
+  collapse(): void {
+    // currently not implemented for iframe
+  }
+
   shutdown(): void {
     Logger.info('iframe shutdown called');
     documentTools.reloadPage();
