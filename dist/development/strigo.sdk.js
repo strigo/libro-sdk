@@ -7541,7 +7541,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
+      return `http://localhost:${"7005"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -7550,7 +7550,7 @@
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
+      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -7559,7 +7559,7 @@
   }
   function generateRecorderCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-assessment-recorder.css`;
+      return `http://localhost:${"7005"}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -7567,7 +7567,7 @@
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL(development) {
-    return development ? `http://localhost:${RECORDER_HOSTING_PORT}` : ASSESSMENT_RECORDER_URL;
+    return development ? `http://localhost:${"7015"}` : ASSESSMENT_RECORDER_URL;
   }
   function isInRecordingMode() {
     const { search } = window.location;
