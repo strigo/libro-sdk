@@ -82,7 +82,7 @@ export function addAssessmentRecorderIframe(development: boolean): void {
         case ASSESSMENT_RECORDER_MESSAGE_TYPES.SUBMIT_ASSESSMENT: {
           window.opener.postMessage(
             JSON.stringify({
-              assesment: {
+              assessment: {
                 ...payload.assessment,
                 url: window.location.href,
               },

@@ -7541,7 +7541,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
+      return `http://localhost:${"7002"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -8549,7 +8549,7 @@ ${JSON.stringify(parsedContext)}` : "");
         }
         case "submit-assessment" /* SUBMIT_ASSESSMENT */: {
           window.opener.postMessage(JSON.stringify({
-            assesment: {
+            assessment: {
               ...payload.assessment,
               url: window.location.href
             }
