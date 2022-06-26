@@ -148,7 +148,11 @@ class StrigoSDK implements IStrigoSDK {
     if (selectedWidgetFlavor !== WIDGET_FLAVORS.IFRAME) {
       const widget = widgetFactory.getWidget(selectedWidgetFlavor);
       widget.collapse();
+
+      return;
     }
+
+    this.shutdown();
   }
 
   shutdown(): void {

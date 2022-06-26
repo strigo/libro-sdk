@@ -10864,7 +10864,7 @@
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -10873,7 +10873,7 @@
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo-widget.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -10882,7 +10882,7 @@
   }
   function generateRecorderCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo-assessment-recorder.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -10890,7 +10890,7 @@
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL(development) {
-    return development ? `http://localhost:${"undefined"}` : ASSESSMENT_RECORDER_URL;
+    return development ? `http://localhost:${RECORDER_HOSTING_PORT}` : ASSESSMENT_RECORDER_URL;
   }
   function isInRecordingMode() {
     const { search } = window.location;
@@ -11296,7 +11296,6 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function toggleWidget() {
     const widget = document.getElementById("strigo-widget");
-    console.log("toggleWidget", widget.classList);
     widget.classList.toggle("slide-in");
     widget.classList.toggle("loaded");
     const collapseDiv = document.getElementById("strigo-collapse-div");
@@ -12751,7 +12750,9 @@ ${JSON.stringify(parsedContext)}` : "");
       if (selectedWidgetFlavor !== "iframe" /* IFRAME */) {
         const widget = getWidget(selectedWidgetFlavor);
         widget.collapse();
+        return;
       }
+      this.shutdown();
     }
     shutdown() {
       try {

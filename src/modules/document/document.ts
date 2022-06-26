@@ -95,7 +95,6 @@ export function move(): void {
 
 export function toggleWidget(): void {
   const widget = document.getElementById('strigo-widget');
-  console.log('toggleWidget', widget.classList);
   widget.classList.toggle('slide-in');
   widget.classList.toggle('loaded');
 
