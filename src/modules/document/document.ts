@@ -88,6 +88,11 @@ export function isIframeSupported(): boolean {
   return true;
 }
 
+export function move(): void {
+  const widget = document.getElementById('strigo-widget');
+  widget.classList.toggle('align-left');
+}
+
 function toggleWidget(): void {
   const widget = document.getElementById('strigo-widget');
   const isOpen = widget.classList.contains('slide-in');
@@ -105,13 +110,6 @@ export function createWidget(url: string): HTMLIFrameElement {
   arrowDiv.id = 'strigo-arrow';
   arrowDiv.innerHTML = CHEVRON_RIGHT;
 
-  // Create collapse button
-  const collapseButton = document.createElement('div');
-  collapseButton.className = 'strigo-collapse-button';
-  collapseButton.id = 'strigo-toggle';
-
-  collapseButton.appendChild(arrowDiv);
-
   // Create collapse div
   const collapseDiv = document.createElement('div');
   collapseDiv.className = 'strigo-collapse-div';
@@ -119,8 +117,6 @@ export function createWidget(url: string): HTMLIFrameElement {
   collapseDiv.onclick = () => {
     toggleWidget();
   };
-
-  collapseDiv.appendChild(collapseButton);
 
   // Create widget iframe (strigo-app exercises)
   const strigoExercisesIframe = document.createElement('iframe');
