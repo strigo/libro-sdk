@@ -56,7 +56,7 @@ export function addAssessmentRecorderIframe(development: boolean): void {
             recorederIframe.classList.remove('semi-open');
             recorederIframe.classList.add('is-open');
 
-            html2canvas(document.querySelector(elementSelector), { backgroundColor: '#3d408f' }).then((canvas) => {
+            html2canvas(document.querySelector(elementSelector), { backgroundColor: '#c6c7e7' }).then((canvas) => {
               const selectedElement: SelectedElement = {
                 imageData: canvas.toDataURL(),
                 profile: elementProfile,
@@ -80,7 +80,13 @@ export function addAssessmentRecorderIframe(development: boolean): void {
         }
 
         case ASSESSMENT_RECORDER_MESSAGE_TYPES.SUBMIT_ASSESSMENT: {
-          window.opener.postMessage(JSON.stringify(payload), '*');
+          window.opener.postMessage(
+            JSON.stringify({
+              ...payload,
+              url: window.location.href,
+            }),
+            '*'
+          );
           window.close();
 
           break;
