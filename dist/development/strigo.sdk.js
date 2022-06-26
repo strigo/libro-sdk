@@ -8530,7 +8530,7 @@ ${JSON.stringify(parsedContext)}` : "");
             const elementSelector = getElementSelector(elementProfile);
             recorederIframe.classList.remove("semi-open");
             recorederIframe.classList.add("is-open");
-            (0, import_html2canvas.default)(document.querySelector(elementSelector), { backgroundColor: "#3d408f" }).then((canvas) => {
+            (0, import_html2canvas.default)(document.querySelector(elementSelector), { backgroundColor: "#c6c7e7" }).then((canvas) => {
               const selectedElement = {
                 imageData: canvas.toDataURL(),
                 profile: elementProfile,
@@ -8548,7 +8548,10 @@ ${JSON.stringify(parsedContext)}` : "");
           break;
         }
         case "submit-assessment" /* SUBMIT_ASSESSMENT */: {
-          window.opener.postMessage(JSON.stringify(payload), "*");
+          window.opener.postMessage(JSON.stringify({
+            ...payload,
+            url: window.location.href
+          }), "*");
           window.close();
           break;
         }
