@@ -1,4 +1,4 @@
-import { CHEVRON_LEFT, CHEVRON_RIGHT } from '../../strigo/consts';
+import { ACADEMY_HAT } from '../../strigo/consts';
 
 import { AppendCSSFileParams, AppendIframeParams } from './document.types';
 
@@ -93,30 +93,39 @@ export function move(): void {
   widget.classList.toggle('align-left');
 }
 
-function toggleWidget(): void {
+export function toggleWidget(): void {
   const widget = document.getElementById('strigo-widget');
-  const isOpen = widget.classList.contains('slide-in');
+  console.log('toggleWidget', widget.classList);
   widget.classList.toggle('slide-in');
+  widget.classList.toggle('loaded');
 
-  setTimeout(() => {
-    const arrow = document.getElementById('strigo-arrow');
-    arrow.innerHTML = isOpen ? CHEVRON_LEFT : CHEVRON_RIGHT;
-  }, 300);
+  const collapseDiv = document.getElementById('strigo-collapse-div');
+  collapseDiv.classList.toggle('slide-in');
+
+  const academyHat = document.getElementById('strigo-academy-hat');
+  academyHat.classList.toggle('slide-in');
 }
 
 export function createWidget(url: string): HTMLIFrameElement {
-  const arrowDiv = document.createElement('div');
-  arrowDiv.className = 'strigo-arrow';
-  arrowDiv.id = 'strigo-arrow';
-  arrowDiv.innerHTML = CHEVRON_RIGHT;
+  // Create academy hat
+  const academyHatDiv = document.createElement('div');
+  academyHatDiv.className = 'strigo-academy-hat';
+  academyHatDiv.id = 'strigo-academy-hat';
+
+  academyHatDiv.onclick = () => {
+    toggleWidget();
+  };
+
+  const academyHatIcon = document.createElement('div');
+  academyHatIcon.className = 'strigo-academy-hat-icon';
+  academyHatIcon.id = 'strigo-academy-hat-icon';
+  academyHatIcon.innerHTML = ACADEMY_HAT;
+  academyHatDiv.appendChild(academyHatIcon);
 
   // Create collapse div
   const collapseDiv = document.createElement('div');
   collapseDiv.className = 'strigo-collapse-div';
-
-  collapseDiv.onclick = () => {
-    toggleWidget();
-  };
+  collapseDiv.id = 'strigo-collapse-div';
 
   // Create widget iframe (strigo-app exercises)
   const strigoExercisesIframe = document.createElement('iframe');
@@ -131,6 +140,7 @@ export function createWidget(url: string): HTMLIFrameElement {
   widgetDiv.appendChild(strigoExercisesIframe);
 
   document.body.appendChild(widgetDiv);
+  document.body.appendChild(academyHatDiv);
 
   return strigoExercisesIframe;
 }

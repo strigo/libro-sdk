@@ -8,6 +8,7 @@ import { Logger } from '../services/logger';
 import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MESSAGE_TYPES } from '../modules/listeners/listeners.types';
 import { startElementSelector } from '../modules/element-selector/element-selector';
+import { WIDGET_FLAVORS } from '../modules/widgets/widget.types';
 
 import { SDKSetupData, SDK_TYPES, IStrigoSDK, SdkConfig } from './types';
 
@@ -137,6 +138,16 @@ class StrigoSDK implements IStrigoSDK {
       Logger.info('Opened academy panel.');
     } catch (err) {
       Logger.error('Could not open academy panel', { err });
+    }
+  }
+
+  collapse(): void {
+    Logger.info('Collapsing academy panel');
+    const { selectedWidgetFlavor } = configManager.getConfig();
+
+    if (selectedWidgetFlavor !== WIDGET_FLAVORS.IFRAME) {
+      const widget = widgetFactory.getWidget(selectedWidgetFlavor);
+      widget.collapse();
     }
   }
 
