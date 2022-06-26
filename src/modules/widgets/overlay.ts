@@ -27,7 +27,7 @@ function setupResizeFunctionality(): void {
         const x = parseFloat(target.getAttribute('data-x')) || 0;
 
         // update the element's style
-        target.style.width = event.rect.width + 'px';
+        target.style.width = (event.rect.width as string) + 'px';
 
         target.setAttribute('data-x', x);
       },
