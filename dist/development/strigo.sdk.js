@@ -11730,7 +11730,8 @@ ${JSON.stringify(parsedContext)}` : "");
                 payload: {
                   elementType,
                   selectedElement
-                }
+                },
+                windowName: window.name
               }), "*");
             });
           }, rootElementSelector);

@@ -85,6 +85,7 @@ export function addAssessmentRecorderIframe(development: boolean): void {
                     elementType,
                     selectedElement,
                   },
+                  windowName: window.name
                 }),
                 '*'
               );
@@ -102,6 +103,7 @@ export function addAssessmentRecorderIframe(development: boolean): void {
                 ...payload.assessment,
                 url: window.location.href,
               },
+              windowName: window.name
             }),
             '*'
           );
