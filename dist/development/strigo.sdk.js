@@ -11742,7 +11742,8 @@ ${JSON.stringify(parsedContext)}` : "");
             assessment: {
               ...payload.assessment,
               url: window.location.href
-            }
+            },
+            windowName: window.name
           }), "*");
           window.close();
           break;
