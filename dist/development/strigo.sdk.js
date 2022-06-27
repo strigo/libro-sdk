@@ -11047,8 +11047,10 @@ ${JSON.stringify(parsedContext)}` : "");
   function move() {
     const widget = document.getElementById("strigo-widget");
     const collapseDiv = document.getElementById("strigo-collapse-div");
+    const academyHat = document.getElementById("strigo-academy-hat");
     widget.classList.toggle("align-left");
     collapseDiv.classList.toggle("align-left");
+    academyHat.classList.toggle("align-left");
   }
   function toggleWidget() {
     const widget = document.getElementById("strigo-widget");
