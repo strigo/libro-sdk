@@ -158,7 +158,7 @@ export function getElementProfiler() {
     }
 
     for (let candidate of paths) {
-      if (unique(candidate)) {
+      if (unique(candidate) || config.allowDuplicates) {
         return candidate;
       }
     }

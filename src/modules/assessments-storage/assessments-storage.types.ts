@@ -1,5 +1,5 @@
-import { NoCodeAssessment } from "../no-code-assessment/no-code-assessment.types";
+import { Assessment } from "../no-code-assessment/no-code-assessment.types";
 
 export interface StrigoAssessmentsStorage {
-  assessments: NoCodeAssessment[];
+  assessments: Assessment[];
 }

@@ -1,8 +1,8 @@
-export const enum ASSESSMENT_TYPES {
-  CONTENT_CHANGED = 'content-changed',
-  ELEMENT_ADDED = 'element-added',
-  ELEMENT_REMOVED = 'element-removed',
+export enum AssessmentActionType {
+  TEXT_CHANGE = 'text-change',
+  ADDED_ITEM = 'added-item',
 }
+
 export const enum ASSESSMENT_RECORDER_MESSAGE_TYPES {
   START_CAPTURE = 'start-capture',
   END_CAPTURE = 'end-capture',

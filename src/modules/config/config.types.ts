@@ -1,4 +1,4 @@
-import { NoCodeAssessment } from '../no-code-assessment/no-code-assessment.types';
+import { Assessment } from '../no-code-assessment/no-code-assessment.types';
 import { WIDGET_FLAVORS } from '../widgets/widget.types';
 
 export interface SiteConfig {
@@ -16,7 +16,7 @@ export interface LoggingConfig {
 
 export interface StrigoProtectedConfig {
   loggingConfig: LoggingConfig;
-  userAssessments: NoCodeAssessment[];
+  userAssessments: Assessment[];
 }
 
 export interface User {

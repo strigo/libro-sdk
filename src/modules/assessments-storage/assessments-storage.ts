@@ -1,6 +1,6 @@
 import { Logger } from '../../services/logger';
 import { STORAGE_NAMES, STORAGE_TYPES } from '../storage-utils/storage-utils.types';
-import { NoCodeAssessment } from '../no-code-assessment/no-code-assessment.types';
+import { Assessment } from '../no-code-assessment/no-code-assessment.types';
 
 import { StrigoAssessmentsStorage } from './assessments-storage.types';
 
@@ -35,7 +35,7 @@ export function init(): StrigoAssessmentsStorage {
   }
 }
 
-export function setup(initialStorage?: NoCodeAssessment[]): StrigoAssessmentsStorage {
+export function setup(initialStorage?: Assessment[]): StrigoAssessmentsStorage {
   try {
     const strigoAssessments = initialStorage ? { assessments: [...initialStorage] } : { assessments: [] };
     window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_ASSESSMENTS, JSON.stringify(strigoAssessments));
