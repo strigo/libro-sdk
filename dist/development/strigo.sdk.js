@@ -12407,6 +12407,7 @@ ${JSON.stringify(parsedContext)}` : "");
 
   // src/modules/widgets/overlay.ts
   var import_interactjs = __toESM(require_interact_min(), 1);
+  var MINIMUM_WIDTH = 200;
   function makeOverlayWidgetVisible() {
     document.getElementById("strigo-widget").classList.add("slide-in");
     document.getElementById("strigo-widget").classList.add("loaded");
@@ -12418,7 +12419,7 @@ ${JSON.stringify(parsedContext)}` : "");
         move(event) {
           const target = event.target;
           const x = parseFloat(target.getAttribute("data-x")) || 0;
-          target.style.width = event.rect.width + "px";
+          target.style.width = (event.rect.width < MINIMUM_WIDTH ? MINIMUM_WIDTH : event.rect.width) + "px";
           target.setAttribute("data-x", x);
         }
       },
