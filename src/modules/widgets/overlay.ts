@@ -21,7 +21,7 @@ function makeOverlayWidgetVisible(): void {
 function setupResizeFunctionality(): void {
   interact('#strigo-widget').resizable({
     // resize from left edge
-    edges: { left: '.strigo-collapse-div', right: false, bottom: false, top: false },
+    edges: { left: '#strigo-collapse-div', right: '#strigo-collapse-div.align-left', bottom: false, top: false },
 
     listeners: {
       move(event) {
