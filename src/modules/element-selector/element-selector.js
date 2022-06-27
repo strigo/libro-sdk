@@ -21,10 +21,11 @@ function getElementProfile(e, { dataAttribute } = {}) {
   return nodesInfo;
 }
 
-export function getElementSelector(nodesInfo) {
+export function getElementSelector(nodesInfo, allowDuplicates = false) {
   const elementProfiler = getElementProfiler();
 
   const options = {
+    allowDuplicates,
     seedMinLength: 6,
     optimizedMinLength: 10,
     threshold: 2000,

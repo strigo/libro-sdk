@@ -73,15 +73,18 @@ class OverlayWidget implements IOverlayWidget {
 
     const academyPlayerFrame = documentTools.createWidget(urlTools.generateStrigoIframeURL(configManager.getConfig()));
     this.initEventListeners(academyPlayerFrame);
+    console.log('adding observer');
     this.documentObserver = noCodeAssessment.addDocumentObserver(window);
 
+    console.log('observer added');
     setupResizeFunctionality();
   }
 
   shutdown(): void {
     Logger.info('overlay shutdown called');
     this.removeEventListeners();
-    this.documentObserver.disconnect();
+    window?.strigoObserver?.observer?.disconnect();
+    // this.documentObserver.disconnect();
     documentTools.removeWidget();
   }
 

@@ -11236,7 +11236,7 @@ ${JSON.stringify(parsedContext)}` : "");
         return fallback ? fallback() : null;
       }
       for (let candidate of paths) {
-        if (unique(candidate)) {
+        if (unique(candidate) || config.allowDuplicates) {
           return candidate;
         }
       }
@@ -11486,9 +11486,10 @@ ${JSON.stringify(parsedContext)}` : "");
     console.log("Just FYI - this is how it can generate css selector:", elementProfiler.generateSelectorFromNodesInfo(nodesInfo, options));
     return nodesInfo;
   }
-  function getElementSelector(nodesInfo) {
+  function getElementSelector(nodesInfo, allowDuplicates = false) {
     const elementProfiler = getElementProfiler();
     const options = {
+      allowDuplicates,
       seedMinLength: 6,
       optimizedMinLength: 10,
       threshold: 2e3,
@@ -11636,7 +11637,11 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(development, version) {
     if (development) {
+<<<<<<< HEAD
       return `http://localhost:${"7000"}/styles/strigo.css`;
+=======
+      return `http://localhost:${"7005"}/styles/strigo.css`;
+>>>>>>> fe7eb6c (WIP)
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11645,7 +11650,11 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
+<<<<<<< HEAD
       return `http://localhost:${"7000"}/styles/strigo-widget.css`;
+=======
+      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
+>>>>>>> fe7eb6c (WIP)
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11663,7 +11672,11 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(development, version) {
     if (development) {
+<<<<<<< HEAD
       return `http://localhost:${"7000"}/styles/strigo-assessment-recorder.css`;
+=======
+      return `http://localhost:${"7005"}/styles/strigo-assessment-recorder.css`;
+>>>>>>> fe7eb6c (WIP)
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -12409,27 +12422,100 @@ ${JSON.stringify(parsedContext)}` : "");
   }
 
   // src/modules/no-code-assessment/no-code-assessment.ts
+  var observerOptions = {
+    subtree: true,
+    characterData: true,
+    childList: true
+  };
   var addDocumentObserver = function(windowElement) {
     const documentElement = windowElement.document;
     const assessments = getAssessmentsStorageData().assessments;
+    let locationHandlers = {};
+    let assessmentStatuses = {};
     const observerHandler = function() {
       assessments.forEach((assessment) => {
-        const { eventName, expectedResult, selector } = assessment;
-        const element = documentElement.querySelector(selector);
-        if (element?.innerText?.includes(expectedResult) || element?.value?.includes(expectedResult)) {
-          windowElement.Strigo.sendEvent(eventName);
+        const { recordedAssessment, challengeSuccessEvent, _id } = assessment;
+        const { actionType, expectedText } = recordedAssessment;
+        const locationElementProfile = recordedAssessment?.locationElement?.profile;
+        if (assessmentStatuses?.[_id] === "success" || !locationElementProfile) {
+          return;
+        }
+        assessmentStatuses[_id] = "pending";
+        let locationElement;
+        try {
+          const locationElementSelector = getElementSelector(locationElementProfile);
+          locationElement = documentElement.querySelector(locationElementSelector);
+        } catch (err) {
+          return;
+        }
+        switch (actionType) {
+          case "added-item" /* ADDED_ITEM */: {
+            if (locationHandlers[_id]?.observer && locationElement === locationHandlers[_id].element) {
+              locationHandlers[_id].element = locationElement;
+              LoggerInstance.info("Same reference - no need to observe again");
+              return;
+            }
+            if (locationElement[_id]?.observer) {
+              locationElement[_id].observer.observe(locationElement, observerOptions);
+              LoggerInstance.info("DOM Reference have changed - observing again");
+              return;
+            }
+            locationHandlers[_id] = {
+              element: locationElement,
+              observer: new MutationObserver(function() {
+                const exampleElementProfile = this.assessment.recordedAssessment?.exampleElement?.profile;
+                if (!exampleElementProfile) {
+                  return;
+                }
+                let exampleElementSelector;
+                try {
+                  exampleElementSelector = getElementSelector(exampleElementProfile, true);
+                } catch {
+                  return;
+                }
+                const currentExampleElementCount = locationElement.querySelectorAll(exampleElementSelector)?.length || 0;
+                const previousExampleElementCount = window.sessionStorage.getItem(_id);
+                if (!previousExampleElementCount) {
+                  window.sessionStorage.setItem(_id, currentExampleElementCount);
+                  return;
+                }
+                if (currentExampleElementCount > parseInt(previousExampleElementCount)) {
+                  assessmentStatuses[_id] = "success";
+                  windowElement.Strigo.sendEvent(challengeSuccessEvent);
+                  locationHandlers[_id].observer.disconnect();
+                  delete locationHandlers[_id];
+                }
+              }.bind({ assessment }))
+            };
+            locationHandlers[_id].observer.observe(locationElement, observerOptions);
+            break;
+          }
+          case "text-change" /* TEXT_CHANGE */: {
+            if (locationElement?.innerText?.includes(expectedText) || locationElement?.value?.includes(expectedText)) {
+              assessmentStatuses[_id] = "success";
+              LoggerInstance.info(`sent event ${challengeSuccessEvent}`);
+              windowElement.Strigo.sendEvent(challengeSuccessEvent);
+            }
+            break;
+          }
+          default: {
+            break;
+          }
         }
       });
     };
-    const observer = new MutationObserver(observerHandler);
-    observer.observe(documentElement, {
-      subtree: true,
-      attributes: true,
-      attributeOldValue: true,
-      characterDataOldValue: true,
-      characterData: true
-    });
-    return observer;
+    if (!windowElement?.strigoObserver?.observer) {
+      windowElement.strigoObserver = {
+        observer: new MutationObserver(observerHandler),
+        element: windowElement.document.body
+      };
+      windowElement?.strigoObserver?.observer?.observe(windowElement.document.body, observerOptions);
+      return;
+    }
+    if (windowElement.strigoObserver.element !== windowElement.document.body) {
+      windowElement.strigoObserver.element = windowElement.document.body;
+      windowElement.strigoObserver.observer.observe(windowElement.document.body, observerOptions);
+    }
   };
 
   // src/modules/widgets/overlay.ts
@@ -12480,13 +12566,15 @@ ${JSON.stringify(parsedContext)}` : "");
       });
       const academyPlayerFrame = createWidget(generateStrigoIframeURL(getConfig()));
       this.initEventListeners(academyPlayerFrame);
+      console.log("adding observer");
       this.documentObserver = addDocumentObserver(window);
+      console.log("observer added");
       setupResizeFunctionality();
     }
     shutdown() {
       LoggerInstance.info("overlay shutdown called");
       this.removeEventListeners();
-      this.documentObserver.disconnect();
+      window?.strigoObserver?.observer?.disconnect();
       removeWidget();
     }
     collapse() {

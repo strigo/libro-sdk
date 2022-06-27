@@ -36,3 +36,8 @@ export interface IStrigoSDK {
 export interface StrigoWindow extends Window {
   Strigo: IStrigoSDK;
 }
+
+export interface ElementObserver {
+  element: Element;
+  observer: MutationObserver;
+}
