@@ -119,7 +119,7 @@ export function generateAssessmentRecorderURL(development:boolean): string {
     : ASSESSMENT_RECORDER_URL
 }
 
-export function isInRecordingMode(): boolean {
+export function isRecordingUrlParamExists(): boolean {
   const { search } = window.location;
   const urlParams = extractUrlParams(search);
 

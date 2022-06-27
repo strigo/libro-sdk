@@ -4,4 +4,5 @@ export interface StrigoSession {
   isPanelOpen: boolean;
   isLoading?: boolean;
   widgetFlavor: WIDGET_FLAVORS;
+  isRecordingMode?: boolean;
 }

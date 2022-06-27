@@ -10798,184 +10798,8 @@
     }
   });
 
-  // src/strigo/consts.ts
-  var INIT_SCRIPT_ID = "strigo-sdk";
-  var BASE_STRIGO_URL = "strigo.io";
-  var LOCAL_STRIGO_URL = "localhost:3000";
-  var STRIGO_IFRAME_CLASSES = ["strigo-exercises"];
-  var ORIGINAL_WEBSITE_IFRAME_CLASSES = ["orig-iframe"];
-  var ACADEMY_HAT = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M623.1 136.9l-282.7-101.2c-13.73-4.91-28.7-4.91-42.43 0L16.05 136.9C6.438 140.4 0 149.6 0 160s6.438 19.65 16.05 23.09L76.07 204.6c-11.89 15.8-20.26 34.16-24.55 53.95C40.05 263.4 32 274.8 32 288c0 9.953 4.814 18.49 11.94 24.36l-24.83 149C17.48 471.1 25 480 34.89 480H93.11c9.887 0 17.41-8.879 15.78-18.63l-24.83-149C91.19 306.5 96 297.1 96 288c0-10.29-5.174-19.03-12.72-24.89c4.252-17.76 12.88-33.82 24.94-47.03l190.6 68.23c13.73 4.91 28.7 4.91 42.43 0l282.7-101.2C633.6 179.6 640 170.4 640 160S633.6 140.4 623.1 136.9zM351.1 314.4C341.7 318.1 330.9 320 320 320c-10.92 0-21.69-1.867-32-5.555L142.8 262.5L128 405.3C128 446.6 213.1 480 320 480c105.1 0 192-33.4 192-74.67l-14.78-142.9L351.1 314.4z"/></svg>
-`;
-  var CDN_BASE_PATH = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk";
-  var ASSESSMENT_RECORDER_URL = "https://assessment-recorder.web.app";
-
-  // src/modules/url/url.ts
-  var STRIGO_CHILD_IFRAME_PARAM = "strigoChildIframe";
-  function paramsToObject(entries) {
-    const result = {};
-    for (const [key, value] of entries) {
-      result[key] = value;
-    }
-    return result;
-  }
-  function extractUrlParams(search) {
-    const urlParams = new URLSearchParams(search);
-    const entries = urlParams.entries();
-    return paramsToObject(entries);
-  }
-  function getUrlData() {
-    const { host, pathname, href, origin, search } = window.location;
-    return {
-      host,
-      pathName: pathname,
-      href,
-      origin,
-      search,
-      params: extractUrlParams(search)
-    };
-  }
-  function generateStrigoIframeURL(config) {
-    const { subDomain, user, webApiKey, development } = config;
-    return development ? `http://${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}` : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`;
-  }
-  function generateStrigoChildIframeURL(url) {
-    const currentUrl = new URL(url);
-    currentUrl.searchParams.set(STRIGO_CHILD_IFRAME_PARAM, "true");
-    return currentUrl.toString();
-  }
-  function isStrigoChildIframe() {
-    return window.location.search.includes(STRIGO_CHILD_IFRAME_PARAM);
-  }
-  function removeStrigoChildIframeParam() {
-    const url = new URL(window.location.href);
-    const searchParams = new URLSearchParams(url.search);
-    searchParams.delete(STRIGO_CHILD_IFRAME_PARAM);
-    url.search = searchParams.toString();
-    window.history.replaceState(window.history.state, "", url);
-  }
-  function extractInitScriptParams() {
-    const initScript = document.getElementById(INIT_SCRIPT_ID);
-    return {
-      webApiKey: initScript?.getAttribute("data-web-api-key") || "",
-      subDomain: initScript?.getAttribute("data-subdomain") || "",
-      selectedWidgetFlavor: initScript?.getAttribute("data-layout-flavor") || "dynamic" /* DYNAMIC */
-    };
-  }
-  function generateCssURL(development, version) {
-    if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
-    }
-    if (version) {
-      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
-    }
-    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo.min.css`;
-  }
-  function generateWidgetCssURL(development, version) {
-    if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
-    }
-    if (version) {
-      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
-    }
-    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-widget.min.css`;
-  }
-  function generateRecorderCssURL(development, version) {
-    if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-assessment-recorder.css`;
-    }
-    if (version) {
-      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
-    }
-    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
-  }
-  function generateAssessmentRecorderURL(development) {
-    return development ? `http://localhost:${RECORDER_HOSTING_PORT}` : ASSESSMENT_RECORDER_URL;
-  }
-  function isInRecordingMode() {
-    const { search } = window.location;
-    const urlParams = extractUrlParams(search);
-    return "strigoAssessmentRecorder" in urlParams;
-  }
-  function isDevelopment() {
-    const { search } = window.location;
-    const urlParams = extractUrlParams(search);
-    return "development" in urlParams;
-  }
-
-  // src/services/logger.ts
-  var Logger = class {
-    constructor(config) {
-      this.url = config?.url;
-    }
-    setup(config) {
-      this.url = config.url;
-    }
-    logToRemote(level, message, context) {
-      return fetch(this.url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          level,
-          message,
-          context
-        })
-      }).then((result) => {
-        if (!result.ok) {
-          console.warn("Logging to Strigo failed", { result });
-        }
-      }).catch((error) => {
-        console.warn("Logging to Strigo failed", { err: error });
-      });
-    }
-    logToConsole(level, message, context) {
-      const enrichedMessage = `${new Date().toISOString()} - ${message}`;
-      const parsedContext = context.err instanceof Error ? { ...context, err: { message: context.err.message, name: context.err.name, stack: context.err.stack } } : context;
-      console[level](enrichedMessage, context ? `
-${JSON.stringify(parsedContext)}` : "");
-    }
-    getDefaultContext() {
-      const config = getConfig();
-      if (!config) {
-        return {};
-      }
-      const { user, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
-      return {
-        token: user?.token.token,
-        initSite: initSite?.href,
-        subDomain,
-        development,
-        version,
-        selectedWidgetFlavor
-      };
-    }
-    log(level, message, context) {
-      const enrichedContext = { ...this.getDefaultContext(), ...context };
-      try {
-        if (this.url && !getConfig()?.development) {
-          this.logToRemote(level, message, enrichedContext);
-        }
-        this.logToConsole(level, `Academy - ${message}`, enrichedContext);
-      } catch (err) {
-        console.log("Logging error:", { err });
-      }
-    }
-    debug(message, context = {}) {
-      this.log("debug", message, context);
-    }
-    info(message, context = {}) {
-      this.log("info", message, context);
-    }
-    warn(message, context = {}) {
-      this.log("warn", message, context);
-    }
-    error(message, context = {}) {
-      this.log("error", message, context);
-    }
-  };
-  var LoggerInstance = new Logger();
+  // src/modules/assessment-recorder/assessment-recorder.ts
+  var import_html2canvas = __toESM(require_html2canvas(), 1);
 
   // src/modules/storage-utils/storage-utils.ts
   function getStorageData(storageType, storageName) {
@@ -11070,161 +10894,91 @@ ${JSON.stringify(parsedContext)}` : "");
     }
   }
 
-  // src/modules/session/session.ts
-  function setup2(initialSession) {
-    const session = setupStorage("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */, initialSession);
-    return session;
-  }
-  function getSession() {
-    const session = getStorageData("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */);
-    return session;
-  }
-  function isPanelOpen() {
-    return getSession()?.isPanelOpen;
-  }
-  function getWidgetFlavor() {
-    return getSession()?.widgetFlavor;
-  }
-  function setSessionValue(key, value) {
-    const session = setStorageValue("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */, key, value);
-    return session;
-  }
-  function getSessionValue(key) {
-    const session = getSession();
-    return session?.[key];
-  }
-  function clearSession() {
-    clearStorage("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */);
-  }
+  // src/services/logger.ts
+  var Logger = class {
+    constructor(config) {
+      this.url = config?.url;
+    }
+    setup(config) {
+      this.url = config.url;
+    }
+    logToRemote(level, message, context) {
+      return fetch(this.url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          level,
+          message,
+          context
+        })
+      }).then((result) => {
+        if (!result.ok) {
+          console.warn("Logging to Strigo failed", { result });
+        }
+      }).catch((error) => {
+        console.warn("Logging to Strigo failed", { err: error });
+      });
+    }
+    logToConsole(level, message, context) {
+      const enrichedMessage = `${new Date().toISOString()} - ${message}`;
+      const parsedContext = context.err instanceof Error ? { ...context, err: { message: context.err.message, name: context.err.name, stack: context.err.stack } } : context;
+      console[level](enrichedMessage, context ? `
+${JSON.stringify(parsedContext)}` : "");
+    }
+    getDefaultContext() {
+      const config = getConfig();
+      if (!config) {
+        return {};
+      }
+      const { user, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
+      return {
+        token: user?.token.token,
+        initSite: initSite?.href,
+        subDomain,
+        development,
+        version,
+        selectedWidgetFlavor
+      };
+    }
+    log(level, message, context) {
+      const enrichedContext = { ...this.getDefaultContext(), ...context };
+      try {
+        if (this.url && !getConfig()?.development) {
+          this.logToRemote(level, message, enrichedContext);
+        }
+        this.logToConsole(level, `Academy - ${message}`, enrichedContext);
+      } catch (err) {
+        console.log("Logging error:", { err });
+      }
+    }
+    debug(message, context = {}) {
+      this.log("debug", message, context);
+    }
+    info(message, context = {}) {
+      this.log("info", message, context);
+    }
+    warn(message, context = {}) {
+      this.log("warn", message, context);
+    }
+    error(message, context = {}) {
+      this.log("error", message, context);
+    }
+  };
+  var LoggerInstance = new Logger();
 
-  // src/modules/events-storage/events-storage.ts
-  function getEventsStorageData() {
-    try {
-      return JSON.parse(window["localStorage" /* LOCAL_STORAGE */].getItem("strigoEvents" /* STRIGO_EVENTS */));
-    } catch (error) {
-      LoggerInstance.error("Get events storage error", { error });
-      return null;
-    }
-  }
-  function init2() {
-    try {
-      const currentEventsStorage = getEventsStorageData();
-      if (currentEventsStorage) {
-        LoggerInstance.debug("Events storage already exists");
-        return currentEventsStorage;
-      }
-      const storageEvents = { events: [] };
-      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(storageEvents));
-      return storageEvents;
-    } catch (error) {
-      LoggerInstance.error("Init events storage error", { error });
-      return null;
-    }
-  }
-  function pushEventValue(event) {
-    try {
-      const initialState = getEventsStorageData();
-      if (!initialState) {
-        throw new Error("Can't find initial state");
-      }
-      const prev = JSON.stringify(initialState);
-      initialState.events.push(event);
-      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(initialState));
-      if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
-        const customEvent = new CustomEvent("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, {
-          bubbles: true,
-          detail: {
-            key: "strigoEvents",
-            oldValue: prev,
-            newValue: JSON.stringify(initialState)
-          }
-        });
-        window.dispatchEvent(customEvent);
-      }
-      return initialState;
-    } catch (error) {
-      LoggerInstance.error("Push event to storage error", { error });
-      return null;
-    }
-  }
-  function popEventValue() {
-    try {
-      const initialState = getEventsStorageData();
-      if (!initialState) {
-        throw new Error("Can't find events storage");
-      }
-      const event = initialState.events.pop();
-      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(initialState));
-      return event;
-    } catch (error) {
-      LoggerInstance.error("Pop event from storage error", { error });
-      return null;
-    }
-  }
-  function getEventValue() {
-    try {
-      const initialState = getEventsStorageData();
-      if (!initialState) {
-        throw new Error("Can't find events storage");
-      }
-      return initialState.events.pop();
-    } catch (error) {
-      LoggerInstance.error("Get event from storage error", { error });
-      return null;
-    }
-  }
-  function clearEventsStorage() {
-    try {
-      window["localStorage" /* LOCAL_STORAGE */].removeItem("strigoEvents" /* STRIGO_EVENTS */);
-    } catch (error) {
-      LoggerInstance.error("Clear events storage error", { error });
-    }
-  }
-
-  // src/modules/assessments-storage/assessments-storage.ts
-  function getAssessmentsStorageData() {
-    try {
-      return JSON.parse(window["localStorage" /* LOCAL_STORAGE */].getItem("strigoAssessments" /* STRIGO_ASSESSMENTS */));
-    } catch (error) {
-      LoggerInstance.error("Get assessments storage error", { error });
-      return null;
-    }
-  }
-  function init3() {
-    try {
-      const currentAssessmentsStorage = getAssessmentsStorageData();
-      if (currentAssessmentsStorage) {
-        LoggerInstance.debug("Assessments storage already exists");
-        return currentAssessmentsStorage;
-      }
-      const strigoAssessments = { assessments: [] };
-      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoAssessments" /* STRIGO_ASSESSMENTS */, JSON.stringify(strigoAssessments));
-      return strigoAssessments;
-    } catch (error) {
-      LoggerInstance.error("Init assessments storage error", { error });
-      return null;
-    }
-  }
-  function setup3(initialStorage) {
-    try {
-      const strigoAssessments = initialStorage ? { assessments: [...initialStorage] } : { assessments: [] };
-      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoAssessments" /* STRIGO_ASSESSMENTS */, JSON.stringify(strigoAssessments));
-      return strigoAssessments;
-    } catch (error) {
-      LoggerInstance.error("Assessments storage setup error", { error });
-      return null;
-    }
-  }
-  function clearAssessmentStorage() {
-    try {
-      window["localStorage" /* LOCAL_STORAGE */].removeItem("strigoAssessments" /* STRIGO_ASSESSMENTS */);
-    } catch (error) {
-      LoggerInstance.error("Clear assessments storage error", { error });
-    }
-  }
-
-  // src/modules/assessment-recorder/assessment-recorder.ts
-  var import_html2canvas = __toESM(require_html2canvas(), 1);
+  // src/strigo/consts.ts
+  var INIT_SCRIPT_ID = "strigo-sdk";
+  var BASE_STRIGO_URL = "strigo.io";
+  var LOCAL_STRIGO_URL = "localhost:3000";
+  var STRIGO_IFRAME_CLASSES = ["strigo-exercises"];
+  var ORIGINAL_WEBSITE_IFRAME_CLASSES = ["orig-iframe"];
+  var ACADEMY_HAT = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M623.1 136.9l-282.7-101.2c-13.73-4.91-28.7-4.91-42.43 0L16.05 136.9C6.438 140.4 0 149.6 0 160s6.438 19.65 16.05 23.09L76.07 204.6c-11.89 15.8-20.26 34.16-24.55 53.95C40.05 263.4 32 274.8 32 288c0 9.953 4.814 18.49 11.94 24.36l-24.83 149C17.48 471.1 25 480 34.89 480H93.11c9.887 0 17.41-8.879 15.78-18.63l-24.83-149C91.19 306.5 96 297.1 96 288c0-10.29-5.174-19.03-12.72-24.89c4.252-17.76 12.88-33.82 24.94-47.03l190.6 68.23c13.73 4.91 28.7 4.91 42.43 0l282.7-101.2C633.6 179.6 640 170.4 640 160S633.6 140.4 623.1 136.9zM351.1 314.4C341.7 318.1 330.9 320 320 320c-10.92 0-21.69-1.867-32-5.555L142.8 262.5L128 405.3C128 446.6 213.1 480 320 480c105.1 0 192-33.4 192-74.67l-14.78-142.9L351.1 314.4z"/></svg>
+`;
+  var CDN_BASE_PATH = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk";
+  var ASSESSMENT_RECORDER_URL = "https://assessment-recorder.web.app";
 
   // src/modules/document/document.ts
   function getHeadElement() {
@@ -11824,8 +11578,111 @@ ${JSON.stringify(parsedContext)}` : "");
     rootDocument.addEventListener("mouseout", this.removeClickListenerFromHoveredElement);
   }
 
+  // src/modules/url/url.ts
+  var STRIGO_CHILD_IFRAME_PARAM = "strigoChildIframe";
+  function paramsToObject(entries) {
+    const result = {};
+    for (const [key, value] of entries) {
+      result[key] = value;
+    }
+    return result;
+  }
+  function extractUrlParams(search) {
+    const urlParams = new URLSearchParams(search);
+    const entries = urlParams.entries();
+    return paramsToObject(entries);
+  }
+  function getUrlData() {
+    const { host, pathname, href, origin, search } = window.location;
+    return {
+      host,
+      pathName: pathname,
+      href,
+      origin,
+      search,
+      params: extractUrlParams(search)
+    };
+  }
+  function generateStrigoIframeURL(config) {
+    const { subDomain, user, webApiKey, development } = config;
+    return development ? `http://${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}` : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`;
+  }
+  function generateStrigoChildIframeURL(url) {
+    const currentUrl = new URL(url);
+    currentUrl.searchParams.set(STRIGO_CHILD_IFRAME_PARAM, "true");
+    return currentUrl.toString();
+  }
+  function isStrigoChildIframe() {
+    return window.location.search.includes(STRIGO_CHILD_IFRAME_PARAM);
+  }
+  function removeStrigoChildIframeParam() {
+    const url = new URL(window.location.href);
+    const searchParams = new URLSearchParams(url.search);
+    searchParams.delete(STRIGO_CHILD_IFRAME_PARAM);
+    url.search = searchParams.toString();
+    window.history.replaceState(window.history.state, "", url);
+  }
+  function extractInitScriptParams() {
+    const initScript = document.getElementById(INIT_SCRIPT_ID);
+    return {
+      webApiKey: initScript?.getAttribute("data-web-api-key") || "",
+      subDomain: initScript?.getAttribute("data-subdomain") || "",
+      selectedWidgetFlavor: initScript?.getAttribute("data-layout-flavor") || "dynamic" /* DYNAMIC */
+    };
+  }
+  function generateCssURL(development, version) {
+    if (development) {
+      return `http://localhost:${"7005"}/styles/strigo.css`;
+    }
+    if (version) {
+      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
+    }
+    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo.min.css`;
+  }
+  function generateWidgetCssURL(development, version) {
+    if (development) {
+      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
+    }
+    if (version) {
+      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
+    }
+    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-widget.min.css`;
+  }
+  function generateRecorderCssURL(development, version) {
+    if (development) {
+      return `http://localhost:${"7005"}/styles/strigo-assessment-recorder.css`;
+    }
+    if (version) {
+      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
+    }
+    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
+  }
+  function generateAssessmentRecorderURL(development) {
+    return development ? `http://localhost:${"7015"}` : ASSESSMENT_RECORDER_URL;
+  }
+  function isRecordingUrlParamExists() {
+    const { search } = window.location;
+    const urlParams = extractUrlParams(search);
+    return "strigoAssessmentRecorder" in urlParams;
+  }
+  function isDevelopment() {
+    const { search } = window.location;
+    const urlParams = extractUrlParams(search);
+    return "development" in urlParams;
+  }
+
   // src/modules/assessment-recorder/assessment-recorder.ts
+  function isRecordingMode() {
+    if (isRecordingUrlParamExists() || window.sessionStorage.getItem("isStrigoRecordingMode")) {
+      return true;
+    }
+    return false;
+  }
   function addAssessmentRecorderIframe(development) {
+    window.sessionStorage.setItem("isStrigoRecordingMode", "true");
+    if (document.getElementById("strigo-assessment-recorder-iframe")) {
+      return;
+    }
     const assessmentRecorderUrl = generateAssessmentRecorderURL(development);
     appendCssFile({ parentElement: getHeadElement(), url: generateRecorderCssURL(development) });
     const assessmentRecorderIframe = appendIFrame({
@@ -11876,6 +11733,7 @@ ${JSON.stringify(parsedContext)}` : "");
           break;
         }
         case "submit-assessment" /* SUBMIT_ASSESSMENT */: {
+          window.sessionStorage.removeItem("isStrigoRecordingMode");
           window.opener.postMessage(JSON.stringify({
             assessment: {
               ...payload.assessment,
@@ -11886,6 +11744,7 @@ ${JSON.stringify(parsedContext)}` : "");
           break;
         }
         case "cancel-assessment" /* CANCEL_ASSESSMENT */: {
+          window.sessionStorage.removeItem("isStrigoRecordingMode");
           window.close();
           break;
         }
@@ -11894,6 +11753,159 @@ ${JSON.stringify(parsedContext)}` : "");
         }
       }
     }, false);
+  }
+
+  // src/modules/session/session.ts
+  function setup2(initialSession) {
+    const session = setupStorage("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */, initialSession);
+    return session;
+  }
+  function getSession() {
+    const session = getStorageData("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */);
+    return session;
+  }
+  function isPanelOpen() {
+    return getSession()?.isPanelOpen;
+  }
+  function getWidgetFlavor() {
+    return getSession()?.widgetFlavor;
+  }
+  function setSessionValue(key, value) {
+    const session = setStorageValue("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */, key, value);
+    return session;
+  }
+  function getSessionValue(key) {
+    const session = getSession();
+    return session?.[key];
+  }
+  function clearSession() {
+    clearStorage("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */);
+  }
+
+  // src/modules/events-storage/events-storage.ts
+  function getEventsStorageData() {
+    try {
+      return JSON.parse(window["localStorage" /* LOCAL_STORAGE */].getItem("strigoEvents" /* STRIGO_EVENTS */));
+    } catch (error) {
+      LoggerInstance.error("Get events storage error", { error });
+      return null;
+    }
+  }
+  function init2() {
+    try {
+      const currentEventsStorage = getEventsStorageData();
+      if (currentEventsStorage) {
+        LoggerInstance.debug("Events storage already exists");
+        return currentEventsStorage;
+      }
+      const storageEvents = { events: [] };
+      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(storageEvents));
+      return storageEvents;
+    } catch (error) {
+      LoggerInstance.error("Init events storage error", { error });
+      return null;
+    }
+  }
+  function pushEventValue(event) {
+    try {
+      const initialState = getEventsStorageData();
+      if (!initialState) {
+        throw new Error("Can't find initial state");
+      }
+      const prev = JSON.stringify(initialState);
+      initialState.events.push(event);
+      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(initialState));
+      if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
+        const customEvent = new CustomEvent("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, {
+          bubbles: true,
+          detail: {
+            key: "strigoEvents",
+            oldValue: prev,
+            newValue: JSON.stringify(initialState)
+          }
+        });
+        window.dispatchEvent(customEvent);
+      }
+      return initialState;
+    } catch (error) {
+      LoggerInstance.error("Push event to storage error", { error });
+      return null;
+    }
+  }
+  function popEventValue() {
+    try {
+      const initialState = getEventsStorageData();
+      if (!initialState) {
+        throw new Error("Can't find events storage");
+      }
+      const event = initialState.events.pop();
+      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(initialState));
+      return event;
+    } catch (error) {
+      LoggerInstance.error("Pop event from storage error", { error });
+      return null;
+    }
+  }
+  function getEventValue() {
+    try {
+      const initialState = getEventsStorageData();
+      if (!initialState) {
+        throw new Error("Can't find events storage");
+      }
+      return initialState.events.pop();
+    } catch (error) {
+      LoggerInstance.error("Get event from storage error", { error });
+      return null;
+    }
+  }
+  function clearEventsStorage() {
+    try {
+      window["localStorage" /* LOCAL_STORAGE */].removeItem("strigoEvents" /* STRIGO_EVENTS */);
+    } catch (error) {
+      LoggerInstance.error("Clear events storage error", { error });
+    }
+  }
+
+  // src/modules/assessments-storage/assessments-storage.ts
+  function getAssessmentsStorageData() {
+    try {
+      return JSON.parse(window["localStorage" /* LOCAL_STORAGE */].getItem("strigoAssessments" /* STRIGO_ASSESSMENTS */));
+    } catch (error) {
+      LoggerInstance.error("Get assessments storage error", { error });
+      return null;
+    }
+  }
+  function init3() {
+    try {
+      const currentAssessmentsStorage = getAssessmentsStorageData();
+      if (currentAssessmentsStorage) {
+        LoggerInstance.debug("Assessments storage already exists");
+        return currentAssessmentsStorage;
+      }
+      const strigoAssessments = { assessments: [] };
+      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoAssessments" /* STRIGO_ASSESSMENTS */, JSON.stringify(strigoAssessments));
+      return strigoAssessments;
+    } catch (error) {
+      LoggerInstance.error("Init assessments storage error", { error });
+      return null;
+    }
+  }
+  function setup3(initialStorage) {
+    try {
+      const strigoAssessments = initialStorage ? { assessments: [...initialStorage] } : { assessments: [] };
+      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoAssessments" /* STRIGO_ASSESSMENTS */, JSON.stringify(strigoAssessments));
+      return strigoAssessments;
+    } catch (error) {
+      LoggerInstance.error("Assessments storage setup error", { error });
+      return null;
+    }
+  }
+  function clearAssessmentStorage() {
+    try {
+      window["localStorage" /* LOCAL_STORAGE */].removeItem("strigoAssessments" /* STRIGO_ASSESSMENTS */);
+    } catch (error) {
+      LoggerInstance.error("Clear assessments storage error", { error });
+    }
   }
 
   // node_modules/split.js/dist/split.es.js
@@ -12806,10 +12818,9 @@ ${JSON.stringify(parsedContext)}` : "");
 
   // src/strigo.sdk.ts
   window.Strigo = Strigo;
-  if (isInRecordingMode()) {
-    console.log("In recording mode");
+  if (isRecordingMode()) {
+    LoggerInstance.info("Strigo recorder mode");
     const development = isDevelopment();
-    console.log({ development });
     window.Strigo.assessmentRecorder(development);
   } else {
     window.Strigo.init();
