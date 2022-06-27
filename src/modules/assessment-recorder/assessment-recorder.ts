@@ -3,7 +3,7 @@ import html2canvas from 'html2canvas';
 import { Logger } from '../../services/logger';
 import { appendCssFile, appendIFrame, getHeadElement } from '../document/document';
 import { getElementSelector } from '../element-selector/element-selector';
-import { generateAssessmentRecorderURL, generateRecorderCssURL } from '../url/url';
+import { generateAssessmentRecorderURL, generateRecorderCssURL, isRecordingUrlParamExists } from '../url/url';
 
 import {
   AssessmentRecorderMessage,
@@ -12,7 +12,22 @@ import {
   SelectedElement,
 } from './assessment-recorder.types';
 
+export function isRecordingMode(): boolean {
+
+  if (isRecordingUrlParamExists() || window.sessionStorage.getItem('isStrigoRecordingMode')) {
+    return true;
+  }
+
+  return false;
+}
+
 export function addAssessmentRecorderIframe(development: boolean): void {
+  window.sessionStorage.setItem('isStrigoRecordingMode', 'true');
+
+  if (document.getElementById('strigo-assessment-recorder-iframe')) {
+    return;
+  }
+
   const assessmentRecorderUrl = generateAssessmentRecorderURL(development);
   appendCssFile({ parentElement: getHeadElement(), url: generateRecorderCssURL(development) });
   const assessmentRecorderIframe = appendIFrame({
@@ -80,6 +95,7 @@ export function addAssessmentRecorderIframe(development: boolean): void {
         }
 
         case ASSESSMENT_RECORDER_MESSAGE_TYPES.SUBMIT_ASSESSMENT: {
+          window.sessionStorage.removeItem('isStrigoRecordingMode');
           window.opener.postMessage(
             JSON.stringify({
               assessment: {
@@ -95,6 +111,7 @@ export function addAssessmentRecorderIframe(development: boolean): void {
         }
 
         case ASSESSMENT_RECORDER_MESSAGE_TYPES.CANCEL_ASSESSMENT: {
+          window.sessionStorage.removeItem('isStrigoRecordingMode');
           window.close();
 
           break;
@@ -107,6 +124,4 @@ export function addAssessmentRecorderIframe(development: boolean): void {
     },
     false
   );
-
-  // Listen to messages
 }
