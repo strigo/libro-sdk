@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/strigo/sdk#readme",
   "devDependencies": {
-    "@interactjs/types": "^1.10.14",
+    "@interactjs/types": "1.10.14",
     "@typescript-eslint/eslint-plugin": "5.19.0",
     "@typescript-eslint/parser": "5.19.0",
     "axios": "0.26.0",
@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "html2canvas": "1.4.1",
-    "interactjs": "^1.10.14",
+    "interactjs": "1.10.14",
     "split.js": "1.6.5"
   }
 }

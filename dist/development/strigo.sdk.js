@@ -12503,12 +12503,7 @@ ${JSON.stringify(parsedContext)}` : "");
         break;
       }
       case "close" /* SHUTDOWN */: {
-        LoggerInstance.info("Shutdown message received");
-        window.Strigo?.shutdown();
-        break;
-      }
-      case "collapse" /* COLLAPSE */: {
-        LoggerInstance.info("Collapse message received", { strigo: window.Strigo });
+        LoggerInstance.info("Shutdown message received - will collapse panel");
         window.Strigo?.collapse();
         break;
       }

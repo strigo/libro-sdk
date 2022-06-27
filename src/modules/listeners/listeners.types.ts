@@ -6,7 +6,6 @@ export const enum EVENT_TYPES {
 
 export const enum MESSAGE_TYPES {
   MOVE = 'move',
-  COLLAPSE = 'collapse',
   SHUTDOWN = 'close',
   DESTROY = 'destroy',
   RENDERED = 'rendered',

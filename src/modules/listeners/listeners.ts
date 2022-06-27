@@ -44,14 +44,7 @@ function onHostEventHandler(ev: MessageEvent<any>): void {
     }
 
     case MESSAGE_TYPES.SHUTDOWN: {
-      Logger.info('Shutdown message received');
-      window.Strigo?.shutdown();
-
-      break;
-    }
-
-    case MESSAGE_TYPES.COLLAPSE: {
-      Logger.info('Collapse message received', { strigo: window.Strigo });
+      Logger.info('Shutdown message received - will collapse panel');
       window.Strigo?.collapse();
 
       break;
