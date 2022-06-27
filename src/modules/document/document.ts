@@ -90,7 +90,9 @@ export function isIframeSupported(): boolean {
 
 export function move(): void {
   const widget = document.getElementById('strigo-widget');
+  const collapseDiv = document.getElementById('strigo-collapse-div');
   widget.classList.toggle('align-left');
+  collapseDiv.classList.toggle('align-left');
 }
 
 export function toggleWidget(): void {

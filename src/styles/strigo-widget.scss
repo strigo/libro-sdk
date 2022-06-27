@@ -39,14 +39,19 @@
   }
 
   &.align-left {
-    right: unset;
     left: 0;
     order: 1;
+    -webkit-transform: translate3d(-100%, 0, 0) translate3d(6px, 0, 0);
+    transform: translate3d(-100%, 0, 0) translate3d(6px, 0, 0);
+    right: unset;
+
+    &.slide-in {
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+    }
 
     .strigo-collapse-div {
       order: 2;
-      border-left: unset;
-      border-right: 2px #adafdc solid;
     }
   }
 

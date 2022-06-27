@@ -11046,7 +11046,9 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function move() {
     const widget = document.getElementById("strigo-widget");
+    const collapseDiv = document.getElementById("strigo-collapse-div");
     widget.classList.toggle("align-left");
+    collapseDiv.classList.toggle("align-left");
   }
   function toggleWidget() {
     const widget = document.getElementById("strigo-widget");
@@ -11632,7 +11634,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11641,7 +11643,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11650,7 +11652,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7005"}/styles/strigo-assessment-recorder.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -11658,7 +11660,7 @@ ${JSON.stringify(parsedContext)}` : "");
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL(development) {
-    return development ? `http://localhost:${"7015"}` : ASSESSMENT_RECORDER_URL;
+    return development ? `http://localhost:${RECORDER_HOSTING_PORT}` : ASSESSMENT_RECORDER_URL;
   }
   function isRecordingUrlParamExists() {
     const { search } = window.location;
@@ -12426,7 +12428,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function setupResizeFunctionality() {
     (0, import_interactjs.default)("#strigo-widget").resizable({
-      edges: { left: ".strigo-collapse-div", right: false, bottom: false, top: false },
+      edges: { left: "#strigo-collapse-div", right: "#strigo-collapse-div.align-left", bottom: false, top: false },
       listeners: {
         move(event) {
           const target = event.target;
