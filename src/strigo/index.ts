@@ -145,14 +145,8 @@ class StrigoSDK implements IStrigoSDK {
     Logger.info('Collapsing academy panel');
     const { selectedWidgetFlavor } = configManager.getConfig();
 
-    if (selectedWidgetFlavor !== WIDGET_FLAVORS.IFRAME) {
-      const widget = widgetFactory.getWidget(selectedWidgetFlavor);
-      widget.collapse();
-
-      return;
-    }
-
-    this.shutdown();
+    const widget = widgetFactory.getWidget(selectedWidgetFlavor);
+    widget.collapse();
   }
 
   shutdown(): void {

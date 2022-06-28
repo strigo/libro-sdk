@@ -1,4 +1,10 @@
-import { ASSESSMENT_RECORDER_URL, BASE_STRIGO_URL, CDN_BASE_PATH, INIT_SCRIPT_ID, LOCAL_STRIGO_URL } from '../../strigo/consts';
+import {
+  ASSESSMENT_RECORDER_URL,
+  BASE_STRIGO_URL,
+  CDN_BASE_PATH,
+  INIT_SCRIPT_ID,
+  LOCAL_STRIGO_URL,
+} from '../../strigo/consts';
 import { StrigoConfig, SiteConfig } from '../config/config.types';
 import { WIDGET_FLAVORS } from '../widgets/widget.types';
 
@@ -100,6 +106,18 @@ export function generateWidgetCssURL(development: boolean, version?: string): st
   return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-widget.min.css`;
 }
 
+export function generateAcademyHatCssURL(development: boolean, version?: string): string {
+  if (development) {
+    return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-academy-hat.css`;
+  }
+
+  if (version) {
+    return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
+  }
+
+  return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-academy-hat.min.css`;
+}
+
 export function generateRecorderCssURL(development: boolean, version?: string): string {
   if (development) {
     return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-assessment-recorder.css`;
@@ -112,11 +130,8 @@ export function generateRecorderCssURL(development: boolean, version?: string): 
   return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
 }
 
-export function generateAssessmentRecorderURL(development:boolean): string {
-
-  return development
-    ? `http://localhost:${RECORDER_HOSTING_PORT}`
-    : ASSESSMENT_RECORDER_URL
+export function generateAssessmentRecorderURL(development: boolean): string {
+  return development ? `http://localhost:${RECORDER_HOSTING_PORT}` : ASSESSMENT_RECORDER_URL;
 }
 
 export function isRecordingUrlParamExists(): boolean {

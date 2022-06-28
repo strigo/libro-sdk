@@ -163,7 +163,7 @@ body {
   background-position: 50%;
 }
 .gutter:hover {
-  background-color: #00AEC7;
+  background-color: #00aec7;
 }
 .gutter.gutter-horizontal {
   cursor: col-resize;
