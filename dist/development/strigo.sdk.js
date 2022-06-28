@@ -11739,13 +11739,13 @@ ${JSON.stringify(parsedContext)}` : "");
         }
         case "submit-assessment" /* SUBMIT_ASSESSMENT */: {
           window.sessionStorage.removeItem("isStrigoRecordingMode");
-          window.opener.postMessage(JSON.stringify({
+          window.opener.postMessage({
             assessment: {
               ...payload.assessment,
               url: window.location.href
             },
             windowName: window.name
-          }), "*");
+          }, "*");
           window.close();
           break;
         }
