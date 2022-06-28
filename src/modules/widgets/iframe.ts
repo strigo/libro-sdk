@@ -2,7 +2,7 @@ import Split from 'split.js';
 
 import { Logger } from '../../services/logger';
 import * as documentTools from '../document/document';
-import { STRIGO_IFRAME_CLASSES, ORIGINAL_WEBSITE_IFRAME_CLASSES } from '../../strigo/consts';
+import { STRIGO_IFRAME_CLASSES, ORIGINAL_WEBSITE_IFRAME_CLASSES, ACADEMY_HAT } from '../../strigo/consts';
 import { hideLoader, showLoader } from '../loader/loader';
 import * as configManager from '../config/config';
 import * as listeners from '../listeners/listeners';
@@ -12,7 +12,18 @@ import { EVENT_TYPES } from '../listeners/listeners.types';
 
 import { IStrigoWidget } from './widget.types';
 
+function setupResizeFunctionality(): Split.Instance {
+  return Split(['#strigo-exercises', '#original-site'], {
+    sizes: [25, 75],
+    maxSize: documentTools.getSplitMaxSizes(),
+    minSize: documentTools.getSplitMinSizes(),
+    gutterSize: 2,
+  });
+}
+
 class IframeWidget implements IStrigoWidget {
+  splitInstance: Split.Instance;
+
   init(): SDK_TYPES {
     let SDKType: SDK_TYPES;
 
@@ -47,6 +58,11 @@ class IframeWidget implements IStrigoWidget {
       url: urlTools.generateCssURL(development, version),
     });
 
+    documentTools.appendCssFile({
+      parentElement: documentTools.getHeadElement(),
+      url: urlTools.generateAcademyHatCssURL(development, version),
+    });
+
     showLoader();
 
     const config = configManager.getConfig();
@@ -68,18 +84,44 @@ class IframeWidget implements IStrigoWidget {
       id: 'original-site',
     });
 
-    Split(['#strigo-exercises', '#original-site'], {
-      sizes: [25, 75],
-      maxSize: documentTools.getSplitMaxSizes(),
-      minSize: documentTools.getSplitMinSizes(),
-      gutterSize: 2,
-    });
+    // Create academy hat
+    const academyHatDiv = document.createElement('div');
+    academyHatDiv.className = 'strigo-academy-hat align-left';
+    academyHatDiv.id = 'strigo-academy-hat';
+
+    academyHatDiv.onclick = () => {
+      const academyHat = document.getElementById('strigo-academy-hat');
+      academyHat.classList.toggle('slide-in');
+
+      this.splitInstance = setupResizeFunctionality();
+    };
+
+    const academyHatIcon = document.createElement('div');
+    academyHatIcon.className = 'strigo-academy-hat-icon';
+    academyHatIcon.id = 'strigo-academy-hat-icon';
+    academyHatIcon.innerHTML = ACADEMY_HAT;
+    academyHatDiv.appendChild(academyHatIcon);
+
+    mainDiv.appendChild(academyHatDiv);
+
+    this.splitInstance = setupResizeFunctionality();
 
     this.initEventListeners(academyPlayerFrame, childFrame);
   }
 
   collapse(): void {
-    // currently not implemented for iframe
+    if (this.splitInstance) {
+      // Can't override the minSize therefore we destroy and create a new instance
+      this.splitInstance.destroy();
+      this.splitInstance = Split(['#strigo-exercises', '#original-site'], {
+        sizes: [25, 75],
+        minSize: 0,
+        gutterSize: 0,
+      });
+      this.splitInstance.collapse(0);
+      const academyHat = document.getElementById('strigo-academy-hat');
+      academyHat.classList.toggle('slide-in');
+    }
   }
 
   shutdown(): void {

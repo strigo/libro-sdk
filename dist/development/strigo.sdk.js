@@ -11652,6 +11652,15 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-widget.min.css`;
   }
+  function generateAcademyHatCssURL(development, version) {
+    if (development) {
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-academy-hat.css`;
+    }
+    if (version) {
+      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
+    }
+    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-academy-hat.min.css`;
+  }
   function generateRecorderCssURL(development, version) {
     if (development) {
       return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-assessment-recorder.css`;
@@ -12464,6 +12473,10 @@ ${JSON.stringify(parsedContext)}` : "");
         parentElement: getHeadElement(),
         url: generateWidgetCssURL(development, version)
       });
+      appendCssFile({
+        parentElement: getHeadElement(),
+        url: generateAcademyHatCssURL(development, version)
+      });
       const academyPlayerFrame = createWidget(generateStrigoIframeURL(getConfig()));
       this.initEventListeners(academyPlayerFrame);
       this.documentObserver = addDocumentObserver(window);
@@ -12577,6 +12590,14 @@ ${JSON.stringify(parsedContext)}` : "");
   }
 
   // src/modules/widgets/iframe.ts
+  function setupResizeFunctionality2() {
+    return split_es_default(["#strigo-exercises", "#original-site"], {
+      sizes: [25, 75],
+      maxSize: getSplitMaxSizes(),
+      minSize: getSplitMinSizes(),
+      gutterSize: 2
+    });
+  }
   var IframeWidget = class {
     init() {
       let SDKType;
@@ -12598,6 +12619,10 @@ ${JSON.stringify(parsedContext)}` : "");
         parentElement: getHeadElement(),
         url: generateCssURL(development, version)
       });
+      appendCssFile({
+        parentElement: getHeadElement(),
+        url: generateAcademyHatCssURL(development, version)
+      });
       showLoader();
       const config = getConfig();
       const mainDiv = generatePageStructure();
@@ -12613,15 +12638,35 @@ ${JSON.stringify(parsedContext)}` : "");
         classNames: ORIGINAL_WEBSITE_IFRAME_CLASSES,
         id: "original-site"
       });
-      split_es_default(["#strigo-exercises", "#original-site"], {
-        sizes: [25, 75],
-        maxSize: getSplitMaxSizes(),
-        minSize: getSplitMinSizes(),
-        gutterSize: 2
-      });
+      const academyHatDiv = document.createElement("div");
+      academyHatDiv.className = "strigo-academy-hat align-left";
+      academyHatDiv.id = "strigo-academy-hat";
+      academyHatDiv.onclick = () => {
+        const academyHat = document.getElementById("strigo-academy-hat");
+        academyHat.classList.toggle("slide-in");
+        this.splitInstance = setupResizeFunctionality2();
+      };
+      const academyHatIcon = document.createElement("div");
+      academyHatIcon.className = "strigo-academy-hat-icon";
+      academyHatIcon.id = "strigo-academy-hat-icon";
+      academyHatIcon.innerHTML = ACADEMY_HAT;
+      academyHatDiv.appendChild(academyHatIcon);
+      mainDiv.appendChild(academyHatDiv);
+      this.splitInstance = setupResizeFunctionality2();
       this.initEventListeners(academyPlayerFrame, childFrame);
     }
     collapse() {
+      if (this.splitInstance) {
+        this.splitInstance.destroy();
+        this.splitInstance = split_es_default(["#strigo-exercises", "#original-site"], {
+          sizes: [25, 75],
+          minSize: 0,
+          gutterSize: 0
+        });
+        this.splitInstance.collapse(0);
+        const academyHat = document.getElementById("strigo-academy-hat");
+        academyHat.classList.toggle("slide-in");
+      }
     }
     shutdown() {
       LoggerInstance.info("iframe shutdown called");
@@ -12761,12 +12806,8 @@ ${JSON.stringify(parsedContext)}` : "");
     collapse() {
       LoggerInstance.info("Collapsing academy panel");
       const { selectedWidgetFlavor } = getConfig();
-      if (selectedWidgetFlavor !== "iframe" /* IFRAME */) {
-        const widget = getWidget(selectedWidgetFlavor);
-        widget.collapse();
-        return;
-      }
-      this.shutdown();
+      const widget = getWidget(selectedWidgetFlavor);
+      widget.collapse();
     }
     shutdown() {
       try {

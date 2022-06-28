@@ -6,6 +6,7 @@ const buildProd = async function () {
     entryPoints: [
       'src/styles/strigo.scss',
       'src/styles/strigo-widget.scss',
+      'src/styles/strigo-academy-hat.scss',
       'src/styles/strigo-assessment-recorder.scss',
       'src/strigo.sdk.ts',
     ],
@@ -25,6 +26,7 @@ const buildDev = async function () {
     entryPoints: [
       'src/styles/strigo.scss',
       'src/styles/strigo-widget.scss',
+      'src/styles/strigo-academy-hat.scss',
       'src/styles/strigo-assessment-recorder.scss',
       'src/strigo.sdk.ts',
     ],

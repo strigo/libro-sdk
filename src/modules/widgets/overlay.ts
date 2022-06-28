@@ -54,10 +54,17 @@ class OverlayWidget implements IOverlayWidget {
 
   setup({ development, version }): void {
     Logger.info('overlay setup called');
+
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
       url: urlTools.generateWidgetCssURL(development, version),
     });
+
+    documentTools.appendCssFile({
+      parentElement: documentTools.getHeadElement(),
+      url: urlTools.generateAcademyHatCssURL(development, version),
+    });
+
     const academyPlayerFrame = documentTools.createWidget(urlTools.generateStrigoIframeURL(configManager.getConfig()));
     this.initEventListeners(academyPlayerFrame);
     this.documentObserver = noCodeAssessment.addDocumentObserver(window);

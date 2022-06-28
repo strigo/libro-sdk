@@ -1,0 +1,47 @@
+/* src/styles/strigo-academy-hat.scss */
+.strigo-academy-hat {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  width: 24px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #3d408f;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2), 0px 8px 24px rgba(0, 0, 0, 0.14);
+  border-radius: 8px 0px 0px 8px;
+  background-color: #3d408f;
+  z-index: 999999;
+  opacity: 0;
+  -webkit-transition: -webkit-transform 0.3s 0.3s;
+  transition: -webkit-transform 0.3s 0.3s;
+  transition: transform 0.3s 0.3s;
+  transition: transform 0.3s 0.3s, -webkit-transform 0.3s 0.3s;
+  -webkit-transform: translate3d(100%, 0, 0);
+  transform: translate3d(100%, 0, 0);
+}
+.strigo-academy-hat.slide-in {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+.strigo-academy-hat.align-left {
+  left: 0;
+  right: unset;
+  border-radius: 0px 8px 8px 0px;
+  -webkit-transform: translate3d(-100%, 0, 0);
+  transform: translate3d(-100%, 0, 0);
+}
+.strigo-academy-hat.align-left.slide-in {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+.strigo-academy-hat:hover {
+  background-color: #adafdc;
+}
+.strigo-academy-hat .strigo-academy-hat-icon {
+  width: 13px;
+  padding-bottom: 2px;
+  fill: #e2e2e7;
+}
