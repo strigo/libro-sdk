@@ -98,13 +98,13 @@ export function addAssessmentRecorderIframe(development: boolean): void {
         case ASSESSMENT_RECORDER_MESSAGE_TYPES.SUBMIT_ASSESSMENT: {
           window.sessionStorage.removeItem('isStrigoRecordingMode');
           window.opener.postMessage(
-            JSON.stringify({
+            {
               assessment: {
                 ...payload.assessment,
                 url: window.location.href,
               },
               windowName: window.name
-            }),
+            },
             '*'
           );
           window.close();
