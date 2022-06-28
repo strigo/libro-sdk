@@ -11,7 +11,7 @@ import { EVENT_TYPES } from '../listeners/listeners.types';
 
 import { IOverlayWidget } from './widget.types';
 
-const MINIMUM_WIDTH = 200;
+const MINIMUM_WIDTH = 342;
 
 function makeOverlayWidgetVisible(): void {
   document.getElementById('strigo-widget').classList.add('slide-in');
@@ -19,6 +19,7 @@ function makeOverlayWidgetVisible(): void {
 }
 
 function setupResizeFunctionality(): void {
+  const [maxWidth] = documentTools.getSplitMaxSizes();
   interact('#strigo-widget').resizable({
     // resize from left edge
     edges: { left: '#strigo-collapse-div', right: '#strigo-collapse-div.align-left', bottom: false, top: false },
@@ -29,7 +30,12 @@ function setupResizeFunctionality(): void {
         const x = parseFloat(target.getAttribute('data-x')) || 0;
 
         // update the element's style
-        target.style.width = ((event.rect.width < MINIMUM_WIDTH ? MINIMUM_WIDTH : event.rect.width) as string) + 'px';
+        target.style.width =
+          ((event.rect.width < MINIMUM_WIDTH
+            ? MINIMUM_WIDTH
+            : event.rect.width > maxWidth
+            ? maxWidth
+            : event.rect.width) as string) + 'px';
 
         target.setAttribute('data-x', x);
       },

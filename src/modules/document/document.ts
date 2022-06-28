@@ -52,7 +52,7 @@ export function isMobile(): boolean {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-export function getSplitMaxSizes(): number[] {
+export function getSplitMaxSizes(): [number, number] {
   if (isMobile()) {
     return [window.screen.width, window.screen.width];
   }
@@ -60,7 +60,7 @@ export function getSplitMaxSizes(): number[] {
   return [window.screen.width / 2, window.screen.width];
 }
 
-export function getSplitMinSizes(): number[] {
+export function getSplitMinSizes(): [number, number] {
   if (isMobile()) {
     return [0, 0];
   }
