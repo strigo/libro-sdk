@@ -51,11 +51,11 @@
 #strigo-widget .strigo-collapse-div {
   width: 4px;
   height: 100%;
-  background: #3d408f;
+  background-color: #adafdc;
   border: none;
 }
 #strigo-widget .strigo-collapse-div:hover {
-  background: #696cbf;
+  background-color: #00aec7;
 }
 #strigo-widget .strigo-collapse-div.slide-in {
   display: none;
