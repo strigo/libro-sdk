@@ -109,6 +109,8 @@ class IframeWidget implements IStrigoWidget {
     this.initEventListeners(academyPlayerFrame, childFrame);
   }
 
+  move: () => void;
+
   collapse(): void {
     if (this.splitInstance) {
       // Can't override the minSize therefore we destroy and create a new instance

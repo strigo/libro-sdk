@@ -96,6 +96,10 @@ export function move(): void {
   widget.classList.toggle('align-left');
   collapseDiv.classList.toggle('align-left');
   academyHat.classList.toggle('align-left');
+
+  const dockingSide = widget.classList.contains('align-left') ? 'left' : 'right';
+  const strigoIframe = document.getElementById('strigo-exercises') as HTMLIFrameElement;
+  strigoIframe.contentWindow.postMessage({ dockingSide }, '*');
 }
 
 export function toggleWidget(): void {

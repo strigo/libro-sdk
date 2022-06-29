@@ -16,6 +16,9 @@ const MINIMUM_WIDTH = 342;
 function makeOverlayWidgetVisible(): void {
   document.getElementById('strigo-widget').classList.add('slide-in');
   document.getElementById('strigo-widget').classList.add('loaded');
+
+  const strigoIframe = document.getElementById('strigo-exercises') as HTMLIFrameElement;
+  strigoIframe.contentWindow.postMessage({ dockable: 'true', dockingSide: 'right' }, '*');
 }
 
 function setupResizeFunctionality(): void {

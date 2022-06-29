@@ -11051,6 +11051,9 @@ ${JSON.stringify(parsedContext)}` : "");
     widget.classList.toggle("align-left");
     collapseDiv.classList.toggle("align-left");
     academyHat.classList.toggle("align-left");
+    const dockingSide = widget.classList.contains("align-left") ? "left" : "right";
+    const strigoIframe = document.getElementById("strigo-exercises");
+    strigoIframe.contentWindow.postMessage({ dockingSide }, "*");
   }
   function toggleWidget() {
     const widget = document.getElementById("strigo-widget");
@@ -11637,7 +11640,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7002"}/styles/strigo.css`;
+      return `http://localhost:${"7000"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11646,7 +11649,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7002"}/styles/strigo-widget.css`;
+      return `http://localhost:${"7000"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11655,7 +11658,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateAcademyHatCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7002"}/styles/strigo-academy-hat.css`;
+      return `http://localhost:${"7000"}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
@@ -11664,7 +11667,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7002"}/styles/strigo-assessment-recorder.css`;
+      return `http://localhost:${"7000"}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -12512,6 +12515,8 @@ ${JSON.stringify(parsedContext)}` : "");
   function makeOverlayWidgetVisible() {
     document.getElementById("strigo-widget").classList.add("slide-in");
     document.getElementById("strigo-widget").classList.add("loaded");
+    const strigoIframe = document.getElementById("strigo-exercises");
+    strigoIframe.contentWindow.postMessage({ dockable: "true", dockingSide: "right" }, "*");
   }
   function setupResizeFunctionality() {
     const [maxWidth] = getSplitMaxSizes();

@@ -8,7 +8,6 @@ import { Logger } from '../services/logger';
 import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MESSAGE_TYPES } from '../modules/listeners/listeners.types';
 import { startElementSelector } from '../modules/element-selector/element-selector';
-import { WIDGET_FLAVORS } from '../modules/widgets/widget.types';
 
 import { SDKSetupData, SDK_TYPES, IStrigoSDK, SdkConfig } from './types';
 
