@@ -77,7 +77,7 @@ class OverlayWidget implements IOverlayWidget {
     const academyPlayerFrame = documentTools.createWidget(urlTools.generateStrigoIframeURL(configManager.getConfig()));
     this.initEventListeners(academyPlayerFrame);
     console.log('adding observer');
-    this.documentObserver = noCodeAssessment.addDocumentObserver(window);
+    // this.documentObserver = noCodeAssessment.addDocumentObserver(window);
 
     console.log('observer added');
     setupResizeFunctionality();
