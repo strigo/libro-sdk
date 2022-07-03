@@ -1,17 +1,18 @@
 import { Logger } from '../../services/logger';
 import { clearStorage, getStorageData, setStorageValue, setupStorage } from '../storage-utils/storage-utils';
 import { STORAGE_NAMES, STORAGE_TYPES } from '../storage-utils/storage-utils.types';
+import { LOCAL_STRIGO_URL } from '../../strigo/consts';
 
 import { StrigoConfig, StrigoInitConfig, StrigoProtectedConfig, StrigoSetupConfig, StrigoToken } from './config.types';
 
-export function getConfig(): StrigoConfig {
+export function getLocalStorageConfig(): StrigoConfig {
   const config = getStorageData<StrigoConfig>(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG);
 
   return config;
 }
 
-export function init(initConfig: StrigoInitConfig): StrigoConfig {
-  const config = getConfig();
+export function initLocalStorageConfig(initConfig: StrigoInitConfig): StrigoConfig {
+  const config = getLocalStorageConfig();
 
   const initializedConfig = setupStorage<StrigoConfig>(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG, {
     ...config,
@@ -21,8 +22,8 @@ export function init(initConfig: StrigoInitConfig): StrigoConfig {
   return initializedConfig;
 }
 
-export function setup(setupConfig: StrigoSetupConfig): StrigoConfig {
-  const currentConfig = getConfig();
+export function setupLocalStorageConfig(setupConfig: StrigoSetupConfig): StrigoConfig {
+  const currentConfig = getLocalStorageConfig();
 
   const config = setupStorage<StrigoConfig>(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG, {
     ...currentConfig,
@@ -39,7 +40,7 @@ export function setConfigValue(key: keyof StrigoConfig, value: any): StrigoConfi
 }
 
 export function getConfigValue(key: keyof StrigoConfig): any {
-  const session = getConfig();
+  const session = getLocalStorageConfig();
 
   return session?.[key];
 }
@@ -48,12 +49,9 @@ export function clearConfig(): void {
   clearStorage(STORAGE_TYPES.LOCAL_STORAGE, STORAGE_NAMES.STRIGO_CONFIG);
 }
 
-export async function fetchRemoteConfiguration(
-  token: StrigoToken,
-  development: boolean
-): Promise<StrigoProtectedConfig | null> {
+export async function fetchRemoteConfiguration(token: StrigoToken): Promise<StrigoProtectedConfig | null> {
   try {
-    const configDomain = development ? 'http://localhost:3000' : 'https://app.strigo.io';
+    const configDomain = window.Strigo.isDevelopment() ? LOCAL_STRIGO_URL : 'https://app.strigo.io';
     const response = await fetch(`${configDomain}/api/internal/academy/v1/config`, {
       method: 'GET',
       headers: {

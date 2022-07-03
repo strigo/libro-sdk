@@ -3,7 +3,6 @@ import { StrigoToken } from '../modules/config/config.types';
 export interface SDKSetupData {
   email: string;
   token: StrigoToken;
-  development?: boolean;
   version?: string;
   openWidget?: boolean;
 }
@@ -29,8 +28,10 @@ export interface IStrigoSDK {
   shutdown: () => void;
   destroy: () => void;
   sendEvent: (eventName: string) => void;
-  assessmentRecorder: (development: boolean) => void;
+  assessmentRecorder: () => void;
   startElementSelector: (onElementProfileCreated: any, rootElementSelector?: string) => void;
+  config: SdkConfig;
+  isDevelopment: () => boolean;
 }
 
 export interface StrigoWindow extends Window {

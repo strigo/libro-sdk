@@ -60,23 +60,26 @@ class OverlayWidget implements IOverlayWidget {
     return SDK_TYPES.OVERLAY;
   }
 
-  setup({ development, version }): void {
+  setup({ version }): void {
     Logger.info('overlay setup called');
 
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
-      url: urlTools.generateWidgetCssURL(development, version),
+      url: urlTools.generateWidgetCssURL(version),
     });
 
     documentTools.appendCssFile({
       parentElement: documentTools.getHeadElement(),
-      url: urlTools.generateAcademyHatCssURL(development, version),
+      url: urlTools.generateAcademyHatCssURL(version),
     });
 
-    const academyPlayerFrame = documentTools.createWidget(urlTools.generateStrigoIframeURL(configManager.getConfig()));
-    this.initEventListeners(academyPlayerFrame);
+    const academyPlayerFrame = documentTools.createWidget(
+      urlTools.generateStrigoIframeURL(configManager.getLocalStorageConfig())
+    );
+    const hostingAppWindow = documentTools.getHostingAppWindow();
+    this.initEventListeners(hostingAppWindow, academyPlayerFrame);
     console.log('adding observer');
-    // this.documentObserver = noCodeAssessment.addDocumentObserver(window);
+    this.documentObserver = noCodeAssessment.initDocumentObserver(hostingAppWindow);
 
     console.log('observer added');
     setupResizeFunctionality();
@@ -84,10 +87,11 @@ class OverlayWidget implements IOverlayWidget {
 
   shutdown(): void {
     Logger.info('overlay shutdown called');
-    this.removeEventListeners();
-    window?.strigoObserver?.observer?.disconnect();
+    const hostingAppWindow = documentTools.getHostingAppWindow();
+    this.removeEventListeners(hostingAppWindow);
+    hostingAppWindow?.strigoObserver?.observer?.disconnect();
     // this.documentObserver.disconnect();
-    documentTools.removeWidget();
+    documentTools.removeWidget(hostingAppWindow);
   }
 
   collapse(): void {
@@ -96,7 +100,8 @@ class OverlayWidget implements IOverlayWidget {
   }
 
   open(): void {
-    documentTools.openWidget();
+    const hostingAppWindow = documentTools.getHostingAppWindow();
+    documentTools.openWidget(hostingAppWindow);
   }
 
   move(): void {
@@ -107,15 +112,15 @@ class OverlayWidget implements IOverlayWidget {
     listeners.storageChanged(customEvent?.detail);
   };
 
-  private initEventListeners(academyPlayerFrame: HTMLIFrameElement): void {
-    listeners.initAcademyPlayerLoadedListeners(academyPlayerFrame, makeOverlayWidgetVisible);
-    listeners.initHostEventListeners();
-    window.addEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, this.onStrigoEventHandler);
+  private initEventListeners(hostingAppWindow: Window, academyPanelFrame: HTMLIFrameElement): void {
+    listeners.initAcademyPanelLoadedListeners(academyPanelFrame, makeOverlayWidgetVisible);
+    listeners.initHostEventListeners(hostingAppWindow);
+    hostingAppWindow.addEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, this.onStrigoEventHandler);
   }
 
-  private removeEventListeners(): void {
+  private removeEventListeners(hostingAppWindow: Window): void {
     listeners.removeHostEventListeners();
-    window.removeEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, this.onStrigoEventHandler);
+    hostingAppWindow.removeEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, this.onStrigoEventHandler);
   }
 }
 

@@ -21,15 +21,15 @@ export function isRecordingMode(): boolean {
   return false;
 }
 
-export function addAssessmentRecorderIframe(development: boolean): void {
+export function addAssessmentRecorderIframe(): void {
   window.sessionStorage.setItem('isStrigoRecordingMode', 'true');
 
   if (document.getElementById('strigo-assessment-recorder-iframe')) {
     return;
   }
 
-  const assessmentRecorderUrl = generateAssessmentRecorderURL(development);
-  appendCssFile({ parentElement: getHeadElement(), url: generateRecorderCssURL(development) });
+  const assessmentRecorderUrl = generateAssessmentRecorderURL();
+  appendCssFile({ parentElement: getHeadElement(), url: generateRecorderCssURL() });
   const assessmentRecorderIframe = appendIFrame({
     classNames: ['strigo-assessment-recorder-iframe', 'drawer', 'is-open'],
     id: 'strigo-assessment-recorder-iframe',

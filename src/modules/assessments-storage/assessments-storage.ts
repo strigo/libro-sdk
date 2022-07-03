@@ -14,7 +14,7 @@ export function getAssessmentsStorageData(): StrigoAssessmentsStorage {
   }
 }
 
-export function init(): StrigoAssessmentsStorage {
+export function initAssessmentStorage(): StrigoAssessmentsStorage {
   try {
     const currentAssessmentsStorage = getAssessmentsStorageData();
 
@@ -35,7 +35,7 @@ export function init(): StrigoAssessmentsStorage {
   }
 }
 
-export function setup(initialStorage?: Assessment[]): StrigoAssessmentsStorage {
+export function setupAssessmentStorage(initialStorage?: Assessment[]): StrigoAssessmentsStorage {
   try {
     const strigoAssessments = initialStorage ? { assessments: [...initialStorage] } : { assessments: [] };
     window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_ASSESSMENTS, JSON.stringify(strigoAssessments));

@@ -47,20 +47,20 @@ class Logger {
   }
 
   getDefaultContext(): Record<string, any> {
-    const config = configManager.getConfig();
+    const config = configManager.getLocalStorageConfig();
 
     if (!config) {
       return {};
     }
 
-    const { user, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
+    const { user, subDomain, initSite, version, selectedWidgetFlavor } = config;
 
     // Explicitly not adding email and webApiKey because of GDPR and privacy concerns
     return {
       token: user?.token.token,
       initSite: initSite?.href,
       subDomain,
-      development,
+      development: window.Strigo.isDevelopment(),
       version,
       selectedWidgetFlavor,
     };
@@ -77,7 +77,7 @@ class Logger {
     const enrichedContext = { ...this.getDefaultContext(), ...context };
 
     try {
-      if (this.url && !configManager.getConfig()?.development) {
+      if (this.url && window.Strigo.isDevelopment()) {
         this.logToRemote(level, message, enrichedContext);
       }
 

@@ -17,6 +17,7 @@ export interface LoggingConfig {
 export interface StrigoProtectedConfig {
   loggingConfig: LoggingConfig;
   userAssessments: Assessment[];
+  allowedDomains: string[];
 }
 
 export interface User {
@@ -33,7 +34,6 @@ export interface StrigoInitConfig {
 export interface StrigoSetupConfig {
   user: User;
   initSite: SiteConfig;
-  development: boolean;
   version?: string;
   loggingConfig?: LoggingConfig;
 }
@@ -43,7 +43,6 @@ export interface StrigoConfig {
   webApiKey: string;
   initSite?: SiteConfig;
   subDomain: string;
-  development?: boolean;
   version?: string;
   selectedWidgetFlavor: WIDGET_FLAVORS;
   loggingConfig?: LoggingConfig;

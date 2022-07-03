@@ -45,10 +45,10 @@ export function getUrlData(): SiteConfig {
 }
 
 export function generateStrigoIframeURL(config: StrigoConfig): string {
-  const { subDomain, user, webApiKey, development } = config;
+  const { subDomain, user, webApiKey } = config;
 
-  return development
-    ? `http://${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`
+  return window.Strigo.isDevelopment()
+    ? `${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`
     : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`;
 }
 
@@ -82,9 +82,9 @@ export function extractInitScriptParams(): InitScriptParams {
   };
 }
 
-export function generateCssURL(development: boolean, version?: string): string {
-  if (development) {
-    return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
+export function generateCssURL(version?: string): string {
+  if (window.Strigo.isDevelopment()) {
+    return `${SDK_LOCAL_URL}/styles/strigo.css`;
   }
 
   if (version) {
@@ -94,9 +94,9 @@ export function generateCssURL(development: boolean, version?: string): string {
   return `${CDN_BASE_PATH}@master/dist/production/styles/strigo.min.css`;
 }
 
-export function generateWidgetCssURL(development: boolean, version?: string): string {
-  if (development) {
-    return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
+export function generateWidgetCssURL(version?: string): string {
+  if (window.Strigo.isDevelopment()) {
+    return `${SDK_LOCAL_URL}/styles/strigo-widget.css`;
   }
 
   if (version) {
@@ -106,9 +106,9 @@ export function generateWidgetCssURL(development: boolean, version?: string): st
   return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-widget.min.css`;
 }
 
-export function generateAcademyHatCssURL(development: boolean, version?: string): string {
-  if (development) {
-    return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-academy-hat.css`;
+export function generateAcademyHatCssURL(version?: string): string {
+  if (window.Strigo.isDevelopment()) {
+    return `${SDK_LOCAL_URL}/styles/strigo-academy-hat.css`;
   }
 
   if (version) {
@@ -118,9 +118,9 @@ export function generateAcademyHatCssURL(development: boolean, version?: string)
   return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-academy-hat.min.css`;
 }
 
-export function generateRecorderCssURL(development: boolean, version?: string): string {
-  if (development) {
-    return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-assessment-recorder.css`;
+export function generateRecorderCssURL(version?: string): string {
+  if (window.Strigo.isDevelopment()) {
+    return `${SDK_LOCAL_URL}/styles/strigo-assessment-recorder.css`;
   }
 
   if (version) {
@@ -130,8 +130,8 @@ export function generateRecorderCssURL(development: boolean, version?: string): 
   return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
 }
 
-export function generateAssessmentRecorderURL(development: boolean): string {
-  return development ? `http://localhost:${RECORDER_HOSTING_PORT}` : ASSESSMENT_RECORDER_URL;
+export function generateAssessmentRecorderURL(): string {
+  return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;
 }
 
 export function isRecordingUrlParamExists(): boolean {
@@ -139,11 +139,4 @@ export function isRecordingUrlParamExists(): boolean {
   const urlParams = extractUrlParams(search);
 
   return 'strigoAssessmentRecorder' in urlParams;
-}
-
-export function isDevelopment(): boolean {
-  const { search } = window.location;
-  const urlParams = extractUrlParams(search);
-
-  return 'development' in urlParams;
 }

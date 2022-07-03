@@ -10,7 +10,7 @@ export function init(): StrigoSession {
   return session as StrigoSession;
 }
 
-export function setup(initialSession: StrigoSession): StrigoSession {
+export function setupSessionStorage(initialSession: StrigoSession): StrigoSession {
   const session = setupStorage<StrigoSession>(
     STORAGE_TYPES.SESSION_STORAGE,
     STORAGE_NAMES.STRIGO_SESSION,

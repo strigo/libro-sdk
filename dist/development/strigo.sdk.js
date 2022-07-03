@@ -1,3 +1,4 @@
+/*global chrome*/
 (() => {
   var __create = Object.create;
   var __defProp = Object.defineProperty;
@@ -200,12 +201,12 @@
         };
         var parseDocumentSize = function(document3) {
           var body = document3.body;
-          var documentElement = document3.documentElement;
-          if (!body || !documentElement) {
+          var documentElement2 = document3.documentElement;
+          if (!body || !documentElement2) {
             throw new Error("Unable to get document size");
           }
-          var width = Math.max(Math.max(body.scrollWidth, documentElement.scrollWidth), Math.max(body.offsetWidth, documentElement.offsetWidth), Math.max(body.clientWidth, documentElement.clientWidth));
-          var height = Math.max(Math.max(body.scrollHeight, documentElement.scrollHeight), Math.max(body.offsetHeight, documentElement.offsetHeight), Math.max(body.clientHeight, documentElement.clientHeight));
+          var width = Math.max(Math.max(body.scrollWidth, documentElement2.scrollWidth), Math.max(body.offsetWidth, documentElement2.offsetWidth), Math.max(body.clientWidth, documentElement2.clientWidth));
+          var height = Math.max(Math.max(body.scrollHeight, documentElement2.scrollHeight), Math.max(body.offsetHeight, documentElement2.offsetHeight), Math.max(body.clientHeight, documentElement2.clientHeight));
           return new Bounds(0, 0, width, height);
         };
         var toCodePoints$1 = function(str) {
@@ -10845,21 +10846,33 @@
     }
   }
 
+  // src/strigo/consts.ts
+  var INIT_SCRIPT_ID = "strigo-sdk";
+  var BASE_STRIGO_URL = "strigo.io";
+  var STRIGO_IFRAME_CLASSES = ["strigo-exercises"];
+  var ORIGINAL_WEBSITE_IFRAME_CLASSES = ["orig-iframe"];
+  var ACADEMY_HAT = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M623.1 136.9l-282.7-101.2c-13.73-4.91-28.7-4.91-42.43 0L16.05 136.9C6.438 140.4 0 149.6 0 160s6.438 19.65 16.05 23.09L76.07 204.6c-11.89 15.8-20.26 34.16-24.55 53.95C40.05 263.4 32 274.8 32 288c0 9.953 4.814 18.49 11.94 24.36l-24.83 149C17.48 471.1 25 480 34.89 480H93.11c9.887 0 17.41-8.879 15.78-18.63l-24.83-149C91.19 306.5 96 297.1 96 288c0-10.29-5.174-19.03-12.72-24.89c4.252-17.76 12.88-33.82 24.94-47.03l190.6 68.23c13.73 4.91 28.7 4.91 42.43 0l282.7-101.2C633.6 179.6 640 170.4 640 160S633.6 140.4 623.1 136.9zM351.1 314.4C341.7 318.1 330.9 320 320 320c-10.92 0-21.69-1.867-32-5.555L142.8 262.5L128 405.3C128 446.6 213.1 480 320 480c105.1 0 192-33.4 192-74.67l-14.78-142.9L351.1 314.4z"/></svg>
+`;
+  var CDN_BASE_PATH = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk";
+  var ASSESSMENT_RECORDER_URL = "https://assessment-recorder.web.app";
+  var LOCAL_STRIGO_URL = "http://local.strigo.io:3000";
+
   // src/modules/config/config.ts
-  function getConfig() {
+  function getLocalStorageConfig() {
     const config = getStorageData("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */);
     return config;
   }
-  function init(initConfig) {
-    const config = getConfig();
+  function initLocalStorageConfig(initConfig) {
+    const config = getLocalStorageConfig();
     const initializedConfig = setupStorage("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */, {
       ...config,
       ...initConfig
     });
     return initializedConfig;
   }
-  function setup(setupConfig) {
-    const currentConfig = getConfig();
+  function setupLocalStorageConfig(setupConfig) {
+    const currentConfig = getLocalStorageConfig();
     const config = setupStorage("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */, {
       ...currentConfig,
       ...setupConfig
@@ -10867,15 +10880,15 @@
     return config;
   }
   function getConfigValue(key) {
-    const session = getConfig();
+    const session = getLocalStorageConfig();
     return session?.[key];
   }
   function clearConfig() {
     clearStorage("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */);
   }
-  async function fetchRemoteConfiguration(token, development) {
+  async function fetchRemoteConfiguration(token) {
     try {
-      const configDomain = development ? "http://localhost:3000" : "https://app.strigo.io";
+      const configDomain = window.Strigo.isDevelopment() ? LOCAL_STRIGO_URL : "https://app.strigo.io";
       const response = await fetch(`${configDomain}/api/internal/academy/v1/config`, {
         method: "GET",
         headers: {
@@ -10928,16 +10941,16 @@
 ${JSON.stringify(parsedContext)}` : "");
     }
     getDefaultContext() {
-      const config = getConfig();
+      const config = getLocalStorageConfig();
       if (!config) {
         return {};
       }
-      const { user, subDomain, initSite, development, version, selectedWidgetFlavor } = config;
+      const { user, subDomain, initSite, version, selectedWidgetFlavor } = config;
       return {
         token: user?.token.token,
         initSite: initSite?.href,
         subDomain,
-        development,
+        development: window.Strigo.isDevelopment(),
         version,
         selectedWidgetFlavor
       };
@@ -10945,7 +10958,7 @@ ${JSON.stringify(parsedContext)}` : "");
     log(level, message, context) {
       const enrichedContext = { ...this.getDefaultContext(), ...context };
       try {
-        if (this.url && !getConfig()?.development) {
+        if (this.url && window.Strigo.isDevelopment()) {
           this.logToRemote(level, message, enrichedContext);
         }
         this.logToConsole(level, `Academy - ${message}`, enrichedContext);
@@ -10968,19 +10981,10 @@ ${JSON.stringify(parsedContext)}` : "");
   };
   var LoggerInstance = new Logger();
 
-  // src/strigo/consts.ts
-  var INIT_SCRIPT_ID = "strigo-sdk";
-  var BASE_STRIGO_URL = "strigo.io";
-  var LOCAL_STRIGO_URL = "localhost:3000";
-  var STRIGO_IFRAME_CLASSES = ["strigo-exercises"];
-  var ORIGINAL_WEBSITE_IFRAME_CLASSES = ["orig-iframe"];
-  var ACADEMY_HAT = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M623.1 136.9l-282.7-101.2c-13.73-4.91-28.7-4.91-42.43 0L16.05 136.9C6.438 140.4 0 149.6 0 160s6.438 19.65 16.05 23.09L76.07 204.6c-11.89 15.8-20.26 34.16-24.55 53.95C40.05 263.4 32 274.8 32 288c0 9.953 4.814 18.49 11.94 24.36l-24.83 149C17.48 471.1 25 480 34.89 480H93.11c9.887 0 17.41-8.879 15.78-18.63l-24.83-149C91.19 306.5 96 297.1 96 288c0-10.29-5.174-19.03-12.72-24.89c4.252-17.76 12.88-33.82 24.94-47.03l190.6 68.23c13.73 4.91 28.7 4.91 42.43 0l282.7-101.2C633.6 179.6 640 170.4 640 160S633.6 140.4 623.1 136.9zM351.1 314.4C341.7 318.1 330.9 320 320 320c-10.92 0-21.69-1.867-32-5.555L142.8 262.5L128 405.3C128 446.6 213.1 480 320 480c105.1 0 192-33.4 192-74.67l-14.78-142.9L351.1 314.4z"/></svg>
-`;
-  var CDN_BASE_PATH = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk";
-  var ASSESSMENT_RECORDER_URL = "https://assessment-recorder.web.app";
-
   // src/modules/document/document.ts
+  function getHostingAppWindow() {
+    return window.top;
+  }
   function getHeadElement() {
     return document.getElementsByTagName("head")[0];
   }
@@ -11087,19 +11091,15 @@ ${JSON.stringify(parsedContext)}` : "");
     widgetDiv.id = "strigo-widget";
     widgetDiv.appendChild(collapseDiv);
     widgetDiv.appendChild(strigoExercisesIframe);
-    const overlayDiv = document.createElement("div");
-    overlayDiv.id = "strigo-widget-overlay";
-    overlayDiv.className = "strigo-widget-overlay invisible";
     document.body.appendChild(widgetDiv);
     document.body.appendChild(academyHatDiv);
-    document.body.appendChild(overlayDiv);
     return strigoExercisesIframe;
   }
-  function removeWidget() {
-    document.getElementById("strigo-widget").remove();
+  function removeWidget(hostingAppWindow) {
+    hostingAppWindow.document.getElementById("strigo-widget").remove();
   }
-  function openWidget() {
-    const widget = document.getElementById("strigo-widget");
+  function openWidget(hostingAppWindow) {
+    const widget = hostingAppWindow.document.getElementById("strigo-widget");
     if (widget.classList.contains("slide-in")) {
       return;
     }
@@ -11616,8 +11616,8 @@ ${JSON.stringify(parsedContext)}` : "");
     };
   }
   function generateStrigoIframeURL(config) {
-    const { subDomain, user, webApiKey, development } = config;
-    return development ? `http://${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}` : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`;
+    const { subDomain, user, webApiKey } = config;
+    return window.Strigo.isDevelopment() ? `${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}` : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`;
   }
   function generateStrigoChildIframeURL(url) {
     const currentUrl = new URL(url);
@@ -11642,54 +11642,49 @@ ${JSON.stringify(parsedContext)}` : "");
       selectedWidgetFlavor: initScript?.getAttribute("data-layout-flavor") || "dynamic" /* DYNAMIC */
     };
   }
-  function generateCssURL(development, version) {
-    if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
+  function generateCssURL(version) {
+    if (window.Strigo.isDevelopment()) {
+      return `${"http://local.strigo.io:7002"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
     }
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo.min.css`;
   }
-  function generateWidgetCssURL(development, version) {
-    if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
+  function generateWidgetCssURL(version) {
+    if (window.Strigo.isDevelopment()) {
+      return `${"http://local.strigo.io:7002"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
     }
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-widget.min.css`;
   }
-  function generateAcademyHatCssURL(development, version) {
-    if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-academy-hat.css`;
+  function generateAcademyHatCssURL(version) {
+    if (window.Strigo.isDevelopment()) {
+      return `${"http://local.strigo.io:7002"}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
     }
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-academy-hat.min.css`;
   }
-  function generateRecorderCssURL(development, version) {
-    if (development) {
-      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-assessment-recorder.css`;
+  function generateRecorderCssURL(version) {
+    if (window.Strigo.isDevelopment()) {
+      return `${"http://local.strigo.io:7002"}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
     }
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
-  function generateAssessmentRecorderURL(development) {
-    return development ? `http://localhost:${RECORDER_HOSTING_PORT}` : ASSESSMENT_RECORDER_URL;
+  function generateAssessmentRecorderURL() {
+    return window.Strigo.isDevelopment() ? "http://local.strigo.io:7015" : ASSESSMENT_RECORDER_URL;
   }
   function isRecordingUrlParamExists() {
     const { search } = window.location;
     const urlParams = extractUrlParams(search);
     return "strigoAssessmentRecorder" in urlParams;
-  }
-  function isDevelopment() {
-    const { search } = window.location;
-    const urlParams = extractUrlParams(search);
-    return "development" in urlParams;
   }
 
   // src/modules/assessment-recorder/assessment-recorder.ts
@@ -11699,13 +11694,13 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     return false;
   }
-  function addAssessmentRecorderIframe(development) {
+  function addAssessmentRecorderIframe() {
     window.sessionStorage.setItem("isStrigoRecordingMode", "true");
     if (document.getElementById("strigo-assessment-recorder-iframe")) {
       return;
     }
-    const assessmentRecorderUrl = generateAssessmentRecorderURL(development);
-    appendCssFile({ parentElement: getHeadElement(), url: generateRecorderCssURL(development) });
+    const assessmentRecorderUrl = generateAssessmentRecorderURL();
+    appendCssFile({ parentElement: getHeadElement(), url: generateRecorderCssURL() });
     const assessmentRecorderIframe = appendIFrame({
       classNames: ["strigo-assessment-recorder-iframe", "drawer", "is-open"],
       id: "strigo-assessment-recorder-iframe",
@@ -11779,7 +11774,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
 
   // src/modules/session/session.ts
-  function setup2(initialSession) {
+  function setupSessionStorage(initialSession) {
     const session = setupStorage("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */, initialSession);
     return session;
   }
@@ -11814,7 +11809,7 @@ ${JSON.stringify(parsedContext)}` : "");
       return null;
     }
   }
-  function init2() {
+  function initEventsStorage() {
     try {
       const currentEventsStorage = getEventsStorageData();
       if (currentEventsStorage) {
@@ -11898,7 +11893,7 @@ ${JSON.stringify(parsedContext)}` : "");
       return null;
     }
   }
-  function init3() {
+  function initAssessmentStorage() {
     try {
       const currentAssessmentsStorage = getAssessmentsStorageData();
       if (currentAssessmentsStorage) {
@@ -11913,7 +11908,7 @@ ${JSON.stringify(parsedContext)}` : "");
       return null;
     }
   }
-  function setup3(initialStorage) {
+  function setupAssessmentStorage(initialStorage) {
     try {
       const strigoAssessments = initialStorage ? { assessments: [...initialStorage] } : { assessments: [] };
       window["localStorage" /* LOCAL_STORAGE */].setItem("strigoAssessments" /* STRIGO_ASSESSMENTS */, JSON.stringify(strigoAssessments));
@@ -12418,6 +12413,122 @@ ${JSON.stringify(parsedContext)}` : "");
 
   // src/modules/widgets/overlay.ts
   var import_interactjs = __toESM(require_interact_min(), 1);
+
+  // src/modules/no-code-assessment/no-code-assessment.ts
+  var observerOptions = {
+    subtree: true,
+    characterData: true,
+    childList: true
+  };
+  var locationHandlers = {};
+  var assessmentStatuses = {};
+  var windowElement;
+  var documentElement;
+  var assessments;
+  function assessAddedItems(mutations) {
+    const exampleElementProfile = this.assessment.recordedAssessment?.exampleElement?.profile;
+    if (!exampleElementProfile) {
+      return;
+    }
+    if (!mutations.some((mutation) => mutation.addedNodes?.length > 0)) {
+      console.log("No nodes were added...");
+      return;
+    }
+    let exampleElementSelector;
+    try {
+      exampleElementSelector = getElementSelector(exampleElementProfile, true);
+    } catch {
+      return;
+    }
+    const { challengeSuccessEvent, _id } = this.assessment;
+    const currentExampleElementCount = this.locationElement.querySelectorAll(exampleElementSelector)?.length || 0;
+    const previousExampleElementCount = window.sessionStorage.getItem(_id);
+    if (!previousExampleElementCount) {
+      window.sessionStorage.setItem(_id, currentExampleElementCount);
+      return;
+    }
+    if (currentExampleElementCount > parseInt(previousExampleElementCount)) {
+      assessmentStatuses[_id] = "success";
+      this.windowElement.Strigo.sendEvent(challengeSuccessEvent);
+      locationHandlers[_id].observer.disconnect();
+      delete locationHandlers[_id];
+    }
+  }
+  var observerHandler = function(pageMutations) {
+    debugger;
+    if (!pageMutations.some((mutation) => mutation.addedNodes?.length > 0)) {
+      console.log("No nodes were added to page...");
+      return;
+    }
+    assessments.forEach((assessment) => {
+      const { recordedAssessment, challengeSuccessEvent, _id } = assessment;
+      const { actionType, expectedText } = recordedAssessment;
+      const locationElementProfile = recordedAssessment?.locationElement?.profile;
+      if (assessmentStatuses?.[_id] === "success" || !locationElementProfile) {
+        return;
+      }
+      assessmentStatuses[_id] = "pending";
+      let locationElement;
+      try {
+        const locationElementSelector = getElementSelector(locationElementProfile);
+        locationElement = documentElement.querySelector(locationElementSelector);
+      } catch (err) {
+        return;
+      }
+      switch (actionType) {
+        case "added-item" /* ADDED_ITEM */: {
+          if (locationHandlers[_id]?.observer && locationElement === locationHandlers[_id].element) {
+            locationHandlers[_id].element = locationElement;
+            LoggerInstance.info("Same reference - no need to observe again");
+            return;
+          }
+          if (locationElement[_id]?.observer) {
+            locationElement[_id].observer.observe(locationElement, observerOptions);
+            LoggerInstance.info("DOM Reference have changed - observing again");
+            return;
+          }
+          locationHandlers[_id] = {
+            element: locationElement,
+            observer: new MutationObserver(assessAddedItems.bind({ assessment, locationElement, windowElement }))
+          };
+          locationHandlers[_id].observer.observe(locationElement, observerOptions);
+          break;
+        }
+        case "text-change" /* TEXT_CHANGE */: {
+          if (locationElement?.innerText?.includes(expectedText) || locationElement?.value?.includes(expectedText)) {
+            assessmentStatuses[_id] = "success";
+            LoggerInstance.info(`sent event ${challengeSuccessEvent}`);
+            windowElement.Strigo.sendEvent(challengeSuccessEvent);
+          }
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    });
+  };
+  var initDocumentObserver = function(windowToObserve) {
+    debugger;
+    windowElement = windowToObserve;
+    documentElement = windowElement.document;
+    assessments = getAssessmentsStorageData().assessments.filter(({ assessmentType }) => assessmentType === "recorded-flow");
+    if (!windowElement?.strigoObserver?.observer) {
+      windowElement.strigoObserver = {
+        observer: new MutationObserver(observerHandler),
+        element: windowElement.document.body
+      };
+      windowElement?.strigoObserver?.observer?.observe(windowElement.document, observerOptions);
+      return;
+    }
+    if (windowElement.strigoObserver.element !== windowElement.document.body) {
+      windowElement.strigoObserver.element = windowElement.document.body;
+      windowElement.strigoObserver.observer.observe(windowElement.document.body, observerOptions);
+    }
+  };
+
+  // src/modules/widgets/overlay.ts
+  var MINIMUM_WIDTH = 342;
   function makeOverlayWidgetVisible() {
     document.getElementById("strigo-widget").classList.add("slide-in");
     document.getElementById("strigo-widget").classList.add("loaded");
@@ -12431,15 +12542,9 @@ ${JSON.stringify(parsedContext)}` : "");
       listeners: {
         move(event) {
           const target = event.target;
-          target.style.width = event.rect.width + "px";
-        },
-        start() {
-          const overlayDiv = document.getElementById("strigo-widget-overlay");
-          overlayDiv.classList.toggle("invisible");
-        },
-        end() {
-          const overlayDiv = document.getElementById("strigo-widget-overlay");
-          overlayDiv.classList.toggle("invisible");
+          const x = parseFloat(target.getAttribute("data-x")) || 0;
+          target.style.width = (event.rect.width < MINIMUM_WIDTH ? MINIMUM_WIDTH : event.rect.width > maxWidth ? maxWidth : event.rect.width) + "px";
+          target.setAttribute("data-x", x);
         }
       },
       modifiers: [
@@ -12459,46 +12564,50 @@ ${JSON.stringify(parsedContext)}` : "");
       LoggerInstance.info("overlay init called");
       return "OVERLAY" /* OVERLAY */;
     }
-    setup({ development, version }) {
+    setup({ version }) {
       LoggerInstance.info("overlay setup called");
       appendCssFile({
         parentElement: getHeadElement(),
-        url: generateWidgetCssURL(development, version)
+        url: generateWidgetCssURL(version)
       });
       appendCssFile({
         parentElement: getHeadElement(),
-        url: generateAcademyHatCssURL(development, version)
+        url: generateAcademyHatCssURL(version)
       });
-      const academyPlayerFrame = createWidget(generateStrigoIframeURL(getConfig()));
-      this.initEventListeners(academyPlayerFrame);
+      const academyPlayerFrame = createWidget(generateStrigoIframeURL(getLocalStorageConfig()));
+      const hostingAppWindow = getHostingAppWindow();
+      this.initEventListeners(hostingAppWindow, academyPlayerFrame);
       console.log("adding observer");
+      this.documentObserver = initDocumentObserver(hostingAppWindow);
       console.log("observer added");
       setupResizeFunctionality();
     }
     shutdown() {
       LoggerInstance.info("overlay shutdown called");
-      this.removeEventListeners();
-      window?.strigoObserver?.observer?.disconnect();
-      removeWidget();
+      const hostingAppWindow = getHostingAppWindow();
+      this.removeEventListeners(hostingAppWindow);
+      hostingAppWindow?.strigoObserver?.observer?.disconnect();
+      removeWidget(hostingAppWindow);
     }
     collapse() {
       LoggerInstance.info("overlay collapse called");
       toggleWidget();
     }
     open() {
-      openWidget();
+      const hostingAppWindow = getHostingAppWindow();
+      openWidget(hostingAppWindow);
     }
     move() {
       move();
     }
-    initEventListeners(academyPlayerFrame) {
-      initAcademyPlayerLoadedListeners(academyPlayerFrame, makeOverlayWidgetVisible);
-      initHostEventListeners();
-      window.addEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
+    initEventListeners(hostingAppWindow, academyPanelFrame) {
+      initAcademyPanelLoadedListeners(academyPanelFrame, makeOverlayWidgetVisible);
+      initHostEventListeners(hostingAppWindow);
+      hostingAppWindow.addEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
     }
-    removeEventListeners() {
+    removeEventListeners(hostingAppWindow) {
       removeHostEventListeners();
-      window.removeEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
+      hostingAppWindow.removeEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
     }
   };
   var overlay_default = new OverlayWidget();
@@ -12549,14 +12658,14 @@ ${JSON.stringify(parsedContext)}` : "");
       }
     }
   }
-  function initHostEventListeners() {
-    window.addEventListener("message" /* MESSAGE */, onHostEventHandler, false);
+  function initHostEventListeners(hostWindow) {
+    hostWindow.addEventListener("message" /* MESSAGE */, onHostEventHandler, false);
   }
   function removeHostEventListeners() {
     window.removeEventListener("message" /* MESSAGE */, onHostEventHandler);
   }
-  function initAcademyPlayerLoadedListeners(academyPlayerIframe, onLoadCallback) {
-    academyPlayerIframe.addEventListener("load", async () => {
+  function initAcademyPanelLoadedListeners(academyPanelframe, onLoadCallback) {
+    academyPanelframe.addEventListener("load", async () => {
       if (!!getSessionValue("isLoading")) {
         if (onLoadCallback) {
           await onLoadCallback();
@@ -12604,21 +12713,21 @@ ${JSON.stringify(parsedContext)}` : "");
       }
       return SDKType;
     }
-    setup({ development, version }) {
+    setup({ version }) {
       LoggerInstance.info("iframe setup started");
       clearDoc();
       appendCssFile({
         parentElement: getHeadElement(),
-        url: generateCssURL(development, version)
+        url: generateCssURL(version)
       });
       appendCssFile({
         parentElement: getHeadElement(),
-        url: generateAcademyHatCssURL(development, version)
+        url: generateAcademyHatCssURL(version)
       });
       showLoader();
-      const config = getConfig();
+      const config = getLocalStorageConfig();
       const mainDiv = generatePageStructure();
-      const academyPlayerFrame = appendIFrame({
+      const academyPanelFrame = appendIFrame({
         parentElement: mainDiv,
         url: generateStrigoIframeURL(config),
         classNames: STRIGO_IFRAME_CLASSES,
@@ -12645,7 +12754,8 @@ ${JSON.stringify(parsedContext)}` : "");
       academyHatDiv.appendChild(academyHatIcon);
       mainDiv.appendChild(academyHatDiv);
       this.splitInstance = setupResizeFunctionality2();
-      this.initEventListeners(academyPlayerFrame, childFrame);
+      const hostingAppWindow = getHostingAppWindow();
+      this.initEventListeners(hostingAppWindow, academyPanelFrame, childFrame);
     }
     collapse() {
       if (this.splitInstance) {
@@ -12664,10 +12774,10 @@ ${JSON.stringify(parsedContext)}` : "");
       LoggerInstance.info("iframe shutdown called");
       reloadPage();
     }
-    initEventListeners(academyPlayerFrame, childFrame) {
-      initAcademyPlayerLoadedListeners(academyPlayerFrame, hideLoader);
+    initEventListeners(hostingAppWindow, academyPanelFrame, childFrame) {
+      initAcademyPanelLoadedListeners(academyPanelFrame, hideLoader);
       initChildEventListeners(childFrame);
-      initHostEventListeners();
+      initHostEventListeners(childFrame.contentWindow);
       window.addEventListener("storage" /* STORAGE */, storageChanged);
     }
   };
@@ -12703,6 +12813,9 @@ ${JSON.stringify(parsedContext)}` : "");
     constructor() {
       this.config = {};
     }
+    isDevelopment() {
+      return true;
+    }
     init() {
       try {
         LoggerInstance.info("Initializing SDK...");
@@ -12710,14 +12823,14 @@ ${JSON.stringify(parsedContext)}` : "");
           LoggerInstance.info("SDK was already initialized");
           return;
         }
-        init2();
-        init3();
+        initEventsStorage();
+        initAssessmentStorage();
         const { webApiKey, subDomain, selectedWidgetFlavor } = extractInitScriptParams();
         if (!webApiKey || !subDomain || !selectedWidgetFlavor) {
           throw new Error("Init data is missing");
         }
         const widgetFlavor = getWidgetFlavor2(selectedWidgetFlavor);
-        init({ webApiKey, subDomain, selectedWidgetFlavor: widgetFlavor });
+        initLocalStorageConfig({ webApiKey, subDomain, selectedWidgetFlavor: widgetFlavor });
         const widget = getWidget(widgetFlavor);
         this.config.sdkType = widget.init();
         this.config.initialized = true;
@@ -12732,32 +12845,37 @@ ${JSON.stringify(parsedContext)}` : "");
     async setup(data) {
       try {
         LoggerInstance.info("Starting to setup SDK...");
-        if (this.config.isOpen || this.config.sdkType === "CHILD" /* CHILD */) {
+        const strigoWidget = document.getElementById("strigo-widget");
+        const isPanelOpen2 = this.config.isOpen && strigoWidget;
+        if (isPanelOpen2 || this.config.sdkType === "CHILD" /* CHILD */) {
           LoggerInstance.info("panel is already opened");
           return;
         }
         if (!this.config.initialized) {
           throw new Error("SDK was not initialized");
         }
-        const config = getConfig();
-        const { email, token, development = false, version, openWidget: openWidget2 = true } = { ...config.user, ...config, ...data };
-        if (!development && (!email || !token)) {
+        const config = getLocalStorageConfig();
+        const { email, token, version, openWidget: openWidget2 = true } = { ...config.user, ...config, ...data };
+        if (!email || !token) {
           throw new Error("Setup data is missing");
         }
-        const configuration = await fetchRemoteConfiguration(token, development);
+        const configuration = await fetchRemoteConfiguration(token);
+        if (!configuration?.allowedDomains.includes(window.location.host)) {
+          console.log("Running on an unrelated domain. Aborting...");
+          return;
+        }
         if (configuration) {
           const { loggingConfig, userAssessments } = configuration;
           LoggerInstance.debug("Configuration fetched from Strigo");
           LoggerInstance.setup(loggingConfig);
-          setup3(userAssessments);
+          setupAssessmentStorage(userAssessments);
         }
-        setup({
+        setupLocalStorageConfig({
           user: {
             email,
             token
           },
           initSite: getUrlData(),
-          development,
           version,
           loggingConfig: configuration?.loggingConfig
         });
@@ -12776,19 +12894,21 @@ ${JSON.stringify(parsedContext)}` : "");
         if (!this.config.configured) {
           throw new Error("SDK was not set up");
         }
-        if (this.config.isOpen || this.config.sdkType === "CHILD" /* CHILD */) {
+        const strigoWidget = document.getElementById("strigo-widget");
+        const isPanelOpen2 = this.config.isOpen && strigoWidget;
+        if (isPanelOpen2 || this.config.sdkType === "CHILD" /* CHILD */) {
           LoggerInstance.info("Panel is already opened");
           return;
         }
-        const config = getConfig();
-        setup2({
+        const config = getLocalStorageConfig();
+        setupSessionStorage({
           currentUrl: config.initSite.href,
           isPanelOpen: true,
           isLoading: true,
           widgetFlavor: config.selectedWidgetFlavor
         });
         const widget = getWidget(config.selectedWidgetFlavor);
-        widget.setup({ version: config.version, development: config.development });
+        widget.setup({ version: config.version });
         this.config.isOpen = true;
         LoggerInstance.info("Opened academy panel.");
       } catch (err) {
@@ -12797,7 +12917,7 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     collapse() {
       LoggerInstance.info("Collapsing academy panel");
-      const { selectedWidgetFlavor } = getConfig();
+      const { selectedWidgetFlavor } = getLocalStorageConfig();
       const widget = getWidget(selectedWidgetFlavor);
       widget.collapse();
     }
@@ -12815,7 +12935,6 @@ ${JSON.stringify(parsedContext)}` : "");
         }
         const widget = getWidget(getWidgetFlavor());
         clearSession();
-        widget.collapse();
         widget.shutdown();
         this.config.isOpen = false;
         LoggerInstance.info("Closed academy panel.");
@@ -12850,20 +12969,53 @@ ${JSON.stringify(parsedContext)}` : "");
       const rootElement = rootElementSelector ? window.document.querySelector(rootElementSelector) : window.document.body;
       startElementSelector(window.document, { onElementProfileCreated, zIndex: 9999999999, rootElement });
     }
-    assessmentRecorder(development) {
-      addAssessmentRecorderIframe(development);
+    assessmentRecorder() {
+      addAssessmentRecorderIframe();
     }
   };
   var Strigo = new StrigoSDK();
 
   // src/strigo.sdk.ts
   window.Strigo = Strigo;
+  function setupSdk() {
+    console.log("Setting up SDK...");
+    chrome?.storage?.sync.get(["orgId", "apiKey", "email", "shouldSetup"], ({ orgId, apiKey, email, shouldSetup }) => {
+      console.log("Received data from storage:", { orgId, apiKey, email, shouldSetup });
+      console.log("current WINDOW:", window);
+      if (!window.Strigo) {
+        console.log("Missing Strigo object on window!");
+        return;
+      }
+      console.log("current CONFIG:", window.Strigo.config);
+      if (window.Strigo.config.initialized) {
+        console.log("already initialized with academy user");
+        return;
+      }
+      console.log("Fetching Strigo credentials...", { orgId, apiKey, email });
+      if (orgId && apiKey && email) {
+        chrome.runtime.sendMessage({ request: "generateToken", payload: { orgId, apiKey, email, development: true } }, (response) => {
+          console.log("Received generate token response");
+          const { token, expiration } = response;
+          if (email && token && expiration) {
+            console.log("Removing Strigo config and session...");
+            window.Strigo.init();
+            window.Strigo.setup({
+              version: "v1.1.12",
+              email,
+              token: { token, expiration }
+            });
+          }
+          chrome?.storage?.sync.set({ shouldSetup: false }, () => {
+          });
+        });
+      }
+    });
+  }
   if (isRecordingMode()) {
-    LoggerInstance.info("Strigo recorder mode");
-    const development = isDevelopment();
-    window.Strigo.assessmentRecorder(development);
+    console.log("Strigo recorder mode");
+    window.Strigo.assessmentRecorder();
   } else {
-    window.Strigo.init();
+    setupSdk();
   }
 })();
 /*!

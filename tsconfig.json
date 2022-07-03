@@ -18,7 +18,8 @@
     "typeRoots": [
       "src/types",
     ],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["chrome"]
 	},
 	"include": [
     "src/**/*"
