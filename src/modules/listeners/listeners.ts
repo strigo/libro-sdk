@@ -104,7 +104,7 @@ export function initChildEventListeners(childIframe: HTMLIFrameElement): void {
   const originalHost = configManager.getConfigValue('initSite')?.host;
 
   childIframe.addEventListener('load', function () {
-    noCodeAssessment.addDocumentObserver(childIframe.contentWindow);
+    // noCodeAssessment.addDocumentObserver(childIframe.contentWindow);
 
     try {
       const currentHost = this.contentWindow.location.host;
