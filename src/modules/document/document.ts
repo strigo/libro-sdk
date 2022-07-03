@@ -2,6 +2,10 @@ import { ACADEMY_HAT } from '../../strigo/consts';
 
 import { AppendCSSFileParams, AppendIframeParams } from './document.types';
 
+export function getHostingAppWindow(): Window {
+  return window.top;
+}
+
 export function getHeadElement(): HTMLElement {
   return document.getElementsByTagName('head')[0];
 }
@@ -153,12 +157,12 @@ export function createWidget(url: string): HTMLIFrameElement {
   return strigoExercisesIframe;
 }
 
-export function removeWidget(): void {
-  document.getElementById('strigo-widget').remove();
+export function removeWidget(hostingAppWindow: Window): void {
+  hostingAppWindow.document.getElementById('strigo-widget').remove();
 }
 
-export function openWidget(): void {
-  const widget = document.getElementById('strigo-widget');
+export function openWidget(hostingAppWindow: Window): void {
+  const widget = hostingAppWindow.document.getElementById('strigo-widget');
 
   if (widget.classList.contains('slide-in')) {
     return;

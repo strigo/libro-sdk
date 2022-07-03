@@ -10981,6 +10981,9 @@ ${JSON.stringify(parsedContext)}` : "");
   var ASSESSMENT_RECORDER_URL = "https://assessment-recorder.web.app";
 
   // src/modules/document/document.ts
+  function getHostingAppWindow() {
+    return window.top;
+  }
   function getHeadElement() {
     return document.getElementsByTagName("head")[0];
   }
@@ -11091,11 +11094,11 @@ ${JSON.stringify(parsedContext)}` : "");
     document.body.appendChild(academyHatDiv);
     return strigoExercisesIframe;
   }
-  function removeWidget() {
-    document.getElementById("strigo-widget").remove();
+  function removeWidget(hostingAppWindow) {
+    hostingAppWindow.document.getElementById("strigo-widget").remove();
   }
-  function openWidget() {
-    const widget = document.getElementById("strigo-widget");
+  function openWidget(hostingAppWindow) {
+    const widget = hostingAppWindow.document.getElementById("strigo-widget");
     if (widget.classList.contains("slide-in")) {
       return;
     }
@@ -11640,7 +11643,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11649,7 +11652,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo-widget.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11658,7 +11661,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateAcademyHatCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo-academy-hat.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
@@ -11667,7 +11670,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo-assessment-recorder.css`;
+      return `http://localhost:${SDK_HOSTING_PORT}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -11675,7 +11678,7 @@ ${JSON.stringify(parsedContext)}` : "");
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL(development) {
-    return development ? `http://localhost:${"7015"}` : ASSESSMENT_RECORDER_URL;
+    return development ? `http://localhost:${RECORDER_HOSTING_PORT}` : ASSESSMENT_RECORDER_URL;
   }
   function isRecordingUrlParamExists() {
     const { search } = window.location;
@@ -12453,9 +12456,13 @@ ${JSON.stringify(parsedContext)}` : "");
             }
             locationHandlers[_id] = {
               element: locationElement,
-              observer: new MutationObserver(function() {
+              observer: new MutationObserver(function(mutations) {
                 const exampleElementProfile = this.assessment.recordedAssessment?.exampleElement?.profile;
                 if (!exampleElementProfile) {
+                  return;
+                }
+                if (!mutations.some((mutation) => mutation.addedNodes?.length > 0)) {
+                  console.log("No nodes were added...");
                   return;
                 }
                 let exampleElementSelector;
@@ -12558,7 +12565,8 @@ ${JSON.stringify(parsedContext)}` : "");
         url: generateAcademyHatCssURL(development, version)
       });
       const academyPlayerFrame = createWidget(generateStrigoIframeURL(getConfig()));
-      this.initEventListeners(academyPlayerFrame);
+      const hostingAppWindow = getHostingAppWindow();
+      this.initEventListeners(hostingAppWindow, academyPlayerFrame);
       console.log("adding observer");
       this.documentObserver = addDocumentObserver(window);
       console.log("observer added");
@@ -12566,28 +12574,30 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     shutdown() {
       LoggerInstance.info("overlay shutdown called");
-      this.removeEventListeners();
-      window?.strigoObserver?.observer?.disconnect();
-      removeWidget();
+      const hostingAppWindow = getHostingAppWindow();
+      this.removeEventListeners(hostingAppWindow);
+      hostingAppWindow?.strigoObserver?.observer?.disconnect();
+      removeWidget(hostingAppWindow);
     }
     collapse() {
       LoggerInstance.info("overlay collapse called");
       toggleWidget();
     }
     open() {
-      openWidget();
+      const hostingAppWindow = getHostingAppWindow();
+      openWidget(hostingAppWindow);
     }
     move() {
       move();
     }
-    initEventListeners(academyPlayerFrame) {
-      initAcademyPlayerLoadedListeners(academyPlayerFrame, makeOverlayWidgetVisible);
-      initHostEventListeners();
-      window.addEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
+    initEventListeners(hostingAppWindow, academyPanelFrame) {
+      initAcademyPanelLoadedListeners(academyPanelFrame, makeOverlayWidgetVisible);
+      initHostEventListeners(hostingAppWindow);
+      hostingAppWindow.addEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
     }
-    removeEventListeners() {
+    removeEventListeners(hostingAppWindow) {
       removeHostEventListeners();
-      window.removeEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
+      hostingAppWindow.removeEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
     }
   };
   var overlay_default = new OverlayWidget();
@@ -12638,14 +12648,14 @@ ${JSON.stringify(parsedContext)}` : "");
       }
     }
   }
-  function initHostEventListeners() {
-    window.addEventListener("message" /* MESSAGE */, onHostEventHandler, false);
+  function initHostEventListeners(hostWindow) {
+    hostWindow.addEventListener("message" /* MESSAGE */, onHostEventHandler, false);
   }
   function removeHostEventListeners() {
     window.removeEventListener("message" /* MESSAGE */, onHostEventHandler);
   }
-  function initAcademyPlayerLoadedListeners(academyPlayerIframe, onLoadCallback) {
-    academyPlayerIframe.addEventListener("load", async () => {
+  function initAcademyPanelLoadedListeners(academyPanelframe, onLoadCallback) {
+    academyPanelframe.addEventListener("load", async () => {
       if (!!getSessionValue("isLoading")) {
         if (onLoadCallback) {
           await onLoadCallback();
@@ -12657,8 +12667,8 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function initChildEventListeners(childIframe) {
     const originalHost = getConfigValue("initSite")?.host;
+    addDocumentObserver(childIframe.contentWindow);
     childIframe.addEventListener("load", function() {
-      addDocumentObserver(childIframe.contentWindow);
       try {
         const currentHost = this.contentWindow.location.host;
         if (currentHost !== originalHost) {
@@ -12708,7 +12718,7 @@ ${JSON.stringify(parsedContext)}` : "");
       showLoader();
       const config = getConfig();
       const mainDiv = generatePageStructure();
-      const academyPlayerFrame = appendIFrame({
+      const academyPanelFrame = appendIFrame({
         parentElement: mainDiv,
         url: generateStrigoIframeURL(config),
         classNames: STRIGO_IFRAME_CLASSES,
@@ -12735,7 +12745,8 @@ ${JSON.stringify(parsedContext)}` : "");
       academyHatDiv.appendChild(academyHatIcon);
       mainDiv.appendChild(academyHatDiv);
       this.splitInstance = setupResizeFunctionality2();
-      this.initEventListeners(academyPlayerFrame, childFrame);
+      const hostingAppWindow = getHostingAppWindow();
+      this.initEventListeners(hostingAppWindow, academyPanelFrame, childFrame);
     }
     collapse() {
       if (this.splitInstance) {
@@ -12754,10 +12765,10 @@ ${JSON.stringify(parsedContext)}` : "");
       LoggerInstance.info("iframe shutdown called");
       reloadPage();
     }
-    initEventListeners(academyPlayerFrame, childFrame) {
-      initAcademyPlayerLoadedListeners(academyPlayerFrame, hideLoader);
+    initEventListeners(hostingAppWindow, academyPanelFrame, childFrame) {
+      initAcademyPanelLoadedListeners(academyPanelFrame, hideLoader);
       initChildEventListeners(childFrame);
-      initHostEventListeners();
+      initHostEventListeners(childFrame.contentWindow);
       window.addEventListener("storage" /* STORAGE */, storageChanged);
     }
   };

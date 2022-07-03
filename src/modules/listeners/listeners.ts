@@ -74,19 +74,19 @@ function onHostEventHandler(ev: MessageEvent<any>): void {
 }
 
 // Host event listeners
-export function initHostEventListeners(): void {
-  window.addEventListener(EVENT_TYPES.MESSAGE, onHostEventHandler, false);
+export function initHostEventListeners(hostWindow: Window): void {
+  hostWindow.addEventListener(EVENT_TYPES.MESSAGE, onHostEventHandler, false);
 }
 
 export function removeHostEventListeners(): void {
   window.removeEventListener(EVENT_TYPES.MESSAGE, onHostEventHandler);
 }
 
-export function initAcademyPlayerLoadedListeners(
-  academyPlayerIframe: HTMLIFrameElement,
+export function initAcademyPanelLoadedListeners(
+  academyPanelframe: HTMLIFrameElement,
   onLoadCallback?: () => Promise<void> | void
 ): void {
-  academyPlayerIframe.addEventListener('load', async () => {
+  academyPanelframe.addEventListener('load', async () => {
     if (!!sessionManager.getSessionValue('isLoading')) {
       if (onLoadCallback) {
         await onLoadCallback();
@@ -102,10 +102,8 @@ export function initAcademyPlayerLoadedListeners(
 
 export function initChildEventListeners(childIframe: HTMLIFrameElement): void {
   const originalHost = configManager.getConfigValue('initSite')?.host;
-
+  noCodeAssessment.addDocumentObserver(childIframe.contentWindow);
   childIframe.addEventListener('load', function () {
-    noCodeAssessment.addDocumentObserver(childIframe.contentWindow);
-
     try {
       const currentHost = this.contentWindow.location.host;
 

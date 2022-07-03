@@ -69,7 +69,7 @@ class IframeWidget implements IStrigoWidget {
 
     const mainDiv = documentTools.generatePageStructure();
     // Append academy player Iframe
-    const academyPlayerFrame = documentTools.appendIFrame({
+    const academyPanelFrame = documentTools.appendIFrame({
       parentElement: mainDiv,
       url: urlTools.generateStrigoIframeURL(config),
       classNames: STRIGO_IFRAME_CLASSES,
@@ -106,7 +106,9 @@ class IframeWidget implements IStrigoWidget {
 
     this.splitInstance = setupResizeFunctionality();
 
-    this.initEventListeners(academyPlayerFrame, childFrame);
+    const hostingAppWindow = documentTools.getHostingAppWindow();
+
+    this.initEventListeners(hostingAppWindow, academyPanelFrame, childFrame);
   }
 
   move: () => void;
@@ -131,10 +133,14 @@ class IframeWidget implements IStrigoWidget {
     documentTools.reloadPage();
   }
 
-  private initEventListeners(academyPlayerFrame: HTMLIFrameElement, childFrame: HTMLIFrameElement): void {
-    listeners.initAcademyPlayerLoadedListeners(academyPlayerFrame, hideLoader);
+  private initEventListeners(
+    hostingAppWindow: Window,
+    academyPanelFrame: HTMLIFrameElement,
+    childFrame: HTMLIFrameElement
+  ): void {
+    listeners.initAcademyPanelLoadedListeners(academyPanelFrame, hideLoader);
     listeners.initChildEventListeners(childFrame);
-    listeners.initHostEventListeners();
+    listeners.initHostEventListeners(childFrame.contentWindow);
     window.addEventListener(EVENT_TYPES.STORAGE, listeners.storageChanged);
   }
 }

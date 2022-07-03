@@ -62,10 +62,16 @@ export const addDocumentObserver = function (windowElement: Window): MutationObs
           locationHandlers[_id] = {
             element: locationElement,
             observer: new MutationObserver(
-              function () {
+              function (mutations) {
                 const exampleElementProfile = this.assessment.recordedAssessment?.exampleElement?.profile;
 
                 if (!exampleElementProfile) {
+                  return;
+                }
+
+                if (!mutations.some((mutation) => mutation.addedNodes?.length > 0)) {
+                  console.log('No nodes were added...');
+
                   return;
                 }
 
