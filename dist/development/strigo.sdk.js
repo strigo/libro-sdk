@@ -12806,6 +12806,7 @@ ${JSON.stringify(parsedContext)}` : "");
         }
         const widget = getWidget(getWidgetFlavor());
         clearSession();
+        widget.collapse();
         widget.shutdown();
         this.config.isOpen = false;
         LoggerInstance.info("Closed academy panel.");
