@@ -11640,7 +11640,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo.css`;
+      return `http://localhost:${"7005"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11649,7 +11649,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo-widget.css`;
+      return `http://localhost:${"7005"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11658,7 +11658,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateAcademyHatCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo-academy-hat.css`;
+      return `http://localhost:${"7005"}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
@@ -11667,7 +11667,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(development, version) {
     if (development) {
-      return `http://localhost:${"7000"}/styles/strigo-assessment-recorder.css`;
+      return `http://localhost:${"7005"}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
