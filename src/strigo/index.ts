@@ -168,6 +168,7 @@ class StrigoSDK implements IStrigoSDK {
       const widget = widgetFactory.getWidget(sessionManager.getWidgetFlavor());
       sessionManager.clearSession();
 
+      widget.collapse();
       widget.shutdown();
       this.config.isOpen = false;
       Logger.info('Closed academy panel.');
