@@ -1,6 +1,5 @@
 export const INIT_SCRIPT_ID = 'strigo-sdk';
 export const BASE_STRIGO_URL = 'strigo.io';
-export const LOCAL_STRIGO_URL = 'localhost:3000';
 
 export const STRIGO_IFRAME_CLASSES = ['strigo-exercises'];
 export const ORIGINAL_WEBSITE_IFRAME_CLASSES = ['orig-iframe'];
@@ -15,3 +14,5 @@ export const PAGE_LISTENER_INTERVAL = 3000;
 export const PAGE_LISTENER_MAX_TIMEOUT = 50000;
 
 export const ASSESSMENT_RECORDER_URL = 'https://assessment-recorder.web.app';
+
+export const LOCAL_STRIGO_URL = 'http://local.strigo.io:3000';

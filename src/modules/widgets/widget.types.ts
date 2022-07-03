@@ -8,7 +8,7 @@ export enum WIDGET_FLAVORS {
 
 export interface IStrigoWidget {
   init: () => SDK_TYPES;
-  setup: (params: { development: boolean; version?: string }) => void;
+  setup: (params: { version?: string }) => void;
   move: () => void;
   collapse: () => void;
   shutdown: () => void;

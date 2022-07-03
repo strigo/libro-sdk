@@ -12,7 +12,11 @@ import { startElementSelector } from '../modules/element-selector/element-select
 import { SDKSetupData, SDK_TYPES, IStrigoSDK, SdkConfig } from './types';
 
 class StrigoSDK implements IStrigoSDK {
-  private config: SdkConfig = {};
+  config: SdkConfig = {};
+
+  isDevelopment(): boolean {
+    return IS_DEVELOPMENT === 'true';
+  }
 
   init(): void {
     try {
@@ -24,8 +28,8 @@ class StrigoSDK implements IStrigoSDK {
         return;
       }
 
-      eventsStorageManager.init();
-      assessmentsStorage.init();
+      eventsStorageManager.initEventsStorage();
+      assessmentsStorage.initAssessmentStorage();
 
       // Get init script parameters
       const { webApiKey, subDomain, selectedWidgetFlavor } = urlTools.extractInitScriptParams();
@@ -36,7 +40,7 @@ class StrigoSDK implements IStrigoSDK {
 
       const widgetFlavor = widgetFactory.getWidgetFlavor(selectedWidgetFlavor);
 
-      configManager.init({ webApiKey, subDomain, selectedWidgetFlavor: widgetFlavor });
+      configManager.initLocalStorageConfig({ webApiKey, subDomain, selectedWidgetFlavor: widgetFlavor });
 
       const widget = widgetFactory.getWidget(widgetFlavor);
       this.config.sdkType = widget.init();
@@ -57,8 +61,11 @@ class StrigoSDK implements IStrigoSDK {
     try {
       Logger.info('Starting to setup SDK...');
 
+      const strigoWidget = document.getElementById('strigo-widget');
+      const isPanelOpen = this.config.isOpen && strigoWidget;
+
       // Setup won't do anything for now (child will only be able to send events later)
-      if (this.config.isOpen || this.config.sdkType === SDK_TYPES.CHILD) {
+      if (isPanelOpen || this.config.sdkType === SDK_TYPES.CHILD) {
         Logger.info('panel is already opened');
 
         return;
@@ -68,31 +75,36 @@ class StrigoSDK implements IStrigoSDK {
         throw new Error('SDK was not initialized');
       }
 
-      const config = configManager.getConfig();
+      const config = configManager.getLocalStorageConfig();
 
-      const { email, token, development = false, version, openWidget = true } = { ...config.user, ...config, ...data };
+      const { email, token, version, openWidget = true } = { ...config.user, ...config, ...data };
 
-      if (!development && (!email || !token)) {
+      if (!email || !token) {
         throw new Error('Setup data is missing');
       }
 
-      const configuration = await configManager.fetchRemoteConfiguration(token, development);
+      const configuration = await configManager.fetchRemoteConfiguration(token);
+
+      if (!configuration?.allowedDomains.includes(window.location.host)) {
+        console.log('Running on an unrelated domain. Aborting...');
+
+        return;
+      }
 
       if (configuration) {
         const { loggingConfig, userAssessments } = configuration;
         Logger.debug('Configuration fetched from Strigo');
         Logger.setup(loggingConfig);
 
-        assessmentsStorage.setup(userAssessments);
+        assessmentsStorage.setupAssessmentStorage(userAssessments);
       }
 
-      configManager.setup({
+      configManager.setupLocalStorageConfig({
         user: {
           email,
           token,
         },
         initSite: urlTools.getUrlData(),
-        development,
         version,
         loggingConfig: configuration?.loggingConfig,
       });
@@ -116,15 +128,18 @@ class StrigoSDK implements IStrigoSDK {
         throw new Error('SDK was not set up');
       }
 
-      if (this.config.isOpen || this.config.sdkType === SDK_TYPES.CHILD) {
+      const strigoWidget = document.getElementById('strigo-widget');
+      const isPanelOpen = this.config.isOpen && strigoWidget;
+
+      if (isPanelOpen || this.config.sdkType === SDK_TYPES.CHILD) {
         Logger.info('Panel is already opened');
 
         return;
       }
 
-      const config = configManager.getConfig();
+      const config = configManager.getLocalStorageConfig();
 
-      sessionManager.setup({
+      sessionManager.setupSessionStorage({
         currentUrl: config.initSite.href,
         isPanelOpen: true,
         isLoading: true,
@@ -132,7 +147,7 @@ class StrigoSDK implements IStrigoSDK {
       });
 
       const widget = widgetFactory.getWidget(config.selectedWidgetFlavor);
-      widget.setup({ version: config.version, development: config.development });
+      widget.setup({ version: config.version });
       this.config.isOpen = true;
       Logger.info('Opened academy panel.');
     } catch (err) {
@@ -142,7 +157,7 @@ class StrigoSDK implements IStrigoSDK {
 
   collapse(): void {
     Logger.info('Collapsing academy panel');
-    const { selectedWidgetFlavor } = configManager.getConfig();
+    const { selectedWidgetFlavor } = configManager.getLocalStorageConfig();
 
     const widget = widgetFactory.getWidget(selectedWidgetFlavor);
     widget.collapse();
@@ -214,8 +229,8 @@ class StrigoSDK implements IStrigoSDK {
     startElementSelector(window.document, { onElementProfileCreated, zIndex: 9999999999, rootElement });
   }
 
-  assessmentRecorder(development: boolean): void {
-    assessmentRecorderModule.addAssessmentRecorderIframe(development);
+  assessmentRecorder(): void {
+    assessmentRecorderModule.addAssessmentRecorderIframe();
   }
 }
 

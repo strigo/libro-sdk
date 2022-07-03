@@ -16,7 +16,7 @@ export function getEventsStorageData(): StrigoEventsStorage {
   }
 }
 
-export function init(): StrigoEventsStorage {
+export function initEventsStorage(): StrigoEventsStorage {
   try {
     const currentEventsStorage = getEventsStorageData();
 
