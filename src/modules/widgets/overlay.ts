@@ -39,6 +39,9 @@ function setupResizeFunctionality(): void {
             ? maxWidth
             : event.rect.width) as string) + 'px';
 
+        target.style.width = (event.rect.width as string) + 'px';
+        console.log({ targetWidth: target.style.width, minWidth: MINIMUM_WIDTH, maxWidth });
+
         target.setAttribute('data-x', x);
       },
     },

@@ -24,6 +24,7 @@ esbuild
     define: {
       SDK_HOSTING_PORT: `"${process.env.SDK_HOSTING_PORT}"`,
       RECORDER_HOSTING_PORT: `"${process.env.RECORDER_HOSTING_PORT}"`,
+      EXTENSION: `"${process.env.EXTENSION}"`,
     },
     watch: {
       onRebuild(err) {

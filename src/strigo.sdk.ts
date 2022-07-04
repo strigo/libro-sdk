@@ -6,9 +6,9 @@ import { Strigo } from './strigo';
 window.Strigo = Strigo;
 
 if (isRecordingMode()) {
-  Logger.info('Strigo recorder mode')
+  Logger.info('Strigo recorder mode');
   const development = urlTools.isDevelopment();
   window.Strigo.assessmentRecorder(development);
-} else {
+} else if (!urlTools.isExtension()) {
   window.Strigo.init();
 }

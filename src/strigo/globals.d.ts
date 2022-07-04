@@ -8,4 +8,5 @@ declare global {
 
   declare const SDK_HOSTING_PORT: string;
   declare const RECORDER_HOSTING_PORT: string;
+  declare const EXTENSION: string;
 }

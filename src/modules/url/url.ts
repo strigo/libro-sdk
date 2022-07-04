@@ -147,3 +147,7 @@ export function isDevelopment(): boolean {
 
   return 'development' in urlParams;
 }
+
+export function isExtension(): boolean {
+  return EXTENSION === 'true';
+}
