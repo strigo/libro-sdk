@@ -4,4 +4,5 @@ export interface InitScriptParams {
   webApiKey: string;
   subDomain: string;
   selectedWidgetFlavor: WIDGET_FLAVORS;
+  isExtension: boolean;
 }

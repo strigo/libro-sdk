@@ -79,6 +79,7 @@ export function extractInitScriptParams(): InitScriptParams {
     webApiKey: initScript?.getAttribute('data-web-api-key') || '',
     subDomain: initScript?.getAttribute('data-subdomain') || '',
     selectedWidgetFlavor: (initScript?.getAttribute('data-layout-flavor') as WIDGET_FLAVORS) || WIDGET_FLAVORS.DYNAMIC,
+    isExtension: initScript?.getAttribute('data-extension') === 'true',
   };
 }
 

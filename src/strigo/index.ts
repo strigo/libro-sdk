@@ -28,7 +28,7 @@ class StrigoSDK implements IStrigoSDK {
       assessmentsStorage.init();
 
       // Get init script parameters
-      const { webApiKey, subDomain, selectedWidgetFlavor } = urlTools.extractInitScriptParams();
+      const { webApiKey, subDomain, selectedWidgetFlavor, isExtension } = urlTools.extractInitScriptParams();
 
       if (!webApiKey || !subDomain || !selectedWidgetFlavor) {
         throw new Error('Init data is missing');
@@ -36,7 +36,12 @@ class StrigoSDK implements IStrigoSDK {
 
       const widgetFlavor = widgetFactory.getWidgetFlavor(selectedWidgetFlavor);
 
-      configManager.init({ webApiKey, subDomain, selectedWidgetFlavor: widgetFlavor });
+      configManager.init({
+        webApiKey,
+        subDomain,
+        selectedWidgetFlavor: widgetFlavor,
+        // extension: isExtension,
+      });
 
       const widget = widgetFactory.getWidget(widgetFlavor);
       this.config.sdkType = widget.init();
