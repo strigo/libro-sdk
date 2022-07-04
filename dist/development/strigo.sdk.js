@@ -11087,8 +11087,12 @@ ${JSON.stringify(parsedContext)}` : "");
     widgetDiv.id = "strigo-widget";
     widgetDiv.appendChild(collapseDiv);
     widgetDiv.appendChild(strigoExercisesIframe);
+    const overlayDiv = document.createElement("div");
+    overlayDiv.id = "strigo-widget-overlay";
+    overlayDiv.className = "strigo-widget-overlay invisible";
     document.body.appendChild(widgetDiv);
     document.body.appendChild(academyHatDiv);
+    document.body.appendChild(overlayDiv);
     return strigoExercisesIframe;
   }
   function removeWidget() {
@@ -12414,7 +12418,6 @@ ${JSON.stringify(parsedContext)}` : "");
 
   // src/modules/widgets/overlay.ts
   var import_interactjs = __toESM(require_interact_min(), 1);
-  var MINIMUM_WIDTH = 342;
   function makeOverlayWidgetVisible() {
     document.getElementById("strigo-widget").classList.add("slide-in");
     document.getElementById("strigo-widget").classList.add("loaded");
@@ -12428,9 +12431,15 @@ ${JSON.stringify(parsedContext)}` : "");
       listeners: {
         move(event) {
           const target = event.target;
-          const x = parseFloat(target.getAttribute("data-x")) || 0;
-          target.style.width = (event.rect.width < MINIMUM_WIDTH ? MINIMUM_WIDTH : event.rect.width > maxWidth ? maxWidth : event.rect.width) + "px";
-          target.setAttribute("data-x", x);
+          target.style.width = event.rect.width + "px";
+        },
+        start() {
+          const overlayDiv = document.getElementById("strigo-widget-overlay");
+          overlayDiv.classList.toggle("invisible");
+        },
+        end() {
+          const overlayDiv = document.getElementById("strigo-widget-overlay");
+          overlayDiv.classList.toggle("invisible");
         }
       },
       modifiers: [
