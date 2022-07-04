@@ -23,24 +23,23 @@ function makeOverlayWidgetVisible(): void {
 
 function setupResizeFunctionality(): void {
   const [maxWidth] = documentTools.getSplitMaxSizes();
+
   interact('#strigo-widget').resizable({
     // resize from left edge
     edges: { left: '#strigo-collapse-div', right: '#strigo-collapse-div.align-left', bottom: false, top: false },
-
     listeners: {
       move(event) {
         const target = event.target;
-        const x = parseFloat(target.getAttribute('data-x')) || 0;
-
         // update the element's style
-        target.style.width =
-          ((event.rect.width < MINIMUM_WIDTH
-            ? MINIMUM_WIDTH
-            : event.rect.width > maxWidth
-            ? maxWidth
-            : event.rect.width) as string) + 'px';
-
-        target.setAttribute('data-x', x);
+        target.style.width = (event.rect.width as string) + 'px';
+      },
+      start() {
+        const overlayDiv = document.getElementById('strigo-widget-overlay');
+        overlayDiv.classList.toggle('invisible');
+      },
+      end() {
+        const overlayDiv = document.getElementById('strigo-widget-overlay');
+        overlayDiv.classList.toggle('invisible');
       },
     },
     modifiers: [
