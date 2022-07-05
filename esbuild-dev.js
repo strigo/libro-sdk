@@ -8,15 +8,9 @@ const LOCAL_OUT_DIR = 'dist/development';
 const EXTENSION_OUT_DIR = '../strigo-academy-chrome-extension/scripts';
 
 const writeBuildResult = (buildResult) => {
-  const data = fs.readFileSync('dist/development/strigo.sdk.js').toString().split("\n");
-  data.splice(0, 0, "/*global chrome*/");
-  const consolidatedText = data.join("\n");
-
-  console.log('writing built file to dist/development/strigo.sdk.js');
-  fs.writeFileSync('dist/development/strigo.sdk.js', consolidatedText);
-
+  const data = fs.readFileSync('dist/development/strigo.sdk.js', 'utf8');
   console.log(`writing built file to "${EXTENSION_OUT_DIR}"`);
-  fs.writeFileSync(`${EXTENSION_OUT_DIR}/strigo.sdk.js`, consolidatedText);
+  fs.writeFileSync(`${EXTENSION_OUT_DIR}/strigo.sdk.js`, data);
 
   console.log('⚡ Styles & Scripts Compiled! ⚡ ');
 };
@@ -50,7 +44,10 @@ esbuild
     },
   })
   .then(writeBuildResult)
-  .catch(() => process.exit(1));
+  .catch((err) => {
+    console.log(err);
+    process.exit(1);
+  });
 
 serve.start({
   port: process.env.SDK_HOSTING_PORT || 7000,
