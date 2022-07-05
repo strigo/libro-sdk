@@ -17,7 +17,7 @@ export interface LoggingConfig {
 export interface StrigoProtectedConfig {
   loggingConfig: LoggingConfig;
   userAssessments: Assessment[];
-  allowedDomains: string[];
+  allowedAcademyDomains: string[];
 }
 
 export interface User {

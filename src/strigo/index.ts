@@ -85,7 +85,7 @@ class StrigoSDK implements IStrigoSDK {
 
       const configuration = await configManager.fetchRemoteConfiguration(token);
 
-      if (!configuration?.allowedDomains.includes(window.location.host)) {
+      if (!configuration?.allowedAcademyDomains.includes(window.location.host)) {
         console.log('Running on an unrelated domain. Aborting...');
 
         return;
