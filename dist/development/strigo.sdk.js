@@ -11091,8 +11091,12 @@ ${JSON.stringify(parsedContext)}` : "");
     widgetDiv.id = "strigo-widget";
     widgetDiv.appendChild(collapseDiv);
     widgetDiv.appendChild(strigoExercisesIframe);
+    const overlayDiv = document.createElement("div");
+    overlayDiv.id = "strigo-widget-overlay";
+    overlayDiv.className = "strigo-widget-overlay invisible";
     document.body.appendChild(widgetDiv);
     document.body.appendChild(academyHatDiv);
+    document.body.appendChild(overlayDiv);
     return strigoExercisesIframe;
   }
   function removeWidget(hostingAppWindow) {
@@ -12528,7 +12532,6 @@ ${JSON.stringify(parsedContext)}` : "");
   };
 
   // src/modules/widgets/overlay.ts
-  var MINIMUM_WIDTH = 342;
   function makeOverlayWidgetVisible() {
     document.getElementById("strigo-widget").classList.add("slide-in");
     document.getElementById("strigo-widget").classList.add("loaded");
@@ -12542,9 +12545,15 @@ ${JSON.stringify(parsedContext)}` : "");
       listeners: {
         move(event) {
           const target = event.target;
-          const x = parseFloat(target.getAttribute("data-x")) || 0;
-          target.style.width = (event.rect.width < MINIMUM_WIDTH ? MINIMUM_WIDTH : event.rect.width > maxWidth ? maxWidth : event.rect.width) + "px";
-          target.setAttribute("data-x", x);
+          target.style.width = event.rect.width + "px";
+        },
+        start() {
+          const overlayDiv = document.getElementById("strigo-widget-overlay");
+          overlayDiv.classList.toggle("invisible");
+        },
+        end() {
+          const overlayDiv = document.getElementById("strigo-widget-overlay");
+          overlayDiv.classList.toggle("invisible");
         }
       },
       modifiers: [
@@ -12860,7 +12869,7 @@ ${JSON.stringify(parsedContext)}` : "");
           throw new Error("Setup data is missing");
         }
         const configuration = await fetchRemoteConfiguration(token);
-        if (!configuration?.allowedDomains.includes(window.location.host)) {
+        if (!configuration?.allowedAcademyDomains.includes(window.location.host)) {
           console.log("Running on an unrelated domain. Aborting...");
           return;
         }
@@ -12935,6 +12944,7 @@ ${JSON.stringify(parsedContext)}` : "");
         }
         const widget = getWidget(getWidgetFlavor());
         clearSession();
+        widget.collapse();
         widget.shutdown();
         this.config.isOpen = false;
         LoggerInstance.info("Closed academy panel.");
@@ -12977,45 +12987,11 @@ ${JSON.stringify(parsedContext)}` : "");
 
   // src/strigo.sdk.ts
   window.Strigo = Strigo;
-  function setupSdk() {
-    console.log("Setting up SDK...");
-    chrome?.storage?.sync.get(["orgId", "apiKey", "email", "shouldSetup"], ({ orgId, apiKey, email, shouldSetup }) => {
-      console.log("Received data from storage:", { orgId, apiKey, email, shouldSetup });
-      console.log("current WINDOW:", window);
-      if (!window.Strigo) {
-        console.log("Missing Strigo object on window!");
-        return;
-      }
-      console.log("current CONFIG:", window.Strigo.config);
-      if (window.Strigo.config.initialized) {
-        console.log("already initialized with academy user");
-        return;
-      }
-      console.log("Fetching Strigo credentials...", { orgId, apiKey, email });
-      if (orgId && apiKey && email) {
-        chrome.runtime.sendMessage({ request: "generateToken", payload: { orgId, apiKey, email, development: true } }, (response) => {
-          console.log("Received generate token response");
-          const { token, expiration } = response;
-          if (email && token && expiration) {
-            console.log("Removing Strigo config and session...");
-            window.Strigo.init();
-            window.Strigo.setup({
-              version: "v1.1.12",
-              email,
-              token: { token, expiration }
-            });
-          }
-          chrome?.storage?.sync.set({ shouldSetup: false }, () => {
-          });
-        });
-      }
-    });
-  }
   if (isRecordingMode()) {
     console.log("Strigo recorder mode");
     window.Strigo.assessmentRecorder();
   } else {
-    setupSdk();
+    window.Strigo.init();
   }
 })();
 /*!

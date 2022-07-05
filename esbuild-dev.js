@@ -15,8 +15,8 @@ const writeBuildResult = (buildResult) => {
   console.log('writing built file to dist/development/strigo.sdk.js');
   fs.writeFileSync('dist/development/strigo.sdk.js', consolidatedText);
 
-  console.log('writing built file to "../strigo-academy-chrome-extension/scripts/strigo.sdk.js"');
-  fs.writeFileSync('../strigo-academy-chrome-extension/scripts/strigo.sdk.js', consolidatedText);
+  console.log(`writing built file to "${EXTENSION_OUT_DIR}"`);
+  fs.writeFileSync(`${EXTENSION_OUT_DIR}/strigo.sdk.js`, consolidatedText);
 
   console.log('⚡ Styles & Scripts Compiled! ⚡ ');
 };
