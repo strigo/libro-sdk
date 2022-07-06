@@ -1,4 +1,3 @@
-/*global chrome*/
 (() => {
   var __create = Object.create;
   var __defProp = Object.defineProperty;
@@ -11091,12 +11090,8 @@ ${JSON.stringify(parsedContext)}` : "");
     widgetDiv.id = "strigo-widget";
     widgetDiv.appendChild(collapseDiv);
     widgetDiv.appendChild(strigoExercisesIframe);
-    const overlayDiv = document.createElement("div");
-    overlayDiv.id = "strigo-widget-overlay";
-    overlayDiv.className = "strigo-widget-overlay invisible";
     document.body.appendChild(widgetDiv);
     document.body.appendChild(academyHatDiv);
-    document.body.appendChild(overlayDiv);
     return strigoExercisesIframe;
   }
   function removeWidget(hostingAppWindow) {
@@ -11648,7 +11643,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${"http://local.strigo.io:7002"}/styles/strigo.css`;
+      return `${"http://local.strigo.io:7000"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11657,7 +11652,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${"http://local.strigo.io:7002"}/styles/strigo-widget.css`;
+      return `${"http://local.strigo.io:7000"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11666,7 +11661,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateAcademyHatCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${"http://local.strigo.io:7002"}/styles/strigo-academy-hat.css`;
+      return `${"http://local.strigo.io:7000"}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
@@ -11675,7 +11670,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${"http://local.strigo.io:7002"}/styles/strigo-assessment-recorder.css`;
+      return `${"http://local.strigo.io:7000"}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -12532,6 +12527,7 @@ ${JSON.stringify(parsedContext)}` : "");
   };
 
   // src/modules/widgets/overlay.ts
+  var MINIMUM_WIDTH = 342;
   function makeOverlayWidgetVisible() {
     document.getElementById("strigo-widget").classList.add("slide-in");
     document.getElementById("strigo-widget").classList.add("loaded");
@@ -12545,15 +12541,15 @@ ${JSON.stringify(parsedContext)}` : "");
       listeners: {
         move(event) {
           const target = event.target;
-          target.style.width = event.rect.width + "px";
+          target.style.width = `${event.rect.width < MINIMUM_WIDTH ? MINIMUM_WIDTH : event.rect.width > maxWidth ? maxWidth : event.rect.width}px`;
         },
         start() {
-          const overlayDiv = document.getElementById("strigo-widget-overlay");
-          overlayDiv.classList.toggle("invisible");
+          const strigoExercisesIframe = document.getElementById("strigo-exercises");
+          strigoExercisesIframe.style.pointerEvents = "none";
         },
         end() {
-          const overlayDiv = document.getElementById("strigo-widget-overlay");
-          overlayDiv.classList.toggle("invisible");
+          const strigoExercisesIframe = document.getElementById("strigo-exercises");
+          strigoExercisesIframe.style.pointerEvents = "auto";
         }
       },
       modifiers: [
@@ -12708,6 +12704,11 @@ ${JSON.stringify(parsedContext)}` : "");
       gutterSize: 2
     });
   }
+  async function makeIframeWidgetVisible() {
+    await hideLoader();
+    const strigoIframe = document.getElementById("strigo-exercises");
+    strigoIframe.contentWindow.postMessage({ dockable: "false" }, "*");
+  }
   var IframeWidget = class {
     init() {
       let SDKType;
@@ -12784,7 +12785,7 @@ ${JSON.stringify(parsedContext)}` : "");
       reloadPage();
     }
     initEventListeners(hostingAppWindow, academyPanelFrame, childFrame) {
-      initAcademyPanelLoadedListeners(academyPanelFrame, hideLoader);
+      initAcademyPanelLoadedListeners(academyPanelFrame, makeIframeWidgetVisible);
       initChildEventListeners(childFrame);
       initHostEventListeners(childFrame.contentWindow);
       window.addEventListener("storage" /* STORAGE */, storageChanged);
@@ -12823,7 +12824,7 @@ ${JSON.stringify(parsedContext)}` : "");
       this.config = {};
     }
     isDevelopment() {
-      return true;
+      return false;
     }
     init() {
       try {
@@ -12869,7 +12870,7 @@ ${JSON.stringify(parsedContext)}` : "");
           throw new Error("Setup data is missing");
         }
         const configuration = await fetchRemoteConfiguration(token);
-        if (!configuration?.allowedAcademyDomains.includes(window.location.host)) {
+        if (!configuration?.allowedAcademyDomains?.includes(window.location.host)) {
           console.log("Running on an unrelated domain. Aborting...");
           return;
         }
