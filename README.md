@@ -138,7 +138,11 @@ but set your `.env` file `IS_DEVELOPMENT` var to false.
 
 or
 
-You can run 
+You can run a single "prod" build that will write the sdk script into the extension scripts folder,
+with `isDevelopment` flag set to `false`:
+```bash
+npm run build:extension
+```
 
 
 ## Testing
