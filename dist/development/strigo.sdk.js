@@ -11090,8 +11090,12 @@ ${JSON.stringify(parsedContext)}` : "");
     widgetDiv.id = "strigo-widget";
     widgetDiv.appendChild(collapseDiv);
     widgetDiv.appendChild(strigoExercisesIframe);
+    const overlayDiv = document.createElement("div");
+    overlayDiv.id = "strigo-widget-overlay";
+    overlayDiv.className = "strigo-widget-overlay invisible";
     document.body.appendChild(widgetDiv);
     document.body.appendChild(academyHatDiv);
+    document.body.appendChild(overlayDiv);
     return strigoExercisesIframe;
   }
   function removeWidget(hostingAppWindow) {
@@ -12454,6 +12458,7 @@ ${JSON.stringify(parsedContext)}` : "");
     }
   }
   var observerHandler = function(pageMutations) {
+    debugger;
     if (!pageMutations.some((mutation) => mutation.addedNodes?.length > 0)) {
       console.log("No nodes were added to page...");
       return;
@@ -12507,6 +12512,7 @@ ${JSON.stringify(parsedContext)}` : "");
     });
   };
   var initDocumentObserver = function(windowToObserve) {
+    debugger;
     windowElement = windowToObserve;
     documentElement = windowElement.document;
     assessments = getAssessmentsStorageData().assessments.filter(({ assessmentType }) => assessmentType === "recorded-flow");
@@ -12525,7 +12531,6 @@ ${JSON.stringify(parsedContext)}` : "");
   };
 
   // src/modules/widgets/overlay.ts
-  var MINIMUM_WIDTH = 342;
   function makeOverlayWidgetVisible() {
     document.getElementById("strigo-widget").classList.add("slide-in");
     document.getElementById("strigo-widget").classList.add("loaded");
@@ -12539,15 +12544,15 @@ ${JSON.stringify(parsedContext)}` : "");
       listeners: {
         move(event) {
           const target = event.target;
-          target.style.width = `${event.rect.width < MINIMUM_WIDTH ? MINIMUM_WIDTH : event.rect.width > maxWidth ? maxWidth : event.rect.width}px`;
+          target.style.width = event.rect.width + "px";
         },
         start() {
-          const strigoExercisesIframe = document.getElementById("strigo-exercises");
-          strigoExercisesIframe.style.pointerEvents = "none";
+          const overlayDiv = document.getElementById("strigo-widget-overlay");
+          overlayDiv.classList.toggle("invisible");
         },
         end() {
-          const strigoExercisesIframe = document.getElementById("strigo-exercises");
-          strigoExercisesIframe.style.pointerEvents = "auto";
+          const overlayDiv = document.getElementById("strigo-widget-overlay");
+          overlayDiv.classList.toggle("invisible");
         }
       },
       modifiers: [
@@ -12702,11 +12707,6 @@ ${JSON.stringify(parsedContext)}` : "");
       gutterSize: 2
     });
   }
-  async function makeIframeWidgetVisible() {
-    await hideLoader();
-    const strigoIframe = document.getElementById("strigo-exercises");
-    strigoIframe.contentWindow.postMessage({ dockable: "false" }, "*");
-  }
   var IframeWidget = class {
     init() {
       let SDKType;
@@ -12783,7 +12783,7 @@ ${JSON.stringify(parsedContext)}` : "");
       reloadPage();
     }
     initEventListeners(hostingAppWindow, academyPanelFrame, childFrame) {
-      initAcademyPanelLoadedListeners(academyPanelFrame, makeIframeWidgetVisible);
+      initAcademyPanelLoadedListeners(academyPanelFrame, hideLoader);
       initChildEventListeners(childFrame);
       initHostEventListeners(childFrame.contentWindow);
       window.addEventListener("storage" /* STORAGE */, storageChanged);
@@ -12822,7 +12822,7 @@ ${JSON.stringify(parsedContext)}` : "");
       this.config = {};
     }
     isDevelopment() {
-      return IS_DEVELOPMENT === "true";
+      return false;
     }
     init() {
       try {
@@ -12868,7 +12868,7 @@ ${JSON.stringify(parsedContext)}` : "");
           throw new Error("Setup data is missing");
         }
         const configuration = await fetchRemoteConfiguration(token);
-        if (!configuration?.allowedAcademyDomains?.includes(window.location.host)) {
+        if (!configuration?.allowedAcademyDomains.includes(window.location.host)) {
           console.log("Running on an unrelated domain. Aborting...");
           return;
         }

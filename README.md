@@ -98,6 +98,49 @@ The academy panel will be closed, `sessionStorage` and `localStorage` configurat
 
 # Development
 
+# Local
+For developing with your local services and SDK:
+
+* Add `127.0.0.1       local.strigo.io` to your hosts file (`/etc/hosts`)
+* Set your `IS_DEVELOPMENT` variable to `true` in the `.env` file.
+
+## Working with the Strigo Chrome extension locally
+To allow a smoother dev experience with ability to test you changes in our Chrome extension
+you can direct your local dev server to also write your latest `strigo.sdk.js` bundle 
+into the *strigo-academy-chrome-extension* scripts folder. 
+
+A new build of the extension is not required in that case since Chrome extensions invoke everything in the `scripts` folder dynamically.
+
+The only thing you might need in order tou test your changes is to refresh the page.
+
+-- in case you don't see you changes in the CE - try to update the extension in the `chrome://extensions` page.
+
+#### To start the dev server with the extension-hot-reload, run:
+```sh
+npm start:ext
+```
+
+## Working with the Strigo Chrome extension in prod
+
+
+## _DISCLAIMER_!
+
+---
+We are "temporarily" 🙄 using the `dist/development/strigo.sdk.js` build for production as well!
+
+So the actual version you upload as the "prod" version of things should be the development build
+
+but with the **IS_DEVELOPMENT** variable set to **false**!
+____
+
+To build a "development" build with the IS_DEVELOPMENT flag set to false you can either run the `start:extension` command,
+but set your `.env` file `IS_DEVELOPMENT` var to false.
+
+or
+
+You can run 
+
+
 ## Testing
 
 Edit the `.env` file to include `SDK_HOSTING_PORT` as you like (7000 is the default port).
