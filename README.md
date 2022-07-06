@@ -105,7 +105,7 @@ For developing with your local services and SDK:
 * Set your `IS_DEVELOPMENT` variable to `true` in the `.env` file.
 
 ## Working with the Strigo Chrome extension locally
-To allow a smoother dev experience with ability to test you changes in our Chrome extension
+To allow a smoother dev experience with ability to test your changes in our Chrome extension
 you can direct your local dev server to also write your latest `strigo.sdk.js` bundle 
 into the *strigo-academy-chrome-extension* scripts folder. 
 
@@ -113,11 +113,11 @@ A new build of the extension is not required in that case since Chrome extension
 
 The only thing you might need in order tou test your changes is to refresh the page.
 
--- in case you don't see you changes in the CE - try to update the extension in the `chrome://extensions` page.
+-- in case you don't see your changes in the CE - try to update the extension in the `chrome://extensions` page.
 
 #### To start the dev server with the extension-hot-reload, run:
 ```sh
-npm start:ext
+npm run build start:extension
 ```
 
 ## Working with the Strigo Chrome extension in prod
