@@ -1,5 +1,17 @@
 import esbuild from 'esbuild';
 import { sassPlugin } from 'esbuild-sass-plugin';
+import * as fs from 'fs';
+
+const LOCAL_OUT_DIR = 'dist/development';
+const EXTENSION_OUT_DIR = '../strigo-academy-chrome-extension/scripts';
+
+const writeBuildResultToExtension = (buildResult) => {
+  const data = fs.readFileSync('dist/development/strigo.sdk.js', 'utf8');
+  console.log(`writing built file to "${EXTENSION_OUT_DIR}"`);
+  fs.writeFileSync(`${EXTENSION_OUT_DIR}/strigo.sdk.js`, data);
+
+  console.log('⚡ Styles & Scripts Compiled! ⚡ ');
+};
 
 const buildProd = async function () {
   return esbuild.build({
@@ -17,7 +29,7 @@ const buildProd = async function () {
     bundle: true,
     minify: true,
     define: {
-      IS_DEVELOPMENT: "false",
+      IS_DEVELOPMENT: `"false"`,
     },
   });
 };
@@ -35,12 +47,12 @@ const buildDev = async function () {
     ],
     platform: 'browser',
     plugins: [sassPlugin()],
-    outdir: 'dist/development',
+    outdir: LOCAL_OUT_DIR,
     bundle: true,
     define: {
-      IS_DEVELOPMENT: "false",
+      IS_DEVELOPMENT: `"false"`,
     },
-  });
+  }).then(writeBuildResultToExtension);
 };
 
 const build = async function () {

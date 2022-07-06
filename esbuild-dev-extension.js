@@ -27,7 +27,7 @@ esbuild
       'src/strigo.sdk.ts',
     ],
     platform: 'browser',
-    outdir: process.env.EXTENSION ? EXTENSION_OUT_DIR : LOCAL_OUT_DIR,
+    outdir: LOCAL_OUT_DIR,
     bundle: true,
     plugins: [sassPlugin()],
     define: {
@@ -51,6 +51,6 @@ esbuild
 
 serve.start({
   port: process.env.SDK_HOSTING_PORT || 7000,
-  root: process.env.EXTENSION ? EXTENSION_OUT_DIR : LOCAL_OUT_DIR,
+  root: LOCAL_OUT_DIR,
   live: true,
 });
