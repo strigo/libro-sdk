@@ -44,7 +44,6 @@ function setupResizeFunctionality(): void {
       },
     },
     modifiers: [
-      // keep the edges inside the parent
       interact.modifiers.restrictEdges({
         outer: 'parent',
       }),
