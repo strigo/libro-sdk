@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "node esbuild.js",
-    "build-local": "node esbuild-dev.js -w",
+    "build:ext": "node esbuild-dev-extension.js -w",
     "start": "node esbuild-dev.js -w",
     "start:extension": "EXTENSION=true node esbuild-dev.js -w",
     "purge": "node purge-jsdelivr",

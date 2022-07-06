@@ -2,9 +2,18 @@ import 'dotenv/config';
 import esbuild from 'esbuild';
 import { sassPlugin } from 'esbuild-sass-plugin';
 import serve, { error, log } from 'create-serve';
+import * as fs from 'fs';
 
 const LOCAL_OUT_DIR = 'dist/development';
 const EXTENSION_OUT_DIR = '../strigo-academy-chrome-extension/scripts';
+
+const writeBuildResultToExtension = (buildResult) => {
+  const data = fs.readFileSync('dist/development/strigo.sdk.js', 'utf8');
+  console.log(`writing built file to "${EXTENSION_OUT_DIR}"`);
+  fs.writeFileSync(`${EXTENSION_OUT_DIR}/strigo.sdk.js`, data);
+
+  console.log('⚡ Styles & Scripts Compiled! ⚡ ');
+};
 
 // Generate CSS/JS Builds
 esbuild
@@ -28,15 +37,13 @@ esbuild
     },
     watch: {
       onRebuild(err, buildResult) {
-        console.log('⚡ Styles & Scripts ReCompiled! ⚡ ');
+        writeBuildResultToExtension(buildResult);
         serve.update();
         err ? error('× Failed') : log('✓ Updated');
       },
     },
   })
-  .then(() => {
-    console.log('⚡ Styles & Scripts Compiled! ⚡ ');
-  })
+  .then(writeBuildResultToExtension)
   .catch((err) => {
     console.log(err);
     process.exit(1);
