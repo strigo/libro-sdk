@@ -151,14 +151,8 @@ export function createWidget(url: string): HTMLIFrameElement {
   widgetDiv.appendChild(collapseDiv);
   widgetDiv.appendChild(strigoExercisesIframe);
 
-  // Create overlay div
-  const overlayDiv = document.createElement('div');
-  overlayDiv.id = 'strigo-widget-overlay';
-  overlayDiv.className = 'strigo-widget-overlay invisible';
-
   document.body.appendChild(widgetDiv);
   document.body.appendChild(academyHatDiv);
-  document.body.appendChild(overlayDiv);
 
   return strigoExercisesIframe;
 }

@@ -30,20 +30,20 @@ function setupResizeFunctionality(): void {
     listeners: {
       move(event) {
         const target = event.target;
-        // update the element's style
-        target.style.width = (event.rect.width as string) + 'px';
+        target.style.width = `${
+          event.rect.width < MINIMUM_WIDTH ? MINIMUM_WIDTH : event.rect.width > maxWidth ? maxWidth : event.rect.width
+        }px`;
       },
       start() {
-        const overlayDiv = document.getElementById('strigo-widget-overlay');
-        overlayDiv.classList.toggle('invisible');
+        const strigoExercisesIframe = document.getElementById('strigo-exercises');
+        strigoExercisesIframe.style.pointerEvents = 'none';
       },
       end() {
-        const overlayDiv = document.getElementById('strigo-widget-overlay');
-        overlayDiv.classList.toggle('invisible');
+        const strigoExercisesIframe = document.getElementById('strigo-exercises');
+        strigoExercisesIframe.style.pointerEvents = 'auto';
       },
     },
     modifiers: [
-      // keep the edges inside the parent
       interact.modifiers.restrictEdges({
         outer: 'parent',
       }),
