@@ -17,7 +17,7 @@ const buildProd = async function () {
     bundle: true,
     minify: true,
     define: {
-      IS_DEVELOPMENT: "false",
+      IS_DEVELOPMENT: `"false"`,
     },
   });
 };
@@ -38,7 +38,7 @@ const buildDev = async function () {
     outdir: 'dist/development',
     bundle: true,
     define: {
-      IS_DEVELOPMENT: "false",
+      IS_DEVELOPMENT: `"false"`,
     },
   });
 };
