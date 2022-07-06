@@ -1,5 +1,4 @@
 import interact from 'interactjs';
-import { ResizeEvent } from '@interactjs/types';
 
 import { Logger } from '../../services/logger';
 import * as documentTools from '../document/document';
@@ -29,7 +28,7 @@ function setupResizeFunctionality(): void {
     // resize from left edge
     edges: { left: '#strigo-collapse-div', right: '#strigo-collapse-div.align-left', bottom: false, top: false },
     listeners: {
-      move(event: ResizeEvent) {
+      move(event) {
         const target = event.target;
         target.style.width = `${
           event.rect.width < MINIMUM_WIDTH ? MINIMUM_WIDTH : event.rect.width > maxWidth ? maxWidth : event.rect.width

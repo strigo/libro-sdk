@@ -1,7 +1,6 @@
 import * as eventsSender from '../events-sender/events-sender';
 import * as sessionManager from '../session/session';
 import * as configManager from '../config/config';
-import * as noCodeAssessment from '../no-code-assessment/no-code-assessment';
 import { STORAGE_NAMES } from '../storage-utils/storage-utils.types';
 import ovelayWidget from '../widgets/overlay';
 import { Logger } from '../../services/logger';
