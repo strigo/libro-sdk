@@ -34,12 +34,12 @@ function setupResizeFunctionality(): void {
         target.style.width = (event.rect.width as string) + 'px';
       },
       start() {
-        const overlayDiv = document.getElementById('strigo-widget-overlay');
-        overlayDiv.classList.toggle('invisible');
+        const overlayDiv = document.getElementById('strigo-exercises');
+        overlayDiv.style.pointerEvents = 'none';
       },
       end() {
-        const overlayDiv = document.getElementById('strigo-widget-overlay');
-        overlayDiv.classList.toggle('invisible');
+        const overlayDiv = document.getElementById('strigo-exercises');
+        overlayDiv.style.pointerEvents = 'auto';
       },
     },
     modifiers: [
