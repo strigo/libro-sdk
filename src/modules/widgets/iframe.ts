@@ -21,6 +21,12 @@ function setupResizeFunctionality(): Split.Instance {
   });
 }
 
+async function makeIframeWidgetVisible(): Promise<void> {
+  await hideLoader();
+  const strigoIframe = document.getElementById('strigo-exercises') as HTMLIFrameElement;
+  strigoIframe.contentWindow.postMessage({ dockable: 'false' }, '*');
+}
+
 class IframeWidget implements IStrigoWidget {
   splitInstance: Split.Instance;
 
@@ -138,7 +144,7 @@ class IframeWidget implements IStrigoWidget {
     academyPanelFrame: HTMLIFrameElement,
     childFrame: HTMLIFrameElement
   ): void {
-    listeners.initAcademyPanelLoadedListeners(academyPanelFrame, hideLoader);
+    listeners.initAcademyPanelLoadedListeners(academyPanelFrame, makeIframeWidgetVisible);
     listeners.initChildEventListeners(childFrame);
     listeners.initHostEventListeners(childFrame.contentWindow);
     window.addEventListener(EVENT_TYPES.STORAGE, listeners.storageChanged);

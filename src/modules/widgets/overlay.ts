@@ -1,4 +1,5 @@
 import interact from 'interactjs';
+import { ResizeEvent } from '@interactjs/types';
 
 import { Logger } from '../../services/logger';
 import * as documentTools from '../document/document';
@@ -28,18 +29,19 @@ function setupResizeFunctionality(): void {
     // resize from left edge
     edges: { left: '#strigo-collapse-div', right: '#strigo-collapse-div.align-left', bottom: false, top: false },
     listeners: {
-      move(event) {
+      move(event: ResizeEvent) {
         const target = event.target;
-        // update the element's style
-        target.style.width = (event.rect.width as string) + 'px';
+        target.style.width = `${
+          event.rect.width < MINIMUM_WIDTH ? MINIMUM_WIDTH : event.rect.width > maxWidth ? maxWidth : event.rect.width
+        }px`;
       },
       start() {
-        const overlayDiv = document.getElementById('strigo-exercises');
-        overlayDiv.style.pointerEvents = 'none';
+        const strigoExercisesIframe = document.getElementById('strigo-exercises');
+        strigoExercisesIframe.style.pointerEvents = 'none';
       },
       end() {
-        const overlayDiv = document.getElementById('strigo-exercises');
-        overlayDiv.style.pointerEvents = 'auto';
+        const strigoExercisesIframe = document.getElementById('strigo-exercises');
+        strigoExercisesIframe.style.pointerEvents = 'auto';
       },
     },
     modifiers: [
