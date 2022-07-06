@@ -60,8 +60,6 @@ function assessAddedItems(mutations): void {
 }
 
 const observerHandler = function (pageMutations): void {
-  debugger; // Added by Hidday
-
   if (!pageMutations.some((mutation) => mutation.addedNodes?.length > 0)) {
     console.log('No nodes were added to page...');
 
@@ -132,10 +130,8 @@ const observerHandler = function (pageMutations): void {
   });
 };
 
-
 // TODO: This function is not efficient - need to check by location
 export const initDocumentObserver = function (windowToObserve: Window): MutationObserver {
-  debugger; // Added by Hidday
   windowElement = windowToObserve;
   documentElement = windowElement.document;
   assessments = getAssessmentsStorageData().assessments.filter(
