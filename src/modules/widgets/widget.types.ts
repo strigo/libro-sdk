@@ -1,17 +1,18 @@
-import { SDK_TYPES } from '../../strigo/types';
+import { SdkTypes } from '../../strigo/types';
 
-export enum WIDGET_FLAVORS {
+export enum WidgetFlavors {
   IFRAME = 'iframe',
   OVERLAY = 'overlay',
   DYNAMIC = 'dynamic',
 }
 
 export interface IStrigoWidget {
-  init: () => SDK_TYPES;
+  init: () => SdkTypes;
   setup: (params: { version?: string }) => void;
   move: () => void;
   collapse: () => void;
   shutdown: () => void;
+  open: () => void;
 }
 
 export interface IOverlayWidget extends IStrigoWidget {

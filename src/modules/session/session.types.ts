@@ -1,8 +1,8 @@
-import { WIDGET_FLAVORS } from '../widgets/widget.types';
+import { WidgetFlavors } from '../widgets/widget.types';
 export interface StrigoSession {
   currentUrl: string;
-  isPanelOpen: boolean;
+  shouldPanelBeOpen: boolean;
   isLoading?: boolean;
-  widgetFlavor: WIDGET_FLAVORS;
+  widgetFlavor: WidgetFlavors;
   isRecordingMode?: boolean;
 }

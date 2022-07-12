@@ -7,10 +7,10 @@ import { generateAssessmentRecorderURL, generateRecorderCssURL, isRecordingUrlPa
 
 import {
   AssessmentRecorderMessage,
-  ASSESSMENT_RECORDER_MESSAGE_TYPES,
+  AssessmentRecorderMessageTypes,
   CaptureParams,
-  SelectedElement,
-} from './assessment-recorder.types';
+  SelectedElement, ASSESSMENT_RECORDER_ID_PARAM
+} from "./assessment-recorder.types";
 
 export function isRecordingMode(): boolean {
 
@@ -55,7 +55,7 @@ export function addAssessmentRecorderIframe(): void {
       const { messageType, payload } = recorderMessage;
 
       switch (messageType) {
-        case ASSESSMENT_RECORDER_MESSAGE_TYPES.START_CAPTURE: {
+        case AssessmentRecorderMessageTypes.START_CAPTURE: {
           Logger.info('Start capturing message received');
           assessmentRecorderIframe.classList.remove('is-open');
           setTimeout(() => {
@@ -80,7 +80,7 @@ export function addAssessmentRecorderIframe(): void {
 
               recorederIframe.contentWindow.postMessage(
                 JSON.stringify({
-                  messageType: ASSESSMENT_RECORDER_MESSAGE_TYPES.END_CAPTURE,
+                  messageType: AssessmentRecorderMessageTypes.END_CAPTURE,
                   payload: {
                     elementType,
                     selectedElement,
@@ -95,7 +95,8 @@ export function addAssessmentRecorderIframe(): void {
           break;
         }
 
-        case ASSESSMENT_RECORDER_MESSAGE_TYPES.SUBMIT_ASSESSMENT: {
+        case AssessmentRecorderMessageTypes.SUBMIT_ASSESSMENT: {
+          const assessmentUuid = new URL(window.location.href).searchParams.get(ASSESSMENT_RECORDER_ID_PARAM);
           window.sessionStorage.removeItem('isStrigoRecordingMode');
           window.opener.postMessage(
             {
@@ -103,7 +104,7 @@ export function addAssessmentRecorderIframe(): void {
                 ...payload.assessment,
                 url: window.location.href,
               },
-              windowName: window.name
+              recorderWindowId: assessmentUuid
             },
             '*'
           );
@@ -112,7 +113,7 @@ export function addAssessmentRecorderIframe(): void {
           break;
         }
 
-        case ASSESSMENT_RECORDER_MESSAGE_TYPES.CANCEL_ASSESSMENT: {
+        case AssessmentRecorderMessageTypes.CANCEL_ASSESSMENT: {
           window.sessionStorage.removeItem('isStrigoRecordingMode');
           window.close();
 

@@ -7,7 +7,7 @@ export interface SDKSetupData {
   openWidget?: boolean;
 }
 
-export enum SDK_TYPES {
+export enum SdkTypes {
   PARENT = 'PARENT',
   CHILD = 'CHILD',
   OVERLAY = 'OVERLAY',
@@ -17,7 +17,7 @@ export interface SdkConfig {
   initialized?: boolean;
   configured?: boolean;
   isOpen?: boolean;
-  sdkType?: SDK_TYPES;
+  sdkType?: SdkTypes;
 }
 
 export interface IStrigoSDK {
@@ -39,6 +39,6 @@ export interface StrigoWindow extends Window {
 }
 
 export interface ElementObserver {
-  element: Element;
+  element?: Element;
   observer: MutationObserver;
 }

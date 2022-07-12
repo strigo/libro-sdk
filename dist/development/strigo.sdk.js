@@ -10798,6 +10798,139 @@
     }
   });
 
+  // node_modules/lodash.debounce/index.js
+  var require_lodash = __commonJS({
+    "node_modules/lodash.debounce/index.js"(exports, module) {
+      var FUNC_ERROR_TEXT = "Expected a function";
+      var NAN = 0 / 0;
+      var symbolTag = "[object Symbol]";
+      var reTrim = /^\s+|\s+$/g;
+      var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+      var reIsBinary = /^0b[01]+$/i;
+      var reIsOctal = /^0o[0-7]+$/i;
+      var freeParseInt = parseInt;
+      var freeGlobal = typeof global == "object" && global && global.Object === Object && global;
+      var freeSelf = typeof self == "object" && self && self.Object === Object && self;
+      var root = freeGlobal || freeSelf || Function("return this")();
+      var objectProto = Object.prototype;
+      var objectToString = objectProto.toString;
+      var nativeMax = Math.max;
+      var nativeMin = Math.min;
+      var now = function() {
+        return root.Date.now();
+      };
+      function debounce2(func, wait, options) {
+        var lastArgs, lastThis, maxWait, result, timerId, lastCallTime, lastInvokeTime = 0, leading = false, maxing = false, trailing = true;
+        if (typeof func != "function") {
+          throw new TypeError(FUNC_ERROR_TEXT);
+        }
+        wait = toNumber(wait) || 0;
+        if (isObject(options)) {
+          leading = !!options.leading;
+          maxing = "maxWait" in options;
+          maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
+          trailing = "trailing" in options ? !!options.trailing : trailing;
+        }
+        function invokeFunc(time) {
+          var args = lastArgs, thisArg = lastThis;
+          lastArgs = lastThis = void 0;
+          lastInvokeTime = time;
+          result = func.apply(thisArg, args);
+          return result;
+        }
+        function leadingEdge(time) {
+          lastInvokeTime = time;
+          timerId = setTimeout(timerExpired, wait);
+          return leading ? invokeFunc(time) : result;
+        }
+        function remainingWait(time) {
+          var timeSinceLastCall = time - lastCallTime, timeSinceLastInvoke = time - lastInvokeTime, result2 = wait - timeSinceLastCall;
+          return maxing ? nativeMin(result2, maxWait - timeSinceLastInvoke) : result2;
+        }
+        function shouldInvoke(time) {
+          var timeSinceLastCall = time - lastCallTime, timeSinceLastInvoke = time - lastInvokeTime;
+          return lastCallTime === void 0 || timeSinceLastCall >= wait || timeSinceLastCall < 0 || maxing && timeSinceLastInvoke >= maxWait;
+        }
+        function timerExpired() {
+          var time = now();
+          if (shouldInvoke(time)) {
+            return trailingEdge(time);
+          }
+          timerId = setTimeout(timerExpired, remainingWait(time));
+        }
+        function trailingEdge(time) {
+          timerId = void 0;
+          if (trailing && lastArgs) {
+            return invokeFunc(time);
+          }
+          lastArgs = lastThis = void 0;
+          return result;
+        }
+        function cancel() {
+          if (timerId !== void 0) {
+            clearTimeout(timerId);
+          }
+          lastInvokeTime = 0;
+          lastArgs = lastCallTime = lastThis = timerId = void 0;
+        }
+        function flush() {
+          return timerId === void 0 ? result : trailingEdge(now());
+        }
+        function debounced() {
+          var time = now(), isInvoking = shouldInvoke(time);
+          lastArgs = arguments;
+          lastThis = this;
+          lastCallTime = time;
+          if (isInvoking) {
+            if (timerId === void 0) {
+              return leadingEdge(lastCallTime);
+            }
+            if (maxing) {
+              timerId = setTimeout(timerExpired, wait);
+              return invokeFunc(lastCallTime);
+            }
+          }
+          if (timerId === void 0) {
+            timerId = setTimeout(timerExpired, wait);
+          }
+          return result;
+        }
+        debounced.cancel = cancel;
+        debounced.flush = flush;
+        return debounced;
+      }
+      function isObject(value) {
+        var type = typeof value;
+        return !!value && (type == "object" || type == "function");
+      }
+      function isObjectLike(value) {
+        return !!value && typeof value == "object";
+      }
+      function isSymbol(value) {
+        return typeof value == "symbol" || isObjectLike(value) && objectToString.call(value) == symbolTag;
+      }
+      function toNumber(value) {
+        if (typeof value == "number") {
+          return value;
+        }
+        if (isSymbol(value)) {
+          return NAN;
+        }
+        if (isObject(value)) {
+          var other = typeof value.valueOf == "function" ? value.valueOf() : value;
+          value = isObject(other) ? other + "" : other;
+        }
+        if (typeof value != "string") {
+          return value === 0 ? value : +value;
+        }
+        value = value.replace(reTrim, "");
+        var isBinary = reIsBinary.test(value);
+        return isBinary || reIsOctal.test(value) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : reIsBadHex.test(value) ? NAN : +value;
+      }
+      module.exports = debounce2;
+    }
+  });
+
   // src/modules/assessment-recorder/assessment-recorder.ts
   var import_html2canvas = __toESM(require_html2canvas(), 1);
 
@@ -10878,6 +11011,10 @@
     });
     return config;
   }
+  function setConfigValue(key, value) {
+    const config = setStorageValue("localStorage" /* LOCAL_STORAGE */, "strigoConfig" /* STRIGO_CONFIG */, key, value);
+    return config;
+  }
   function getConfigValue(key) {
     const session = getLocalStorageConfig();
     return session?.[key];
@@ -10888,7 +11025,7 @@
   async function fetchRemoteConfiguration(token) {
     try {
       const configDomain = window.Strigo.isDevelopment() ? LOCAL_STRIGO_URL : "https://app.strigo.io";
-      const response = await fetch(`${configDomain}/api/internal/academy/v1/config`, {
+      const response = await fetch(`${configDomain}/api/internal/academy/v1/config?domain=${window.location.hostname}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -10980,6 +11117,33 @@ ${JSON.stringify(parsedContext)}` : "");
   };
   var LoggerInstance = new Logger();
 
+  // src/modules/session/session.ts
+  function setupSessionStorage(initialSession) {
+    const session = setupStorage("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */, initialSession);
+    return session;
+  }
+  function getSession() {
+    const session = getStorageData("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */);
+    return session;
+  }
+  function shouldPanelBeOpen() {
+    return getSession() ? getSession().shouldPanelBeOpen : true;
+  }
+  function getWidgetFlavor() {
+    return getSession()?.widgetFlavor;
+  }
+  function setSessionValue(key, value) {
+    const session = setStorageValue("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */, key, value);
+    return session;
+  }
+  function getSessionValue(key) {
+    const session = getSession();
+    return session?.[key];
+  }
+  function clearSession() {
+    clearStorage("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */);
+  }
+
   // src/modules/document/document.ts
   function getHostingAppWindow() {
     return window.top;
@@ -11054,20 +11218,59 @@ ${JSON.stringify(parsedContext)}` : "");
     widget.classList.toggle("align-left");
     collapseDiv.classList.toggle("align-left");
     academyHat.classList.toggle("align-left");
-    const dockingSide = widget.classList.contains("align-left") ? "left" : "right";
+    const dockingSide = widget.classList.contains("align-left") ? "left" /* LEFT */ : "right" /* RIGHT */;
     const strigoIframe = document.getElementById("strigo-exercises");
+    setConfigValue("dockingSide", dockingSide);
     strigoIframe.contentWindow.postMessage({ dockingSide }, "*");
   }
-  function toggleWidget() {
+  function removeWidget(hostingAppWindow) {
+    hostingAppWindow.document.getElementById("strigo-widget").remove();
+  }
+  function openWidget() {
     const widget = document.getElementById("strigo-widget");
-    widget.classList.toggle("slide-in");
-    widget.classList.toggle("loaded");
+    widget.classList.add("slide-in");
+    widget.classList.add("loaded");
     const collapseDiv = document.getElementById("strigo-collapse-div");
-    collapseDiv.classList.toggle("slide-in");
+    collapseDiv.classList.remove("slide-in");
     const academyHat = document.getElementById("strigo-academy-hat");
-    academyHat.classList.toggle("slide-in");
+    academyHat.classList.remove("slide-in");
+  }
+  function collapseWidget() {
+    const widget = document.getElementById("strigo-widget");
+    widget.classList.remove("slide-in");
+    widget.classList.remove("loaded");
+    const collapseDiv = document.getElementById("strigo-collapse-div");
+    collapseDiv.classList.add("slide-in");
+    const academyHat = document.getElementById("strigo-academy-hat");
+    academyHat.classList.add("slide-in");
+  }
+  var navigationObserver = function(pageMutations) {
+    const filteredMutations = pageMutations.filter((mutation) => {
+      return ["HTML", "BODY"].includes(mutation.target.nodeName);
+    });
+    if (filteredMutations.length > 0) {
+      const widget = window.document.getElementById("strigo-widget");
+      if (widget) {
+        console.log("*** Strigo widget already exist on the DOM.");
+        return;
+      }
+      console.log("*** Reloading widget in navigation observer");
+      setTimeout(window.Strigo.open.bind(window.Strigo), 0);
+    }
+  };
+  function toggleWidget() {
+    const previousOpenState = shouldPanelBeOpen();
+    const shouldPanelBeOpen2 = !previousOpenState;
+    setSessionValue("shouldPanelBeOpen", shouldPanelBeOpen2);
+    if (shouldPanelBeOpen2) {
+      openWidget();
+    } else {
+      collapseWidget();
+    }
   }
   function createWidget(url) {
+    const shouldPanelBeOpen2 = shouldPanelBeOpen();
+    const dockingSide = getConfigValue("dockingSide");
     const academyHatDiv = document.createElement("div");
     academyHatDiv.className = "strigo-academy-hat";
     academyHatDiv.id = "strigo-academy-hat";
@@ -11090,21 +11293,29 @@ ${JSON.stringify(parsedContext)}` : "");
     widgetDiv.id = "strigo-widget";
     widgetDiv.appendChild(collapseDiv);
     widgetDiv.appendChild(strigoExercisesIframe);
+    if (dockingSide === "left" /* LEFT */) {
+      widgetDiv.classList.add("align-left");
+      collapseDiv.classList.add("align-left");
+      academyHatDiv.classList.add("align-left");
+    }
     document.body.appendChild(widgetDiv);
     document.body.appendChild(academyHatDiv);
+    if (shouldPanelBeOpen2) {
+      openWidget();
+    } else {
+      collapseWidget();
+    }
     return strigoExercisesIframe;
   }
-  function removeWidget(hostingAppWindow) {
-    hostingAppWindow.document.getElementById("strigo-widget").remove();
-  }
-  function openWidget(hostingAppWindow) {
-    const widget = document.getElementById("strigo-widget");
-    widget.classList.add("slide-in");
-    widget.classList.add("loaded");
-    const collapseDiv = document.getElementById("strigo-collapse-div");
-    collapseDiv.classList.remove("slide-in");
-    const academyHat = document.getElementById("strigo-academy-hat");
-    academyHat.classList.remove("slide-in");
+  function initNavigationObserver(hostingAppWindow) {
+    hostingAppWindow.strigoNavigationObserver = {
+      observer: new MutationObserver(navigationObserver)
+    };
+    const navigationObserverOptions = {
+      childList: true,
+      subtree: true
+    };
+    hostingAppWindow?.strigoNavigationObserver?.observer?.observe(hostingAppWindow.document, navigationObserverOptions);
   }
 
   // src/modules/element-selector/element-profiler.js
@@ -11131,9 +11342,9 @@ ${JSON.stringify(parsedContext)}` : "");
         tagName: (name) => true,
         attr: (name, value) => false,
         seedMinLength: 1,
-        optimizedMinLength: 2,
+        buildNodesInfoUpToRoot: false,
         threshold: 1e3,
-        maxNumberOfTries: 1e4
+        maxNumberOfTries: 2e3
       };
       config = Object.assign(Object.assign({}, defaults), options);
       rootDocument = findRootDocument(config.root, defaults);
@@ -11147,14 +11358,16 @@ ${JSON.stringify(parsedContext)}` : "");
         className: (name) => true,
         tagName: (name) => true,
         attr: (name, value) => false,
-        seedMinLength: 1,
-        optimizedMinLength: 2,
+        optimizedMinLength: 6,
         threshold: 1e3,
-        maxNumberOfTries: 1e4
+        maxNumberOfTries: 2e3,
+        fallbackNodesInfo: nodesInfo,
+        permutationsThreshold: 5e4
       };
       config = Object.assign(Object.assign({}, defaults), options);
       rootDocument = findRootDocument(config.root, defaults);
-      let pathToProduceSelectorsFrom = generateUniquePath(nodesInfo, Limit.All, () => generateUniquePath(nodesInfo, Limit.Two, () => generateUniquePath(nodesInfo, Limit.One)));
+      const generateUniquePathWithFallbackPolicy = () => generateUniquePath(nodesInfo, Limit.All, () => generateUniquePath(nodesInfo, Limit.Two, () => generateUniquePath(nodesInfo, Limit.One, () => generateUniquePath(config.fallbackNodesInfo, Limit.All, () => generateUniquePath(config.fallbackNodesInfo, Limit.Two, () => generateUniquePath(config.fallbackNodesInfo, Limit.One))))));
+      let pathToProduceSelectorsFrom = generateUniquePathWithFallbackPolicy();
       if (pathToProduceSelectorsFrom) {
         let selectorToFindElementBy = selector(pathToProduceSelectorsFrom);
         const element = rootDocument.querySelector(selectorToFindElementBy);
@@ -11164,6 +11377,7 @@ ${JSON.stringify(parsedContext)}` : "");
         }
         return selector(pathToProduceSelectorsFrom);
       } else {
+        console.log("*** Selector was not found.");
         throw new Error(`Selector was not found.`);
       }
     }
@@ -11191,6 +11405,13 @@ ${JSON.stringify(parsedContext)}` : "");
       }
       return levelPath;
     }
+    function countNumberOfPermutations(stack) {
+      let numberOfPathPermutations = 1;
+      stack.forEach((nodeLevel) => {
+        numberOfPathPermutations = numberOfPathPermutations * nodeLevel.length;
+      });
+      return numberOfPathPermutations;
+    }
     function generatePathStack(nodesInfo, limit) {
       let stack = nodesInfo.map(({ nodeIdentifiers, level }) => {
         let levelPath = getLevelPath(nodeIdentifiers, limit);
@@ -11199,6 +11420,10 @@ ${JSON.stringify(parsedContext)}` : "");
         }
         return levelPath;
       });
+      let numberOfPathPermutations = countNumberOfPermutations(stack);
+      if (numberOfPathPermutations > config.permutationsThreshold) {
+        return null;
+      }
       return stack;
     }
     function findRootDocument(rootNode, defaults) {
@@ -11223,8 +11448,9 @@ ${JSON.stringify(parsedContext)}` : "");
           maybe(index(current))
         ].filter(notEmpty).flat().sort((a, b) => a.penalty - b.penalty);
         nodesInfo.push({ nodeIdentifiers, level: i });
-        if (nodesInfo.length >= config.seedMinLength) {
-          let pathToProduceSelectorsFrom = generateUniquePath(nodesInfo, Limit.All, () => generateUniquePath(nodesInfo, Limit.Two, () => generateUniquePath(nodesInfo, Limit.One)));
+        if (!config.buildNodesInfoUpToRoot && nodesInfo.length >= config.seedMinLength) {
+          const generateUniquePathWithFallbackPolicy = generateUniquePath(nodesInfo, Limit.All, () => generateUniquePath(nodesInfo, Limit.Two, () => generateUniquePath(nodesInfo, Limit.One, () => generateUniquePath(config.fallbackNodesInfo, Limit.All, () => generateUniquePath(config.fallbackNodesInfo, Limit.Two, () => generateUniquePath(config.fallbackNodesInfo, Limit.One))))));
+          let pathToProduceSelectorsFrom = generateUniquePathWithFallbackPolicy();
           if (pathToProduceSelectorsFrom) {
             break;
           }
@@ -11236,6 +11462,9 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     function generateUniquePath(nodesInfo, limit, fallback) {
       const pathStack = generatePathStack(nodesInfo, limit);
+      if (!pathStack) {
+        return fallback ? fallback() : null;
+      }
       return findUniquePath(pathStack, fallback);
     }
     function findUniquePath(stack, fallback) {
@@ -11244,11 +11473,18 @@ ${JSON.stringify(parsedContext)}` : "");
         return fallback ? fallback() : null;
       }
       for (let candidate of paths) {
-        if (unique(candidate) || config.allowDuplicates) {
+        let isUnique = false;
+        try {
+          isUnique = unique(candidate);
+        } catch (err) {
+          continue;
+        }
+        if (isUnique || config.allowDuplicates) {
           return candidate;
         }
       }
-      return null;
+      console.log("*** Did not found a unique path. returning null.");
+      return fallback ? fallback() : null;
     }
     function selector(path) {
       let node = path[0];
@@ -11358,7 +11594,7 @@ ${JSON.stringify(parsedContext)}` : "");
       };
     }
     function dispensableNth(node) {
-      return node.name !== "html" && !node.name.startsWith("#");
+      return node.name !== "html" && !node.name.startsWith("#") && !config.allowDuplicates;
     }
     function maybe(...level) {
       const list = level.filter(notEmpty);
@@ -11389,6 +11625,7 @@ ${JSON.stringify(parsedContext)}` : "");
       if (path.length > 2 && path.length > config.optimizedMinLength) {
         for (let i = 1; i < path.length - 1; i++) {
           if (scope.counter > config.maxNumberOfTries) {
+            console.log(`*** Selector optimization exhausted. Exceeded max number of tries - ${config.maxNumberOfTries}`);
             return;
           }
           scope.counter += 1;
@@ -11485,25 +11722,26 @@ ${JSON.stringify(parsedContext)}` : "");
   function getElementProfile(e, { dataAttribute: dataAttribute2 } = {}) {
     const elementProfiler = getElementProfiler();
     const options = {
-      seedMinLength: 6,
+      buildNodesInfoUpToRoot: true,
       optimizedMinLength: e.target.id ? 2 : 10,
-      threshold: 2e3,
+      threshold: 1e3,
       attr: (name) => name === dataAttribute2
     };
     const nodesInfo = elementProfiler.getElementProfileNodesInfo(e.target, options);
-    console.log("Just FYI - this is how it can generate css selector:", elementProfiler.generateSelectorFromNodesInfo(nodesInfo, options));
+    console.log("*** Just FYI - this is how it can generate css selector:", elementProfiler.generateSelectorFromNodesInfo(nodesInfo, options));
     return nodesInfo;
   }
-  function getElementSelector(nodesInfo, allowDuplicates = false) {
+  function getElementSelector(nodesInfo, options) {
     const elementProfiler = getElementProfiler();
-    const options = {
-      allowDuplicates,
-      seedMinLength: 6,
+    const defaultOptions = {
+      allowDuplicates: false,
       optimizedMinLength: 10,
-      threshold: 2e3,
-      attr: (name) => name === dataAttribute
+      threshold: 1e3,
+      attr: (name) => name === dataAttribute,
+      fallbackNodesInfo: nodesInfo
     };
-    const elementSelector = elementProfiler.generateSelectorFromNodesInfo(nodesInfo, options);
+    const consolidatedOptions = { ...defaultOptions, ...options };
+    const elementSelector = elementProfiler.generateSelectorFromNodesInfo(nodesInfo, consolidatedOptions);
     return elementSelector;
   }
   function startElementSelector(rootDocument, options) {
@@ -11688,6 +11926,9 @@ ${JSON.stringify(parsedContext)}` : "");
     return "strigoAssessmentRecorder" in urlParams;
   }
 
+  // src/modules/assessment-recorder/assessment-recorder.types.ts
+  var ASSESSMENT_RECORDER_ID_PARAM = "strigoAssessmentUuid";
+
   // src/modules/assessment-recorder/assessment-recorder.ts
   function isRecordingMode() {
     if (isRecordingUrlParamExists() || window.sessionStorage.getItem("isStrigoRecordingMode")) {
@@ -11751,13 +11992,14 @@ ${JSON.stringify(parsedContext)}` : "");
           break;
         }
         case "submit-assessment" /* SUBMIT_ASSESSMENT */: {
+          const assessmentUuid = new URL(window.location.href).searchParams.get(ASSESSMENT_RECORDER_ID_PARAM);
           window.sessionStorage.removeItem("isStrigoRecordingMode");
           window.opener.postMessage({
             assessment: {
               ...payload.assessment,
               url: window.location.href
             },
-            windowName: window.name
+            recorderWindowId: assessmentUuid
           }, "*");
           window.close();
           break;
@@ -11772,33 +12014,6 @@ ${JSON.stringify(parsedContext)}` : "");
         }
       }
     }, false);
-  }
-
-  // src/modules/session/session.ts
-  function setupSessionStorage(initialSession) {
-    const session = setupStorage("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */, initialSession);
-    return session;
-  }
-  function getSession() {
-    const session = getStorageData("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */);
-    return session;
-  }
-  function isPanelOpen() {
-    return getSession()?.isPanelOpen;
-  }
-  function getWidgetFlavor() {
-    return getSession()?.widgetFlavor;
-  }
-  function setSessionValue(key, value) {
-    const session = setStorageValue("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */, key, value);
-    return session;
-  }
-  function getSessionValue(key) {
-    const session = getSession();
-    return session?.[key];
-  }
-  function clearSession() {
-    clearStorage("sessionStorage" /* SESSION_STORAGE */, "strigoSession" /* STRIGO_SESSION */);
   }
 
   // src/modules/events-storage/events-storage.ts
@@ -12416,89 +12631,208 @@ ${JSON.stringify(parsedContext)}` : "");
   var import_interactjs = __toESM(require_interact_min(), 1);
 
   // src/modules/no-code-assessment/no-code-assessment.ts
-  var observerOptions = {
+  var import_lodash = __toESM(require_lodash(), 1);
+  var exampleElementCountObserverOptions = {
+    subtree: true,
+    childList: true
+  };
+  var bodyObserverOptions = {
     subtree: true,
     characterData: true,
     childList: true
   };
   var locationHandlers = {};
-  var assessmentStatuses = {};
+  var assessmentState = {};
   var windowElement;
   var documentElement;
+  var currentLocation;
   var assessments;
-  function assessAddedItems(mutations) {
-    const exampleElementProfile = this.assessment.recordedAssessment?.exampleElement?.profile;
-    if (!exampleElementProfile) {
-      return;
-    }
-    if (!mutations.some((mutation) => mutation.addedNodes?.length > 0)) {
-      console.log("No nodes were added...");
-      return;
-    }
+  function updateAssessmentState(assessmentId, updatedFields) {
+    assessmentState[assessmentId] = { ...assessmentState[assessmentId], ...updatedFields };
+  }
+  function updateAssessmentStorageState(assessmentId, updatedRecord) {
+    const previousState = window.sessionStorage.getItem(assessmentId);
+    const parsedPreviousState = previousState ? JSON.parse(previousState) : {};
+    const stateToUpdate = { ...parsedPreviousState, ...updatedRecord };
+    window.sessionStorage.setItem(assessmentId, JSON.stringify(stateToUpdate));
+  }
+  function countAndUpdateExampleElements(assessment, locationElement) {
+    const exampleElementProfile = assessment.recordedAssessment?.exampleElement?.profile;
+    const softProfile = exampleElementProfile.map(({ nodeIdentifiers, level }) => {
+      return {
+        level,
+        nodeIdentifiers: nodeIdentifiers.filter(({ identifier }) => identifier !== "className")
+      };
+    });
     let exampleElementSelector;
     try {
-      exampleElementSelector = getElementSelector(exampleElementProfile, true);
-    } catch {
+      exampleElementSelector = getElementSelector(exampleElementProfile, {
+        allowDuplicates: true,
+        fallbackNodesInfo: softProfile
+      });
+    } catch (e) {
+      console.log("*** Failed to retrieve a selector for the example element");
+      return;
+    }
+    const { _id } = assessment;
+    const exampleElements = document.querySelectorAll(exampleElementSelector) || [];
+    console.log("*** Example elements found:", exampleElements);
+    const exampleElementsInsideTheLocationElement = Array.from(exampleElements).filter((exampleElement) => locationElement.contains(exampleElement));
+    console.log("*** Example elements that are inside the location element:", exampleElementsInsideTheLocationElement);
+    const currentExampleElementCount = exampleElementsInsideTheLocationElement?.length || 0;
+    const previousAssessmentStorageState = window.sessionStorage.getItem(_id);
+    const parsedPreviousAssessmentStorageState = previousAssessmentStorageState ? JSON.parse(previousAssessmentStorageState) : {};
+    const previousExampleElementCount = parsedPreviousAssessmentStorageState?.[document.location.href];
+    console.log("*** evaluating example element count", {
+      currentExampleElementCount,
+      previousExampleElementCount,
+      exampleElementSelector,
+      documentText: document.body.innerText.slice(0, 10)
+    });
+    if (!previousExampleElementCount) {
+      console.log("*** Persisting example element count to local storage", { currentExampleElementCount });
+      updateAssessmentStorageState(_id, { [document.location.href]: currentExampleElementCount });
+      return currentExampleElementCount;
+    }
+    return currentExampleElementCount;
+  }
+  var onAssessmentSuccess = (assessment) => {
+    const { assessmentId, challengeSuccessEvent } = assessment;
+    updateAssessmentState(assessmentId, { status: "SUCCESS" /* SUCCESS */ });
+    LoggerInstance.info(`sent event ${challengeSuccessEvent}`);
+    windowElement.Strigo.sendEvent(challengeSuccessEvent);
+  };
+  function assessAddedItems(mutations) {
+    console.log("*** Got an item count mutation in the location element!");
+    if (currentLocation !== document.location.href) {
+      console.log("*** Aborting element count due to race condition");
       return;
     }
     const { challengeSuccessEvent, _id } = this.assessment;
-    const currentExampleElementCount = this.locationElement.querySelectorAll(exampleElementSelector)?.length || 0;
-    const previousExampleElementCount = window.sessionStorage.getItem(_id);
-    if (!previousExampleElementCount) {
-      window.sessionStorage.setItem(_id, currentExampleElementCount);
+    if (assessmentState[_id]?.status === "SUCCESS" /* SUCCESS */) {
+      console.log("*** Assessment already completed successfully.");
       return;
     }
-    if (currentExampleElementCount > parseInt(previousExampleElementCount)) {
-      assessmentStatuses[_id] = "success";
-      this.windowElement.Strigo.sendEvent(challengeSuccessEvent);
+    let currentExampleElementCount;
+    try {
+      currentExampleElementCount = countAndUpdateExampleElements(this.assessment, this.locationElement);
+    } catch (e) {
+      return;
+    }
+    const previousAssessmentStorageState = window.sessionStorage.getItem(_id);
+    const parsedPreviousAssessmentStorageState = previousAssessmentStorageState ? JSON.parse(previousAssessmentStorageState) : {};
+    const previousExampleElementCount = parsedPreviousAssessmentStorageState?.[document.location.href];
+    if (previousExampleElementCount && currentExampleElementCount > parseInt(previousExampleElementCount)) {
+      console.log("*** Yo! we got a successfully added item!", {
+        currentExampleElementCount,
+        previousExampleElementCount
+      });
+      updateAssessmentStorageState(_id, { [document.location.href]: currentExampleElementCount });
+      onAssessmentSuccess(this.assessment);
       locationHandlers[_id].observer.disconnect();
       delete locationHandlers[_id];
     }
   }
-  var observerHandler = function(pageMutations) {
-    if (!pageMutations.some((mutation) => mutation.addedNodes?.length > 0)) {
-      console.log("No nodes were added to page...");
-      return;
+  var getLocationElement = (assessmentId, locationElementProfile) => {
+    let locationElement;
+    const cachedLocationElement = assessmentState[assessmentId]?.locationElement;
+    if (cachedLocationElement) {
+      console.log("*** Got a cached location element...", cachedLocationElement);
+      locationElement = cachedLocationElement;
+    } else {
+      try {
+        const softProfile = locationElementProfile.map(({ nodeIdentifiers, level }) => {
+          return {
+            level,
+            nodeIdentifiers: nodeIdentifiers.filter(({ identifier }) => identifier !== "className")
+          };
+        });
+        const locationElementSelector = getElementSelector(locationElementProfile, { fallbackNodesInfo: softProfile });
+        console.log("*** Retrieving location element by selector:", locationElementSelector);
+        locationElement = documentElement.querySelector(locationElementSelector);
+        console.log("*** Found location element:", locationElement);
+        updateAssessmentState(assessmentId, { locationElement });
+        console.log('*** Identified a "Location Element" on the page!', { locationElement, locationElementSelector });
+      } catch (err) {
+        console.log("*** Error in selecting Location element", err);
+        return;
+      }
     }
+    return locationElement;
+  };
+  var evaluateAssessments = function() {
+    console.log("*** Evaluating Assessments...", {
+      bodyTextDuringAssessment: window.document.body.innerText.slice(0, 50)
+    });
     assessments.forEach((assessment) => {
       const { recordedAssessment, challengeSuccessEvent, _id } = assessment;
       const { actionType, expectedText } = recordedAssessment;
       const locationElementProfile = recordedAssessment?.locationElement?.profile;
-      if (assessmentStatuses?.[_id] === "success" || !locationElementProfile) {
+      if (!locationElementProfile) {
+        console.log("*** missing location element profile. Aborting...");
         return;
       }
-      assessmentStatuses[_id] = "pending";
-      let locationElement;
-      try {
-        const locationElementSelector = getElementSelector(locationElementProfile);
-        locationElement = documentElement.querySelector(locationElementSelector);
-      } catch (err) {
+      if (assessmentState?.[_id]?.status === "SUCCESS" /* SUCCESS */) {
+        console.log('*** Assessment already in "success" status. Aborting...');
+        return;
+      }
+      updateAssessmentState(_id, { status: "pending" /* PENDING */ });
+      const locationElement = getLocationElement(_id, locationElementProfile);
+      if (!locationElement) {
+        console.log("*** Failed to find location element. Aborting assessment evaluation...");
         return;
       }
       switch (actionType) {
         case "added-item" /* ADDED_ITEM */: {
+          const boundedAssessAddedItems = assessAddedItems.bind({ assessment, locationElement, windowElement });
           if (locationHandlers[_id]?.observer && locationElement === locationHandlers[_id].element) {
             locationHandlers[_id].element = locationElement;
-            LoggerInstance.info("Same reference - no need to observe again");
-            return;
+            try {
+              boundedAssessAddedItems([]);
+              locationHandlers[_id].observer.observe(locationElement, exampleElementCountObserverOptions);
+              LoggerInstance.info("Same reference - no need to observe again");
+              console.log(" *** Same reference - no need to observe again", locationElement);
+            } catch (e) {
+              console.log("*** Got an error in item count", e);
+              break;
+            }
+            break;
           }
-          if (locationElement[_id]?.observer) {
-            locationElement[_id].observer.observe(locationElement, observerOptions);
-            LoggerInstance.info("DOM Reference have changed - observing again");
-            return;
+          if (locationHandlers[_id]?.observer) {
+            try {
+              boundedAssessAddedItems([]);
+              locationHandlers[_id].observer.observe(locationElement, exampleElementCountObserverOptions);
+              LoggerInstance.info("DOM Reference have changed - observing again");
+              console.log(" *** DOM Reference have changed - observing again", locationElement);
+            } catch (e) {
+              console.log("*** Got an error in item count", e);
+              break;
+            }
+            break;
           }
           locationHandlers[_id] = {
             element: locationElement,
-            observer: new MutationObserver(assessAddedItems.bind({ assessment, locationElement, windowElement }))
+            observer: new MutationObserver(boundedAssessAddedItems)
           };
-          locationHandlers[_id].observer.observe(locationElement, observerOptions);
+          try {
+            boundedAssessAddedItems([]);
+            locationHandlers[_id].observer.observe(locationElement, exampleElementCountObserverOptions);
+          } catch (e) {
+            console.log("*** Got an error in item count", e);
+            break;
+          }
           break;
         }
         case "text-change" /* TEXT_CHANGE */: {
-          if (locationElement?.innerText?.includes(expectedText) || locationElement?.value?.includes(expectedText)) {
-            assessmentStatuses[_id] = "success";
-            LoggerInstance.info(`sent event ${challengeSuccessEvent}`);
-            windowElement.Strigo.sendEvent(challengeSuccessEvent);
+          if (locationElement instanceof HTMLInputElement) {
+            if (locationElement?.value?.includes(expectedText)) {
+              onAssessmentSuccess(assessment);
+              break;
+            }
+          }
+          if (locationElement?.innerText?.includes(expectedText)) {
+            onAssessmentSuccess(assessment);
+            break;
           }
           break;
         }
@@ -12508,31 +12842,59 @@ ${JSON.stringify(parsedContext)}` : "");
       }
     });
   };
-  var initDocumentObserver = function(windowToObserve) {
-    windowElement = windowToObserve;
-    documentElement = windowElement.document;
-    assessments = getAssessmentsStorageData().assessments.filter(({ assessmentType }) => assessmentType === "recorded-flow");
-    if (!windowElement?.strigoObserver?.observer) {
-      windowElement.strigoObserver = {
-        observer: new MutationObserver(observerHandler),
-        element: windowElement.document.body
-      };
-      windowElement?.strigoObserver?.observer?.observe(windowElement.document, observerOptions);
+  var documentObserverHandler = function(pageMutations) {
+    const isAddedNodes = pageMutations.some((mutation) => mutation.addedNodes?.length > 0);
+    const isCharacterDataChanged = pageMutations.some((mutation) => mutation.type == "characterData");
+    console.log("#####", { isAddedNodes, isCharacterDataChanged });
+    if (!isAddedNodes && !isCharacterDataChanged) {
+      console.log("*** No added nodes and no character data change were detected after url change.", {
+        previousLocation: currentLocation || "",
+        newLocation: document.location.href
+      });
       return;
     }
-    if (windowElement.strigoObserver.element !== windowElement.document.body) {
-      windowElement.strigoObserver.element = windowElement.document.body;
-      windowElement.strigoObserver.observer.observe(windowElement.document.body, observerOptions);
+    if (currentLocation === document.location.href) {
+      console.log("*** No URL change and no nodes were added.");
+    } else {
+      console.log("*** Detected URL change!", {
+        previousLocation: currentLocation || "",
+        newLocation: document.location.href
+      });
+      currentLocation = document.location.href;
     }
+    initDocumentObserver(window);
   };
+  var initDocumentObserver = (0, import_lodash.default)((windowToObserve) => {
+    windowElement = windowToObserve;
+    documentElement = windowElement.document;
+    console.log("*** Initializing document observer");
+    assessments = getAssessmentsStorageData().assessments.filter(({ assessmentType }) => assessmentType === "recorded-flow");
+    if (!windowElement?.strigoObserver?.observer) {
+      console.log("*** Adding Strigo observer to document body");
+      windowElement.strigoObserver = {
+        observer: new MutationObserver(documentObserverHandler),
+        element: windowElement.document.body
+      };
+      evaluateAssessments();
+      console.log("*** Starting to observe document body");
+      windowElement?.strigoObserver?.observer?.observe(windowElement.document, bodyObserverOptions);
+      return;
+    }
+    evaluateAssessments();
+    if (windowElement.strigoObserver.element !== windowElement.document.body) {
+      console.log('*** Detected a "body" element change. Re-initializing the document observer...');
+      windowElement.strigoObserver.element = windowElement.document.body;
+      windowElement.strigoObserver.observer.observe(windowElement.document.body, bodyObserverOptions);
+    }
+  }, 500);
 
   // src/modules/widgets/overlay.ts
   var MINIMUM_WIDTH = 342;
-  function makeOverlayWidgetVisible() {
-    document.getElementById("strigo-widget").classList.add("slide-in");
-    document.getElementById("strigo-widget").classList.add("loaded");
+  function postDockableStateToStrigo() {
+    console.log("Posting dockable state to Strigo...");
+    const dockingSide = getConfigValue("dockingSide");
     const strigoIframe = document.getElementById("strigo-exercises");
-    strigoIframe.contentWindow.postMessage({ dockable: true, dockingSide: "right" }, "*");
+    strigoIframe.contentWindow.postMessage({ dockable: true, dockingSide }, "*");
   }
   function setupResizeFunctionality() {
     const [maxWidth] = getSplitMaxSizes();
@@ -12583,7 +12945,8 @@ ${JSON.stringify(parsedContext)}` : "");
       const hostingAppWindow = getHostingAppWindow();
       this.initEventListeners(hostingAppWindow, academyPlayerFrame);
       console.log("adding observer");
-      this.documentObserver = initDocumentObserver(hostingAppWindow);
+      initDocumentObserver(hostingAppWindow);
+      initNavigationObserver(hostingAppWindow);
       console.log("observer added");
       setupResizeFunctionality();
     }
@@ -12599,14 +12962,14 @@ ${JSON.stringify(parsedContext)}` : "");
       toggleWidget();
     }
     open() {
-      const hostingAppWindow = getHostingAppWindow();
-      openWidget(hostingAppWindow);
+      openWidget();
+      postDockableStateToStrigo();
     }
     move() {
       move();
     }
     initEventListeners(hostingAppWindow, academyPanelFrame) {
-      initAcademyPanelLoadedListeners(academyPanelFrame, makeOverlayWidgetVisible);
+      initAcademyPanelLoadedListeners(academyPanelFrame, postDockableStateToStrigo);
       initHostEventListeners(hostingAppWindow);
       hostingAppWindow.addEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
     }
@@ -12845,7 +13208,7 @@ ${JSON.stringify(parsedContext)}` : "");
         this.config.sdkType = widget.init();
         this.config.initialized = true;
         LoggerInstance.info("Initialized SDK.");
-        if (this.config.sdkType !== "CHILD" /* CHILD */ && isPanelOpen()) {
+        if (this.config.sdkType !== "CHILD" /* CHILD */ && shouldPanelBeOpen()) {
           this.setup();
         }
       } catch (err) {
@@ -12856,22 +13219,31 @@ ${JSON.stringify(parsedContext)}` : "");
       try {
         LoggerInstance.info("Starting to setup SDK...");
         const strigoWidget = document.getElementById("strigo-widget");
-        const isPanelOpen2 = this.config.isOpen && strigoWidget;
-        if (isPanelOpen2 || this.config.sdkType === "CHILD" /* CHILD */) {
-          LoggerInstance.info("panel is already opened");
+        const isPanelOpen = this.config.isOpen && strigoWidget;
+        if (isPanelOpen || this.config.sdkType === "CHILD" /* CHILD */) {
+          LoggerInstance.info('panel is already opened. Aborting "setup" action...');
           return;
         }
         if (!this.config.initialized) {
           throw new Error("SDK was not initialized");
         }
         const config = getLocalStorageConfig();
-        const { email, token, version, openWidget: openWidget2 = true } = { ...config.user, ...config, ...data };
+        const {
+          email,
+          token,
+          version,
+          openWidget: openWidget2 = true,
+          dockingSide = "right" /* RIGHT */
+        } = { ...config.user, ...config, ...data };
         if (!email || !token) {
           throw new Error("Setup data is missing");
         }
         const configuration = await fetchRemoteConfiguration(token);
-        if (!configuration?.allowedAcademyDomains?.includes(window.location.host)) {
-          console.log("Running on an unrelated domain. Aborting...");
+        if (!configuration?.allowedAcademyDomains?.includes(window.location.host.replace(/^www\./i, ""))) {
+          console.log("Running on an unrelated domain. Aborting...", {
+            allowedDomains: configuration?.allowedAcademyDomains,
+            currentHost: window.location.host
+          });
           return;
         }
         if (configuration) {
@@ -12887,7 +13259,8 @@ ${JSON.stringify(parsedContext)}` : "");
           },
           initSite: getUrlData(),
           version,
-          loggingConfig: configuration?.loggingConfig
+          loggingConfig: configuration?.loggingConfig,
+          dockingSide
         });
         this.config.configured = true;
         LoggerInstance.info("Finished SDK setup.");
@@ -12905,15 +13278,15 @@ ${JSON.stringify(parsedContext)}` : "");
           throw new Error("SDK was not set up");
         }
         const strigoWidget = document.getElementById("strigo-widget");
-        const isPanelOpen2 = this.config.isOpen && strigoWidget;
-        if (isPanelOpen2 || this.config.sdkType === "CHILD" /* CHILD */) {
-          LoggerInstance.info("Panel is already opened");
+        const isPanelOpen = this.config.isOpen && strigoWidget;
+        if (isPanelOpen || this.config.sdkType === "CHILD" /* CHILD */) {
+          LoggerInstance.info('Panel is already opened. Aborting "open" action...');
           return;
         }
         const config = getLocalStorageConfig();
         setupSessionStorage({
           currentUrl: config.initSite.href,
-          isPanelOpen: true,
+          shouldPanelBeOpen: shouldPanelBeOpen(),
           isLoading: true,
           widgetFlavor: config.selectedWidgetFlavor
         });

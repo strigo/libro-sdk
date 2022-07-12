@@ -4,6 +4,7 @@ declare global {
   interface Window {
     Strigo: IStrigoSDK;
     strigoObserver: ElementObserver;
+    strigoNavigationObserver: ElementObserver;
   }
 
   declare const SDK_LOCAL_URL: string;

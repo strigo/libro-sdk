@@ -1,14 +1,14 @@
-import { STORAGE_NAMES, STORAGE_TYPES } from '../storage-utils/storage-utils.types';
+import { StorageNames, StorageTypes } from '../storage-utils/storage-utils.types';
 import { Logger } from '../../services/logger';
 import * as sessionManager from '../session/session';
-import { EVENT_TYPES } from '../listeners/listeners.types';
-import { WIDGET_FLAVORS } from '../widgets/widget.types';
+import { EventTypes } from '../listeners/listeners.types';
+import { WidgetFlavors } from '../widgets/widget.types';
 
 import { StrigoEventsStorage, StrigoEvent } from './events-storage.types';
 
 export function getEventsStorageData(): StrigoEventsStorage {
   try {
-    return JSON.parse(window[STORAGE_TYPES.LOCAL_STORAGE].getItem(STORAGE_NAMES.STRIGO_EVENTS));
+    return JSON.parse(window[StorageTypes.LOCAL_STORAGE].getItem(StorageNames.STRIGO_EVENTS));
   } catch (error) {
     Logger.error('Get events storage error', { error });
 
@@ -27,7 +27,7 @@ export function initEventsStorage(): StrigoEventsStorage {
     }
 
     const storageEvents = { events: [] };
-    window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_EVENTS, JSON.stringify(storageEvents));
+    window[StorageTypes.LOCAL_STORAGE].setItem(StorageNames.STRIGO_EVENTS, JSON.stringify(storageEvents));
 
     return storageEvents;
   } catch (error) {
@@ -40,7 +40,7 @@ export function initEventsStorage(): StrigoEventsStorage {
 export function setup(initialStorage?: StrigoEvent): StrigoEventsStorage {
   try {
     const storageEvents = initialStorage ? { events: [initialStorage] } : { events: [] };
-    window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_EVENTS, JSON.stringify(storageEvents));
+    window[StorageTypes.LOCAL_STORAGE].setItem(StorageNames.STRIGO_EVENTS, JSON.stringify(storageEvents));
 
     return storageEvents;
   } catch (error) {
@@ -61,10 +61,10 @@ export function pushEventValue(event: StrigoEvent): StrigoEventsStorage {
     const prev = JSON.stringify(initialState);
     initialState.events.push(event);
 
-    window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_EVENTS, JSON.stringify(initialState));
+    window[StorageTypes.LOCAL_STORAGE].setItem(StorageNames.STRIGO_EVENTS, JSON.stringify(initialState));
 
-    if (sessionManager.getWidgetFlavor() === WIDGET_FLAVORS.OVERLAY) {
-      const customEvent = new CustomEvent(EVENT_TYPES.OVERLAY_WIDGET_EVENT, {
+    if (sessionManager.getWidgetFlavor() === WidgetFlavors.OVERLAY) {
+      const customEvent = new CustomEvent(EventTypes.OVERLAY_WIDGET_EVENT, {
         bubbles: true,
         detail: {
           key: 'strigoEvents',
@@ -93,7 +93,7 @@ export function popEventValue(): StrigoEvent {
 
     const event = initialState.events.pop();
 
-    window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_EVENTS, JSON.stringify(initialState));
+    window[StorageTypes.LOCAL_STORAGE].setItem(StorageNames.STRIGO_EVENTS, JSON.stringify(initialState));
 
     return event;
   } catch (error) {
@@ -121,7 +121,7 @@ export function getEventValue(): StrigoEvent {
 
 export function clearEventsStorage(): void {
   try {
-    window[STORAGE_TYPES.LOCAL_STORAGE].removeItem(STORAGE_NAMES.STRIGO_EVENTS);
+    window[StorageTypes.LOCAL_STORAGE].removeItem(StorageNames.STRIGO_EVENTS);
   } catch (error) {
     Logger.error('Clear events storage error', { error });
   }
