@@ -3,26 +3,26 @@ import { isIframeSupported } from '../document/document';
 
 import iframeWidget from './iframe';
 import overlayWidget from './overlay';
-import { WIDGET_FLAVORS, IStrigoWidget } from './widget.types';
+import { WidgetFlavors, IStrigoWidget } from './widget.types';
 
-export function getWidgetFlavor(selectedWidgetFlavor?: WIDGET_FLAVORS): WIDGET_FLAVORS {
-  if (selectedWidgetFlavor && selectedWidgetFlavor === WIDGET_FLAVORS.DYNAMIC) {
-    return isIframeSupported() ? WIDGET_FLAVORS.IFRAME : WIDGET_FLAVORS.OVERLAY;
+export function getWidgetFlavor(selectedWidgetFlavor?: WidgetFlavors): WidgetFlavors {
+  if (selectedWidgetFlavor && selectedWidgetFlavor === WidgetFlavors.DYNAMIC) {
+    return isIframeSupported() ? WidgetFlavors.IFRAME : WidgetFlavors.OVERLAY;
   }
 
   return selectedWidgetFlavor;
 }
 
-export function getWidget(widgetFlavor: WIDGET_FLAVORS): IStrigoWidget | null {
+export function getWidget(widgetFlavor: WidgetFlavors): IStrigoWidget | null {
   let widget = null;
 
   switch (widgetFlavor) {
-    case WIDGET_FLAVORS.IFRAME: {
+    case WidgetFlavors.IFRAME: {
       widget = iframeWidget;
       break;
     }
 
-    case WIDGET_FLAVORS.OVERLAY: {
+    case WidgetFlavors.OVERLAY: {
       widget = overlayWidget;
       break;
     }

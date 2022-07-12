@@ -21,9 +21,9 @@ export function getElementProfiler() {
       tagName: (name) => true,
       attr: (name, value) => false,
       seedMinLength: 1,
-      optimizedMinLength: 2,
+      buildNodesInfoUpToRoot: false,
       threshold: 1000,
-      maxNumberOfTries: 10000
+      maxNumberOfTries: 2000
     };
     config = Object.assign(Object.assign({}, defaults), options);
     rootDocument = findRootDocument(config.root, defaults);
@@ -38,17 +38,25 @@ export function getElementProfiler() {
       className: (name) => true,
       tagName: (name) => true,
       attr: (name, value) => false,
-      seedMinLength: 1,
-      optimizedMinLength: 2,
+      optimizedMinLength: 6,
       threshold: 1000,
-      maxNumberOfTries: 10000
+      maxNumberOfTries: 2000,
+      fallbackNodesInfo: nodesInfo,
+      permutationsThreshold: 50000
     };
     config = Object.assign(Object.assign({}, defaults), options);
     rootDocument = findRootDocument(config.root, defaults);
 
-    let pathToProduceSelectorsFrom = generateUniquePath(nodesInfo, Limit.All, () =>
-      generateUniquePath(nodesInfo, Limit.Two, () => generateUniquePath(nodesInfo, Limit.One))
-    );
+    const generateUniquePathWithFallbackPolicy =
+      () => generateUniquePath(nodesInfo, Limit.All,
+      () => generateUniquePath(nodesInfo, Limit.Two,
+        () => generateUniquePath(nodesInfo, Limit.One,
+          () => generateUniquePath(config.fallbackNodesInfo, Limit.All,
+            () => generateUniquePath(config.fallbackNodesInfo, Limit.Two,
+              () => generateUniquePath(config.fallbackNodesInfo, Limit.One)
+            )))));
+
+    let pathToProduceSelectorsFrom = generateUniquePathWithFallbackPolicy();
 
     if (pathToProduceSelectorsFrom) {
       let selectorToFindElementBy = selector(pathToProduceSelectorsFrom);
@@ -59,6 +67,7 @@ export function getElementProfiler() {
       }
       return selector(pathToProduceSelectorsFrom);
     } else {
+      console.log('*** Selector was not found.');
       throw new Error(`Selector was not found.`);
     }
   }
@@ -93,6 +102,15 @@ export function getElementProfiler() {
 
     return levelPath;
   }
+  function countNumberOfPermutations(stack) {
+    let numberOfPathPermutations = 1;
+
+    stack.forEach((nodeLevel) => {
+      numberOfPathPermutations = numberOfPathPermutations * nodeLevel.length;
+    });
+
+    return numberOfPathPermutations;
+  }
   function generatePathStack(nodesInfo, limit) {
     let stack = nodesInfo.map(({nodeIdentifiers, level}) =>{
       let levelPath = getLevelPath(nodeIdentifiers, limit);
@@ -103,6 +121,11 @@ export function getElementProfiler() {
 
       return levelPath;
     })
+
+    let numberOfPathPermutations = countNumberOfPermutations(stack);
+    if (numberOfPathPermutations > config.permutationsThreshold) {
+      return null;
+    }
 
     return stack;
   }
@@ -131,10 +154,17 @@ export function getElementProfiler() {
 
       nodesInfo.push({ nodeIdentifiers, level: i });
 
-      if (nodesInfo.length >= config.seedMinLength) {
-        let pathToProduceSelectorsFrom = generateUniquePath(nodesInfo, Limit.All, () =>
-          generateUniquePath(nodesInfo, Limit.Two, () => generateUniquePath(nodesInfo, Limit.One))
-        );
+      if (!config.buildNodesInfoUpToRoot && nodesInfo.length >= config.seedMinLength) {
+        const generateUniquePathWithFallbackPolicy =
+          generateUniquePath(nodesInfo, Limit.All,
+            () => generateUniquePath(nodesInfo, Limit.Two,
+              () => generateUniquePath(nodesInfo, Limit.One,
+                () => generateUniquePath(config.fallbackNodesInfo, Limit.All,
+                  () => generateUniquePath(config.fallbackNodesInfo, Limit.Two,
+                    () => generateUniquePath(config.fallbackNodesInfo, Limit.One)
+                  )))));
+
+        let pathToProduceSelectorsFrom = generateUniquePathWithFallbackPolicy()
 
         if (pathToProduceSelectorsFrom) {
           break;
@@ -149,6 +179,11 @@ export function getElementProfiler() {
   }
   function generateUniquePath (nodesInfo, limit, fallback) {
     const pathStack = generatePathStack(nodesInfo, limit);
+
+    if (!pathStack) {
+      return fallback ? fallback() : null;
+    }
+
     return findUniquePath(pathStack, fallback);
   }
   function findUniquePath(stack, fallback) {
@@ -158,12 +193,20 @@ export function getElementProfiler() {
     }
 
     for (let candidate of paths) {
-      if (unique(candidate) || config.allowDuplicates) {
+      let isUnique = false;
+      try {
+        isUnique = unique(candidate);
+      } catch(err) {
+        continue;
+      }
+
+      if (isUnique || config.allowDuplicates) {
         return candidate;
       }
     }
 
-    return null;
+    console.log('*** Did not found a unique path. returning null.');
+    return fallback ? fallback() : null;
   }
   function selector(path) {
     let node = path[0];
@@ -282,7 +325,7 @@ export function getElementProfiler() {
     };
   }
   function dispensableNth(node) {
-    return node.name !== "html" && !node.name.startsWith("#");
+    return node.name !== "html" && !node.name.startsWith("#") && !config.allowDuplicates;
   }
   function maybe(...level) {
     const list = level.filter(notEmpty);
@@ -317,6 +360,7 @@ export function getElementProfiler() {
     if (path.length > 2 && path.length > config.optimizedMinLength) {
       for (let i = 1; i < path.length - 1; i++) {
         if (scope.counter > config.maxNumberOfTries) {
+          console.log(`*** Selector optimization exhausted. Exceeded max number of tries - ${config.maxNumberOfTries}`);
           return; // Okay At least I tried!
         }
         scope.counter += 1;

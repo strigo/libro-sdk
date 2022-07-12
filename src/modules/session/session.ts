@@ -1,19 +1,19 @@
 import { clearStorage, getStorageData, setStorageValue, setupStorage } from '../storage-utils/storage-utils';
-import { STORAGE_NAMES, STORAGE_TYPES } from '../storage-utils/storage-utils.types';
-import { WIDGET_FLAVORS } from '../widgets/widget.types';
+import { StorageNames, StorageTypes } from '../storage-utils/storage-utils.types';
+import { WidgetFlavors } from '../widgets/widget.types';
 
 import { StrigoSession } from './session.types';
 
 export function init(): StrigoSession {
-  const session = getStorageData(STORAGE_TYPES.SESSION_STORAGE, STORAGE_NAMES.STRIGO_SESSION);
+  const session = getStorageData(StorageTypes.SESSION_STORAGE, StorageNames.STRIGO_SESSION);
 
   return session as StrigoSession;
 }
 
 export function setupSessionStorage(initialSession: StrigoSession): StrigoSession {
   const session = setupStorage<StrigoSession>(
-    STORAGE_TYPES.SESSION_STORAGE,
-    STORAGE_NAMES.STRIGO_SESSION,
+    StorageTypes.SESSION_STORAGE,
+    StorageNames.STRIGO_SESSION,
     initialSession
   );
 
@@ -21,26 +21,22 @@ export function setupSessionStorage(initialSession: StrigoSession): StrigoSessio
 }
 
 export function getSession(): StrigoSession {
-  const session = getStorageData(STORAGE_TYPES.SESSION_STORAGE, STORAGE_NAMES.STRIGO_SESSION);
+  const session = getStorageData(StorageTypes.SESSION_STORAGE, StorageNames.STRIGO_SESSION);
 
   return session as StrigoSession;
 }
 
-export function isPanelOpen(): boolean {
-  return getSession()?.isPanelOpen;
+export function shouldPanelBeOpen(): boolean {
+  return getSession() ? getSession().shouldPanelBeOpen : true;
+
 }
 
-export function getWidgetFlavor(): WIDGET_FLAVORS {
+export function getWidgetFlavor(): WidgetFlavors {
   return getSession()?.widgetFlavor;
 }
 
 export function setSessionValue(key: keyof StrigoSession, value: any): StrigoSession {
-  const session = setStorageValue<StrigoSession>(
-    STORAGE_TYPES.SESSION_STORAGE,
-    STORAGE_NAMES.STRIGO_SESSION,
-    key,
-    value
-  );
+  const session = setStorageValue<StrigoSession>(StorageTypes.SESSION_STORAGE, StorageNames.STRIGO_SESSION, key, value);
 
   return session;
 }
@@ -52,5 +48,5 @@ export function getSessionValue(key: keyof StrigoSession): any {
 }
 
 export function clearSession(): void {
-  clearStorage(STORAGE_TYPES.SESSION_STORAGE, STORAGE_NAMES.STRIGO_SESSION);
+  clearStorage(StorageTypes.SESSION_STORAGE, StorageNames.STRIGO_SESSION);
 }

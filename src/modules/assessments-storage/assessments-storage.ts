@@ -1,12 +1,12 @@
 import { Logger } from '../../services/logger';
-import { STORAGE_NAMES, STORAGE_TYPES } from '../storage-utils/storage-utils.types';
+import { StorageNames, StorageTypes } from '../storage-utils/storage-utils.types';
 import { Assessment } from '../no-code-assessment/no-code-assessment.types';
 
 import { StrigoAssessmentsStorage } from './assessments-storage.types';
 
 export function getAssessmentsStorageData(): StrigoAssessmentsStorage {
   try {
-    return JSON.parse(window[STORAGE_TYPES.LOCAL_STORAGE].getItem(STORAGE_NAMES.STRIGO_ASSESSMENTS));
+    return JSON.parse(window[StorageTypes.LOCAL_STORAGE].getItem(StorageNames.STRIGO_ASSESSMENTS));
   } catch (error) {
     Logger.error('Get assessments storage error', { error });
 
@@ -25,7 +25,7 @@ export function initAssessmentStorage(): StrigoAssessmentsStorage {
     }
 
     const strigoAssessments = { assessments: [] };
-    window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_ASSESSMENTS, JSON.stringify(strigoAssessments));
+    window[StorageTypes.LOCAL_STORAGE].setItem(StorageNames.STRIGO_ASSESSMENTS, JSON.stringify(strigoAssessments));
 
     return strigoAssessments;
   } catch (error) {
@@ -38,7 +38,7 @@ export function initAssessmentStorage(): StrigoAssessmentsStorage {
 export function setupAssessmentStorage(initialStorage?: Assessment[]): StrigoAssessmentsStorage {
   try {
     const strigoAssessments = initialStorage ? { assessments: [...initialStorage] } : { assessments: [] };
-    window[STORAGE_TYPES.LOCAL_STORAGE].setItem(STORAGE_NAMES.STRIGO_ASSESSMENTS, JSON.stringify(strigoAssessments));
+    window[StorageTypes.LOCAL_STORAGE].setItem(StorageNames.STRIGO_ASSESSMENTS, JSON.stringify(strigoAssessments));
 
     return strigoAssessments;
   } catch (error) {
@@ -50,7 +50,7 @@ export function setupAssessmentStorage(initialStorage?: Assessment[]): StrigoAss
 
 export function clearAssessmentStorage(): void {
   try {
-    window[STORAGE_TYPES.LOCAL_STORAGE].removeItem(STORAGE_NAMES.STRIGO_ASSESSMENTS);
+    window[StorageTypes.LOCAL_STORAGE].removeItem(StorageNames.STRIGO_ASSESSMENTS);
   } catch (error) {
     Logger.error('Clear assessments storage error', { error });
   }

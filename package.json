@@ -27,6 +27,7 @@
     "@interactjs/types": "1.10.14",
     "html2canvas": "1.4.1",
     "interactjs": "1.10.14",
+    "lodash.debounce": "^4.0.8",
     "split.js": "1.6.5"
   },
   "devDependencies": {

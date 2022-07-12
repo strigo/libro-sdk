@@ -1,5 +1,5 @@
 import { Assessment } from '../no-code-assessment/no-code-assessment.types';
-import { WIDGET_FLAVORS } from '../widgets/widget.types';
+import { WidgetFlavors } from '../widgets/widget.types';
 
 export interface SiteConfig {
   host: string;
@@ -28,7 +28,7 @@ export interface User {
 export interface StrigoInitConfig {
   webApiKey: string;
   subDomain: string;
-  selectedWidgetFlavor: WIDGET_FLAVORS;
+  selectedWidgetFlavor: WidgetFlavors;
 }
 
 export interface StrigoSetupConfig {
@@ -36,6 +36,12 @@ export interface StrigoSetupConfig {
   initSite: SiteConfig;
   version?: string;
   loggingConfig?: LoggingConfig;
+  dockingSide?: DockingSide;
+}
+
+export enum DockingSide {
+  LEFT = 'left',
+  RIGHT = 'right',
 }
 
 export interface StrigoConfig {
@@ -44,8 +50,9 @@ export interface StrigoConfig {
   initSite?: SiteConfig;
   subDomain: string;
   version?: string;
-  selectedWidgetFlavor: WIDGET_FLAVORS;
+  selectedWidgetFlavor: WidgetFlavors;
   loggingConfig?: LoggingConfig;
+  dockingSide?: DockingSide;
 }
 
 export interface StrigoToken {

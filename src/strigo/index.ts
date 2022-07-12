@@ -6,10 +6,12 @@ import * as assessmentsStorage from '../modules/assessments-storage/assessments-
 import * as assessmentRecorderModule from '../modules/assessment-recorder/assessment-recorder';
 import { Logger } from '../services/logger';
 import * as widgetFactory from '../modules/widgets/widget-factory';
-import { MESSAGE_TYPES } from '../modules/listeners/listeners.types';
+import { MessageTypes } from '../modules/listeners/listeners.types';
 import { startElementSelector } from '../modules/element-selector/element-selector';
+import { DockingSide } from '../modules/config/config.types';
+import { shouldPanelBeOpen } from '../modules/session/session';
 
-import { SDKSetupData, SDK_TYPES, IStrigoSDK, SdkConfig } from './types';
+import { IStrigoSDK, SdkConfig, SDKSetupData, SdkTypes } from './types';
 
 class StrigoSDK implements IStrigoSDK {
   config: SdkConfig = {};
@@ -49,7 +51,7 @@ class StrigoSDK implements IStrigoSDK {
       Logger.info('Initialized SDK.');
 
       // Auto open academy if it was opened in this session before.
-      if (this.config.sdkType !== SDK_TYPES.CHILD && sessionManager.isPanelOpen()) {
+      if (this.config.sdkType !== SdkTypes.CHILD && sessionManager.shouldPanelBeOpen()) {
         this.setup();
       }
     } catch (err) {
@@ -65,8 +67,8 @@ class StrigoSDK implements IStrigoSDK {
       const isPanelOpen = this.config.isOpen && strigoWidget;
 
       // Setup won't do anything for now (child will only be able to send events later)
-      if (isPanelOpen || this.config.sdkType === SDK_TYPES.CHILD) {
-        Logger.info('panel is already opened');
+      if (isPanelOpen || this.config.sdkType === SdkTypes.CHILD) {
+        Logger.info('panel is already opened. Aborting "setup" action...');
 
         return;
       }
@@ -77,7 +79,13 @@ class StrigoSDK implements IStrigoSDK {
 
       const config = configManager.getLocalStorageConfig();
 
-      const { email, token, version, openWidget = true } = { ...config.user, ...config, ...data };
+      const {
+        email,
+        token,
+        version,
+        openWidget = true,
+        dockingSide = DockingSide.RIGHT,
+      } = { ...config.user, ...config, ...data };
 
       if (!email || !token) {
         throw new Error('Setup data is missing');
@@ -85,8 +93,11 @@ class StrigoSDK implements IStrigoSDK {
 
       const configuration = await configManager.fetchRemoteConfiguration(token);
 
-      if (!configuration?.allowedAcademyDomains?.includes(window.location.host)) {
-        console.log('Running on an unrelated domain. Aborting...');
+      if (!configuration?.allowedAcademyDomains?.includes(window.location.host.replace(/^www\./i, ''))) {
+        console.log('Running on an unrelated domain. Aborting...', {
+          allowedDomains: configuration?.allowedAcademyDomains,
+          currentHost: window.location.host,
+        });
 
         return;
       }
@@ -107,6 +118,7 @@ class StrigoSDK implements IStrigoSDK {
         initSite: urlTools.getUrlData(),
         version,
         loggingConfig: configuration?.loggingConfig,
+        dockingSide,
       });
 
       this.config.configured = true;
@@ -131,8 +143,8 @@ class StrigoSDK implements IStrigoSDK {
       const strigoWidget = document.getElementById('strigo-widget');
       const isPanelOpen = this.config.isOpen && strigoWidget;
 
-      if (isPanelOpen || this.config.sdkType === SDK_TYPES.CHILD) {
-        Logger.info('Panel is already opened');
+      if (isPanelOpen || this.config.sdkType === SdkTypes.CHILD) {
+        Logger.info('Panel is already opened. Aborting "open" action...');
 
         return;
       }
@@ -141,7 +153,7 @@ class StrigoSDK implements IStrigoSDK {
 
       sessionManager.setupSessionStorage({
         currentUrl: config.initSite.href,
-        isPanelOpen: true,
+        shouldPanelBeOpen: sessionManager.shouldPanelBeOpen(),
         isLoading: true,
         widgetFlavor: config.selectedWidgetFlavor,
       });
@@ -167,8 +179,8 @@ class StrigoSDK implements IStrigoSDK {
     try {
       Logger.info('Closing academy panel...');
 
-      if (this.config.sdkType === SDK_TYPES.CHILD) {
-        window.parent.postMessage(JSON.stringify({ messageType: MESSAGE_TYPES.SHUTDOWN }), '*');
+      if (this.config.sdkType === SdkTypes.CHILD) {
+        window.parent.postMessage(JSON.stringify({ messageType: MessageTypes.SHUTDOWN }), '*');
         Logger.info('Notified parent frame to close academy panel.');
 
         return;
@@ -196,8 +208,8 @@ class StrigoSDK implements IStrigoSDK {
     try {
       Logger.info('Destroying SDK...');
 
-      if (this.config.sdkType === SDK_TYPES.CHILD) {
-        window.parent.postMessage(JSON.stringify({ messageType: MESSAGE_TYPES.DESTROY }), '*');
+      if (this.config.sdkType === SdkTypes.CHILD) {
+        window.parent.postMessage(JSON.stringify({ messageType: MessageTypes.DESTROY }), '*');
         Logger.info('Notified parent frame to destroy SDK.');
 
         return;

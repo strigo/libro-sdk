@@ -7,8 +7,8 @@ import { hideLoader, showLoader } from '../loader/loader';
 import * as configManager from '../config/config';
 import * as listeners from '../listeners/listeners';
 import * as urlTools from '../url/url';
-import { SDK_TYPES } from '../../strigo/types';
-import { EVENT_TYPES } from '../listeners/listeners.types';
+import { SdkTypes } from '../../strigo/types';
+import { EventTypes } from '../listeners/listeners.types';
 
 import { IStrigoWidget } from './widget.types';
 
@@ -30,14 +30,14 @@ async function makeIframeWidgetVisible(): Promise<void> {
 class IframeWidget implements IStrigoWidget {
   splitInstance: Split.Instance;
 
-  init(): SDK_TYPES {
-    let SDKType: SDK_TYPES;
+  init(): SdkTypes {
+    let SDKType: SdkTypes;
 
     if (urlTools.isStrigoChildIframe()) {
       Logger.info('Child SDK window');
 
       // Start as a subscriber
-      SDKType = SDK_TYPES.CHILD;
+      SDKType = SdkTypes.CHILD;
 
       // Dispatch opened event
       window.dispatchEvent(new Event('strigo-opened'));
@@ -47,7 +47,7 @@ class IframeWidget implements IStrigoWidget {
     } else {
       Logger.info('Parent SDK window');
 
-      SDKType = SDK_TYPES.PARENT;
+      SDKType = SdkTypes.PARENT;
     }
 
     return SDKType;
@@ -147,7 +147,7 @@ class IframeWidget implements IStrigoWidget {
     listeners.initAcademyPanelLoadedListeners(academyPanelFrame, makeIframeWidgetVisible);
     listeners.initChildEventListeners(childFrame);
     listeners.initHostEventListeners(childFrame.contentWindow);
-    window.addEventListener(EVENT_TYPES.STORAGE, listeners.storageChanged);
+    window.addEventListener(EventTypes.STORAGE, listeners.storageChanged);
   }
 }
 

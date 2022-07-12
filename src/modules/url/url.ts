@@ -6,7 +6,7 @@ import {
   LOCAL_STRIGO_URL,
 } from '../../strigo/consts';
 import { StrigoConfig, SiteConfig } from '../config/config.types';
-import { WIDGET_FLAVORS } from '../widgets/widget.types';
+import { WidgetFlavors } from '../widgets/widget.types';
 
 import { InitScriptParams } from './url.types';
 
@@ -78,7 +78,7 @@ export function extractInitScriptParams(): InitScriptParams {
   return {
     webApiKey: initScript?.getAttribute('data-web-api-key') || '',
     subDomain: initScript?.getAttribute('data-subdomain') || '',
-    selectedWidgetFlavor: (initScript?.getAttribute('data-layout-flavor') as WIDGET_FLAVORS) || WIDGET_FLAVORS.DYNAMIC,
+    selectedWidgetFlavor: (initScript?.getAttribute('data-layout-flavor') as WidgetFlavors) || WidgetFlavors.DYNAMIC,
   };
 }
 

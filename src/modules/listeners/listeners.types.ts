@@ -1,10 +1,10 @@
-export const enum EVENT_TYPES {
+export const enum EventTypes {
   STORAGE = 'storage',
   MESSAGE = 'message',
   OVERLAY_WIDGET_EVENT = 'overlay-widget-event',
 }
 
-export const enum MESSAGE_TYPES {
+export const enum MessageTypes {
   MOVE = 'move',
   SHUTDOWN = 'close',
   DESTROY = 'destroy',

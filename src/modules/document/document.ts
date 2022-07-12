@@ -1,4 +1,7 @@
 import { ACADEMY_HAT } from '../../strigo/consts';
+import * as sessionManager from '../session/session';
+import * as configManager from '../config/config';
+import { DockingSide } from '../config/config.types';
 
 import { AppendCSSFileParams, AppendIframeParams } from './document.types';
 
@@ -101,24 +104,76 @@ export function move(): void {
   collapseDiv.classList.toggle('align-left');
   academyHat.classList.toggle('align-left');
 
-  const dockingSide = widget.classList.contains('align-left') ? 'left' : 'right';
+  const dockingSide = widget.classList.contains('align-left') ? DockingSide.LEFT : DockingSide.RIGHT;
   const strigoIframe = document.getElementById('strigo-exercises') as HTMLIFrameElement;
+  configManager.setConfigValue('dockingSide', dockingSide);
   strigoIframe.contentWindow.postMessage({ dockingSide }, '*');
 }
 
-export function toggleWidget(): void {
+export function removeWidget(hostingAppWindow: Window): void {
+  hostingAppWindow.document.getElementById('strigo-widget').remove();
+}
+
+export function openWidget(): void {
   const widget = document.getElementById('strigo-widget');
-  widget.classList.toggle('slide-in');
-  widget.classList.toggle('loaded');
+  widget.classList.add('slide-in');
+  widget.classList.add('loaded');
 
   const collapseDiv = document.getElementById('strigo-collapse-div');
-  collapseDiv.classList.toggle('slide-in');
+  collapseDiv.classList.remove('slide-in');
 
   const academyHat = document.getElementById('strigo-academy-hat');
-  academyHat.classList.toggle('slide-in');
+  academyHat.classList.remove('slide-in');
+}
+
+export function collapseWidget(): void {
+  const widget = document.getElementById('strigo-widget');
+  widget.classList.remove('slide-in');
+  widget.classList.remove('loaded');
+
+  const collapseDiv = document.getElementById('strigo-collapse-div');
+  collapseDiv.classList.add('slide-in');
+
+  const academyHat = document.getElementById('strigo-academy-hat');
+  academyHat.classList.add('slide-in');
+}
+
+const navigationObserver = function (pageMutations): void {
+  const filteredMutations = pageMutations.filter((mutation) => {
+    return ['HTML', 'BODY'].includes(mutation.target.nodeName);
+  });
+
+  if (filteredMutations.length > 0) {
+    const widget = window.document.getElementById('strigo-widget');
+
+    if (widget) {
+      console.log('*** Strigo widget already exist on the DOM.');
+
+      return;
+    }
+
+    console.log('*** Reloading widget in navigation observer');
+    setTimeout(window.Strigo.open.bind(window.Strigo), 0);
+  }
+};
+
+export function toggleWidget(): void {
+  const previousOpenState = sessionManager.shouldPanelBeOpen();
+  const shouldPanelBeOpen = !previousOpenState;
+
+  sessionManager.setSessionValue('shouldPanelBeOpen', shouldPanelBeOpen);
+
+  if (shouldPanelBeOpen) {
+    openWidget();
+  } else {
+    collapseWidget();
+  }
 }
 
 export function createWidget(url: string): HTMLIFrameElement {
+  const shouldPanelBeOpen = sessionManager.shouldPanelBeOpen();
+  const dockingSide = configManager.getConfigValue('dockingSide');
+
   // Create academy hat
   const academyHatDiv = document.createElement('div');
   academyHatDiv.className = 'strigo-academy-hat';
@@ -151,24 +206,34 @@ export function createWidget(url: string): HTMLIFrameElement {
   widgetDiv.appendChild(collapseDiv);
   widgetDiv.appendChild(strigoExercisesIframe);
 
+  if (dockingSide === DockingSide.LEFT) {
+    widgetDiv.classList.add('align-left');
+    collapseDiv.classList.add('align-left');
+    academyHatDiv.classList.add('align-left');
+  }
+
   document.body.appendChild(widgetDiv);
   document.body.appendChild(academyHatDiv);
+
+  if (shouldPanelBeOpen) {
+    openWidget();
+  } else {
+    collapseWidget();
+  }
 
   return strigoExercisesIframe;
 }
 
-export function removeWidget(hostingAppWindow: Window): void {
-  hostingAppWindow.document.getElementById('strigo-widget').remove();
-}
+export function initNavigationObserver(hostingAppWindow: Window): void {
+  // eslint-disable-next-line no-param-reassign
+  hostingAppWindow.strigoNavigationObserver = {
+    observer: new MutationObserver(navigationObserver),
+  };
 
-export function openWidget(hostingAppWindow: Window): void {
-  const widget = document.getElementById('strigo-widget');
-  widget.classList.add('slide-in');
-  widget.classList.add('loaded');
+  const navigationObserverOptions = {
+    childList: true,
+    subtree: true,
+  };
 
-  const collapseDiv = document.getElementById('strigo-collapse-div');
-  collapseDiv.classList.remove('slide-in');
-
-  const academyHat = document.getElementById('strigo-academy-hat');
-  academyHat.classList.remove('slide-in');
+  hostingAppWindow?.strigoNavigationObserver?.observer?.observe(hostingAppWindow.document, navigationObserverOptions);
 }

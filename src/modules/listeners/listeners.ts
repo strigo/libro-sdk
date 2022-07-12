@@ -1,16 +1,16 @@
 import * as eventsSender from '../events-sender/events-sender';
 import * as sessionManager from '../session/session';
 import * as configManager from '../config/config';
-import { STORAGE_NAMES } from '../storage-utils/storage-utils.types';
+import { StorageNames } from '../storage-utils/storage-utils.types';
 import ovelayWidget from '../widgets/overlay';
 import { Logger } from '../../services/logger';
-import { WIDGET_FLAVORS } from '../widgets/widget.types';
+import { WidgetFlavors } from '../widgets/widget.types';
 import { StrigoEventsStorage } from '../events-storage/events-storage.types';
 
-import { EVENT_TYPES, MESSAGE_TYPES } from './listeners.types';
+import { EventTypes, MessageTypes } from './listeners.types';
 
 export function storageChanged({ key, oldValue, newValue }): void {
-  if (key !== STORAGE_NAMES.STRIGO_EVENTS) {
+  if (key !== StorageNames.STRIGO_EVENTS) {
     return;
   }
 
@@ -32,34 +32,34 @@ function onHostEventHandler(ev: MessageEvent<any>): void {
   }
 
   switch (ev.data) {
-    case MESSAGE_TYPES.MOVE: {
+    case MessageTypes.MOVE: {
       Logger.info('Panel move message received');
 
-      if (sessionManager.getWidgetFlavor() === WIDGET_FLAVORS.OVERLAY) {
+      if (sessionManager.getWidgetFlavor() === WidgetFlavors.OVERLAY) {
         ovelayWidget.move();
       }
 
       break;
     }
 
-    case MESSAGE_TYPES.SHUTDOWN: {
+    case MessageTypes.SHUTDOWN: {
       Logger.info('Shutdown message received - will collapse panel');
       window.Strigo?.collapse();
 
       break;
     }
 
-    case MESSAGE_TYPES.DESTROY: {
+    case MessageTypes.DESTROY: {
       Logger.info('Destroy message received');
       window.Strigo?.destroy();
 
       break;
     }
 
-    case MESSAGE_TYPES.CHALLENGE_SUCCESS: {
+    case MessageTypes.CHALLENGE_SUCCESS: {
       Logger.info('Challenge event success received');
 
-      if (sessionManager.getWidgetFlavor() === WIDGET_FLAVORS.OVERLAY) {
+      if (sessionManager.getWidgetFlavor() === WidgetFlavors.OVERLAY) {
         ovelayWidget.open();
       }
 
@@ -74,11 +74,11 @@ function onHostEventHandler(ev: MessageEvent<any>): void {
 
 // Host event listeners
 export function initHostEventListeners(hostWindow: Window): void {
-  hostWindow.addEventListener(EVENT_TYPES.MESSAGE, onHostEventHandler, false);
+  hostWindow.addEventListener(EventTypes.MESSAGE, onHostEventHandler, false);
 }
 
 export function removeHostEventListeners(): void {
-  window.removeEventListener(EVENT_TYPES.MESSAGE, onHostEventHandler);
+  window.removeEventListener(EventTypes.MESSAGE, onHostEventHandler);
 }
 
 export function initAcademyPanelLoadedListeners(

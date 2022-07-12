@@ -4,35 +4,36 @@ function getElementProfile(e, { dataAttribute } = {}) {
   const elementProfiler = getElementProfiler();
 
   const options = {
-    seedMinLength: 6,
+    buildNodesInfoUpToRoot: true,
     optimizedMinLength: e.target.id ? 2 : 10,
-    threshold: 2000,
+    threshold: 1000,
     attr: (name) => name === dataAttribute,
     // className: className => !className.includes('sc-')
   };
 
   const nodesInfo = elementProfiler.getElementProfileNodesInfo(e.target, options);
 
-  console.log(
-    'Just FYI - this is how it can generate css selector:',
+  console.log('*** Just FYI - this is how it can generate css selector:',
     elementProfiler.generateSelectorFromNodesInfo(nodesInfo, options)
   );
 
   return nodesInfo;
 }
 
-export function getElementSelector(nodesInfo, allowDuplicates = false) {
+export function getElementSelector(nodesInfo, options) {
   const elementProfiler = getElementProfiler();
 
-  const options = {
-    allowDuplicates,
-    seedMinLength: 6,
+  const defaultOptions = {
+    allowDuplicates: false,
     optimizedMinLength: 10,
-    threshold: 2000,
+    threshold: 1000,
     attr: (name) => name === dataAttribute,
+    fallbackNodesInfo: nodesInfo
   };
 
-  const elementSelector = elementProfiler.generateSelectorFromNodesInfo(nodesInfo, options);
+  const consolidatedOptions = { ...defaultOptions, ...options };
+
+  const elementSelector = elementProfiler.generateSelectorFromNodesInfo(nodesInfo, consolidatedOptions);
 
   return elementSelector;
 }

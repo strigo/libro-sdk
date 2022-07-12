@@ -1,17 +1,3 @@
-// export const enum INTERACTION_TYPES {
-//   CONTENT = 'content',
-//   CLICK = 'click',
-// }
-
-// export interface NoCodeAssessment {
-//   interactionEventType: INTERACTION_TYPES;
-//   selector: string;
-//   eventName: string;
-//   expectedResult: string;
-//   elementFound?: boolean;
-//   assessmentCompleted?: boolean;
-// }
-
 export enum AssessmentType {
   CUSTOM_EVENT = 'custom-event',
   RECORDED_FLOW = 'recorded-flow',
@@ -48,7 +34,7 @@ export interface SelectedElement {
 
 export interface RecordedAssessment {
   locationElement?: SelectedElement;
-  expectedElement?: SelectedElement;
+  exampleElement?: SelectedElement;
   expectedText?: string | null;
   actionType?: AssessmentActionType;
   url: string;
@@ -62,4 +48,21 @@ export interface Assessment {
   recordingStartUrl?: string;
   challengeSuccessEvent?: string;
   recordedAssessment?: RecordedAssessment;
+}
+
+export enum AssessmentStatus {
+  PENDING = 'pending',
+  SUCCESS = 'SUCCESS',
+}
+
+export interface AssessmentState {
+  status?: AssessmentStatus;
+  locationElement?: HTMLElement;
+}
+
+// url: count
+export type AssessmentItemCountRecord = Record<string, number>;
+
+export interface AssessmentItemCountState {
+  _id: AssessmentItemCountRecord;
 }

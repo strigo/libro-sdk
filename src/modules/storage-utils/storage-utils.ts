@@ -1,8 +1,8 @@
 import { Logger } from '../../services/logger';
 
-import { StorageOptions, STORAGE_TYPES } from './storage-utils.types';
+import { StorageOptions, StorageTypes } from './storage-utils.types';
 
-export function getStorageData<T extends StorageOptions>(storageType: STORAGE_TYPES, storageName: string): T | null {
+export function getStorageData<T extends StorageOptions>(storageType: StorageTypes, storageName: string): T | null {
   try {
     const value = JSON.parse(window[storageType].getItem(storageName));
 
@@ -15,7 +15,7 @@ export function getStorageData<T extends StorageOptions>(storageType: STORAGE_TY
 }
 
 export function setupStorage<T extends StorageOptions>(
-  storageType: STORAGE_TYPES,
+  storageType: StorageTypes,
   storageName: string,
   data: T
 ): T | null {
@@ -31,7 +31,7 @@ export function setupStorage<T extends StorageOptions>(
 }
 
 export function setStorageValue<T extends StorageOptions>(
-  storageType: STORAGE_TYPES,
+  storageType: StorageTypes,
   storageName: string,
   key: string,
   value: any
@@ -58,7 +58,7 @@ export function setStorageValue<T extends StorageOptions>(
   }
 }
 
-export function clearStorage(storageType: STORAGE_TYPES, storageName: string): void {
+export function clearStorage(storageType: StorageTypes, storageName: string): void {
   try {
     window[storageType].removeItem(storageName);
   } catch (error) {

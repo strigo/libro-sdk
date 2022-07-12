@@ -6,19 +6,18 @@ import * as noCodeAssessment from '../no-code-assessment/no-code-assessment';
 import * as urlTools from '../url/url';
 import * as listeners from '../listeners/listeners';
 import * as configManager from '../config/config';
-import { SDK_TYPES } from '../../strigo/types';
-import { EVENT_TYPES } from '../listeners/listeners.types';
+import { SdkTypes } from '../../strigo/types';
+import { EventTypes } from '../listeners/listeners.types';
 
 import { IOverlayWidget } from './widget.types';
 
 const MINIMUM_WIDTH = 342;
 
-function makeOverlayWidgetVisible(): void {
-  document.getElementById('strigo-widget').classList.add('slide-in');
-  document.getElementById('strigo-widget').classList.add('loaded');
-
+function postDockableStateToStrigo(): void {
+  console.log('Posting dockable state to Strigo...');
+  const dockingSide = configManager.getConfigValue('dockingSide');
   const strigoIframe = document.getElementById('strigo-exercises') as HTMLIFrameElement;
-  strigoIframe.contentWindow.postMessage({ dockable: true, dockingSide: 'right' }, '*');
+  strigoIframe.contentWindow.postMessage({ dockable: true, dockingSide }, '*');
 }
 
 function setupResizeFunctionality(): void {
@@ -54,10 +53,10 @@ function setupResizeFunctionality(): void {
 class OverlayWidget implements IOverlayWidget {
   private documentObserver: MutationObserver;
 
-  init(): SDK_TYPES {
+  init(): SdkTypes {
     Logger.info('overlay init called');
 
-    return SDK_TYPES.OVERLAY;
+    return SdkTypes.OVERLAY;
   }
 
   setup({ version }): void {
@@ -79,7 +78,8 @@ class OverlayWidget implements IOverlayWidget {
     const hostingAppWindow = documentTools.getHostingAppWindow();
     this.initEventListeners(hostingAppWindow, academyPlayerFrame);
     console.log('adding observer');
-    this.documentObserver = noCodeAssessment.initDocumentObserver(hostingAppWindow);
+    noCodeAssessment.initDocumentObserver(hostingAppWindow);
+    documentTools.initNavigationObserver(hostingAppWindow);
 
     console.log('observer added');
     setupResizeFunctionality();
@@ -100,8 +100,8 @@ class OverlayWidget implements IOverlayWidget {
   }
 
   open(): void {
-    const hostingAppWindow = documentTools.getHostingAppWindow();
-    documentTools.openWidget(hostingAppWindow);
+    documentTools.openWidget();
+    postDockableStateToStrigo();
   }
 
   move(): void {
@@ -113,14 +113,14 @@ class OverlayWidget implements IOverlayWidget {
   };
 
   private initEventListeners(hostingAppWindow: Window, academyPanelFrame: HTMLIFrameElement): void {
-    listeners.initAcademyPanelLoadedListeners(academyPanelFrame, makeOverlayWidgetVisible);
+    listeners.initAcademyPanelLoadedListeners(academyPanelFrame, postDockableStateToStrigo);
     listeners.initHostEventListeners(hostingAppWindow);
-    hostingAppWindow.addEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, this.onStrigoEventHandler);
+    hostingAppWindow.addEventListener(EventTypes.OVERLAY_WIDGET_EVENT, this.onStrigoEventHandler);
   }
 
   private removeEventListeners(hostingAppWindow: Window): void {
     listeners.removeHostEventListeners();
-    hostingAppWindow.removeEventListener(EVENT_TYPES.OVERLAY_WIDGET_EVENT, this.onStrigoEventHandler);
+    hostingAppWindow.removeEventListener(EventTypes.OVERLAY_WIDGET_EVENT, this.onStrigoEventHandler);
   }
 }
 
