@@ -11099,10 +11099,12 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function openWidget(hostingAppWindow) {
     const widget = hostingAppWindow.document.getElementById("strigo-widget");
-    if (widget.classList.contains("slide-in")) {
-      return;
-    }
     widget.classList.add("slide-in");
+    widget.classList.add("loaded");
+    const collapseDiv = document.getElementById("strigo-collapse-div");
+    collapseDiv.classList.add("slide-in");
+    const academyHat = document.getElementById("strigo-academy-hat");
+    academyHat.classList.remove("slide-in");
   }
 
   // src/modules/element-selector/element-profiler.js
@@ -11643,7 +11645,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${"http://local.strigo.io:7000"}/styles/strigo.css`;
+      return `${SDK_LOCAL_URL}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11652,7 +11654,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${"http://local.strigo.io:7000"}/styles/strigo-widget.css`;
+      return `${SDK_LOCAL_URL}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11661,7 +11663,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateAcademyHatCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${"http://local.strigo.io:7000"}/styles/strigo-academy-hat.css`;
+      return `${SDK_LOCAL_URL}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
@@ -11670,7 +11672,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${"http://local.strigo.io:7000"}/styles/strigo-assessment-recorder.css`;
+      return `${SDK_LOCAL_URL}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -11678,7 +11680,7 @@ ${JSON.stringify(parsedContext)}` : "");
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL() {
-    return window.Strigo.isDevelopment() ? "http://local.strigo.io:7015" : ASSESSMENT_RECORDER_URL;
+    return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;
   }
   function isRecordingUrlParamExists() {
     const { search } = window.location;
