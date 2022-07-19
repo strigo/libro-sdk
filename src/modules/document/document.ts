@@ -166,9 +166,9 @@ export function openWidget(hostingAppWindow: Window): void {
   widget.classList.add('slide-in');
   widget.classList.add('loaded');
 
-  const collapseDiv = document.getElementById('strigo-collapse-div');
-  collapseDiv.classList.add('slide-in');
+  const collapseDiv = hostingAppWindow.document.getElementById('strigo-collapse-div');
+  collapseDiv.classList.remove('slide-in');
 
-  const academyHat = document.getElementById('strigo-academy-hat');
+  const academyHat = hostingAppWindow.document.getElementById('strigo-academy-hat');
   academyHat.classList.remove('slide-in');
 }
