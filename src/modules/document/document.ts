@@ -163,10 +163,12 @@ export function removeWidget(hostingAppWindow: Window): void {
 
 export function openWidget(hostingAppWindow: Window): void {
   const widget = hostingAppWindow.document.getElementById('strigo-widget');
-
-  if (widget.classList.contains('slide-in')) {
-    return;
-  }
-
   widget.classList.add('slide-in');
+  widget.classList.add('loaded');
+
+  const collapseDiv = document.getElementById('strigo-collapse-div');
+  collapseDiv.classList.add('slide-in');
+
+  const academyHat = document.getElementById('strigo-academy-hat');
+  academyHat.classList.remove('slide-in');
 }
