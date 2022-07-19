@@ -162,13 +162,13 @@ export function removeWidget(hostingAppWindow: Window): void {
 }
 
 export function openWidget(hostingAppWindow: Window): void {
-  const widget = hostingAppWindow.document.getElementById('strigo-widget');
+  const widget = document.getElementById('strigo-widget');
   widget.classList.add('slide-in');
   widget.classList.add('loaded');
 
-  const collapseDiv = hostingAppWindow.document.getElementById('strigo-collapse-div');
+  const collapseDiv = document.getElementById('strigo-collapse-div');
   collapseDiv.classList.remove('slide-in');
 
-  const academyHat = hostingAppWindow.document.getElementById('strigo-academy-hat');
+  const academyHat = document.getElementById('strigo-academy-hat');
   academyHat.classList.remove('slide-in');
 }
