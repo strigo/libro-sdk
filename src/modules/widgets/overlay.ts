@@ -18,7 +18,7 @@ function makeOverlayWidgetVisible(): void {
   document.getElementById('strigo-widget').classList.add('loaded');
 
   const strigoIframe = document.getElementById('strigo-exercises') as HTMLIFrameElement;
-  strigoIframe.contentWindow.postMessage({ dockable: 'true', dockingSide: 'right' }, '*');
+  strigoIframe.contentWindow.postMessage({ dockable: true, dockingSide: 'right' }, '*');
 }
 
 function setupResizeFunctionality(): void {

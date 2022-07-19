@@ -24,7 +24,7 @@ function setupResizeFunctionality(): Split.Instance {
 async function makeIframeWidgetVisible(): Promise<void> {
   await hideLoader();
   const strigoIframe = document.getElementById('strigo-exercises') as HTMLIFrameElement;
-  strigoIframe.contentWindow.postMessage({ dockable: 'false' }, '*');
+  strigoIframe.contentWindow.postMessage({ dockable: false }, '*');
 }
 
 class IframeWidget implements IStrigoWidget {
