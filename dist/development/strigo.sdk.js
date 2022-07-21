@@ -13143,6 +13143,8 @@ ${JSON.stringify(parsedContext)}` : "");
         academyHat.classList.toggle("slide-in");
       }
     }
+    open() {
+    }
     shutdown() {
       LoggerInstance.info("iframe shutdown called");
       reloadPage();
