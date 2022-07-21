@@ -134,6 +134,8 @@ class IframeWidget implements IStrigoWidget {
     }
   }
 
+  open(): void {}
+
   shutdown(): void {
     Logger.info('iframe shutdown called');
     documentTools.reloadPage();
