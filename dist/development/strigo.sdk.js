@@ -12736,7 +12736,8 @@ ${JSON.stringify(parsedContext)}` : "");
   var getLocationElement = (assessmentId, locationElementProfile) => {
     let locationElement;
     const cachedLocationElement = assessmentState[assessmentId]?.locationElement;
-    if (cachedLocationElement) {
+    const isLocationElementStillOnDOM = window.document.contains(cachedLocationElement);
+    if (cachedLocationElement && isLocationElementStillOnDOM) {
       console.log("*** Got a cached location element...", cachedLocationElement);
       locationElement = cachedLocationElement;
     } else {
