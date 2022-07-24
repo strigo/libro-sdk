@@ -9,11 +9,11 @@ import {
   AssessmentRecorderMessage,
   AssessmentRecorderMessageTypes,
   CaptureParams,
-  SelectedElement, ASSESSMENT_RECORDER_ID_PARAM
-} from "./assessment-recorder.types";
+  SelectedElement,
+  ASSESSMENT_RECORDER_ID_PARAM,
+} from './assessment-recorder.types';
 
 export function isRecordingMode(): boolean {
-
   if (isRecordingUrlParamExists() || window.sessionStorage.getItem('isStrigoRecordingMode')) {
     return true;
   }
@@ -23,6 +23,8 @@ export function isRecordingMode(): boolean {
 
 export function addAssessmentRecorderIframe(): void {
   window.sessionStorage.setItem('isStrigoRecordingMode', 'true');
+  const assessmentUuid = new URL(window.location.href).searchParams.get(ASSESSMENT_RECORDER_ID_PARAM);
+  window.sessionStorage.setItem(ASSESSMENT_RECORDER_ID_PARAM, assessmentUuid);
 
   if (document.getElementById('strigo-assessment-recorder-iframe')) {
     return;
@@ -85,7 +87,7 @@ export function addAssessmentRecorderIframe(): void {
                     elementType,
                     selectedElement,
                   },
-                  windowName: window.name
+                  windowName: window.name,
                 }),
                 '*'
               );
@@ -96,7 +98,7 @@ export function addAssessmentRecorderIframe(): void {
         }
 
         case AssessmentRecorderMessageTypes.SUBMIT_ASSESSMENT: {
-          const assessmentUuid = new URL(window.location.href).searchParams.get(ASSESSMENT_RECORDER_ID_PARAM);
+          const recorderWindowId = window.sessionStorage.getItem(ASSESSMENT_RECORDER_ID_PARAM);
           window.sessionStorage.removeItem('isStrigoRecordingMode');
           window.opener.postMessage(
             {
@@ -104,7 +106,7 @@ export function addAssessmentRecorderIframe(): void {
                 ...payload.assessment,
                 url: window.location.href,
               },
-              recorderWindowId: assessmentUuid
+              recorderWindowId,
             },
             '*'
           );
