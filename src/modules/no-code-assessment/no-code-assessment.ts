@@ -107,7 +107,6 @@ const onAssessmentSuccess = (assessment): void => {
   windowElement.Strigo.sendEvent(challengeSuccessEvent);
 };
 
-
 function assessAddedItems(mutations): void {
   console.log('*** Got an item count mutation in the location element!');
 
@@ -147,7 +146,7 @@ function assessAddedItems(mutations): void {
       previousExampleElementCount,
     });
     updateAssessmentStorageState(_id, { [document.location.href]: currentExampleElementCount });
-    onAssessmentSuccess(this.assessment)
+    onAssessmentSuccess(this.assessment);
     locationHandlers[_id].observer.disconnect();
     delete locationHandlers[_id];
   }
@@ -158,7 +157,9 @@ const getLocationElement = (assessmentId, locationElementProfile): HTMLElement |
 
   const cachedLocationElement = assessmentState[assessmentId]?.locationElement;
 
-  if (cachedLocationElement) {
+  const isLocationElementStillOnDOM = window.document.contains(cachedLocationElement);
+
+  if (cachedLocationElement && isLocationElementStillOnDOM) {
     console.log('*** Got a cached location element...', cachedLocationElement);
     locationElement = cachedLocationElement;
   } else {
