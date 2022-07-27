@@ -200,12 +200,12 @@
         };
         var parseDocumentSize = function(document3) {
           var body = document3.body;
-          var documentElement2 = document3.documentElement;
-          if (!body || !documentElement2) {
+          var documentElement = document3.documentElement;
+          if (!body || !documentElement) {
             throw new Error("Unable to get document size");
           }
-          var width = Math.max(Math.max(body.scrollWidth, documentElement2.scrollWidth), Math.max(body.offsetWidth, documentElement2.offsetWidth), Math.max(body.clientWidth, documentElement2.clientWidth));
-          var height = Math.max(Math.max(body.scrollHeight, documentElement2.scrollHeight), Math.max(body.offsetHeight, documentElement2.offsetHeight), Math.max(body.clientHeight, documentElement2.clientHeight));
+          var width = Math.max(Math.max(body.scrollWidth, documentElement.scrollWidth), Math.max(body.offsetWidth, documentElement.offsetWidth), Math.max(body.clientWidth, documentElement.clientWidth));
+          var height = Math.max(Math.max(body.scrollHeight, documentElement.scrollHeight), Math.max(body.offsetHeight, documentElement.offsetHeight), Math.max(body.clientHeight, documentElement.clientHeight));
           return new Bounds(0, 0, width, height);
         };
         var toCodePoints$1 = function(str) {
@@ -11938,6 +11938,8 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function addAssessmentRecorderIframe() {
     window.sessionStorage.setItem("isStrigoRecordingMode", "true");
+    const assessmentUuid = new URL(window.location.href).searchParams.get(ASSESSMENT_RECORDER_ID_PARAM);
+    window.sessionStorage.setItem(ASSESSMENT_RECORDER_ID_PARAM, assessmentUuid);
     if (document.getElementById("strigo-assessment-recorder-iframe")) {
       return;
     }
@@ -11992,14 +11994,14 @@ ${JSON.stringify(parsedContext)}` : "");
           break;
         }
         case "submit-assessment" /* SUBMIT_ASSESSMENT */: {
-          const assessmentUuid = new URL(window.location.href).searchParams.get(ASSESSMENT_RECORDER_ID_PARAM);
+          const recorderWindowId = window.sessionStorage.getItem(ASSESSMENT_RECORDER_ID_PARAM);
           window.sessionStorage.removeItem("isStrigoRecordingMode");
           window.opener.postMessage({
             assessment: {
               ...payload.assessment,
               url: window.location.href
             },
-            recorderWindowId: assessmentUuid
+            recorderWindowId
           }, "*");
           window.close();
           break;
@@ -12643,8 +12645,6 @@ ${JSON.stringify(parsedContext)}` : "");
   };
   var locationHandlers = {};
   var assessmentState = {};
-  var windowElement;
-  var documentElement;
   var currentLocation;
   var assessments;
   function updateAssessmentState(assessmentId, updatedFields) {
@@ -12698,9 +12698,14 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   var onAssessmentSuccess = (assessment) => {
     const { assessmentId, challengeSuccessEvent } = assessment;
+    console.log("*** Successfully detected assessment criteria!", {
+      assessmentId,
+      challengeSuccessEvent,
+      window
+    });
     updateAssessmentState(assessmentId, { status: "SUCCESS" /* SUCCESS */ });
     LoggerInstance.info(`sent event ${challengeSuccessEvent}`);
-    windowElement.Strigo.sendEvent(challengeSuccessEvent);
+    window.Strigo.sendEvent(challengeSuccessEvent);
   };
   function assessAddedItems(mutations) {
     console.log("*** Got an item count mutation in the location element!");
@@ -12748,12 +12753,14 @@ ${JSON.stringify(parsedContext)}` : "");
             nodeIdentifiers: nodeIdentifiers.filter(({ identifier }) => identifier !== "className")
           };
         });
-        const locationElementSelector = getElementSelector(locationElementProfile, { fallbackNodesInfo: softProfile });
+        const locationElementSelector = getElementSelector(locationElementProfile);
         console.log("*** Retrieving location element by selector:", locationElementSelector);
-        locationElement = documentElement.querySelector(locationElementSelector);
-        console.log("*** Found location element:", locationElement);
+        locationElement = window.document.querySelector(locationElementSelector);
+        console.log("*** Found location element:", {
+          locationElement,
+          locationElementSelector
+        });
         updateAssessmentState(assessmentId, { locationElement });
-        console.log('*** Identified a "Location Element" on the page!', { locationElement, locationElementSelector });
       } catch (err) {
         console.log("*** Error in selecting Location element", err);
         return;
@@ -12785,7 +12792,7 @@ ${JSON.stringify(parsedContext)}` : "");
       }
       switch (actionType) {
         case "added-item" /* ADDED_ITEM */: {
-          const boundedAssessAddedItems = assessAddedItems.bind({ assessment, locationElement, windowElement });
+          const boundedAssessAddedItems = assessAddedItems.bind({ assessment, locationElement, window });
           if (locationHandlers[_id]?.observer && locationElement === locationHandlers[_id].element) {
             locationHandlers[_id].element = locationElement;
             try {
@@ -12825,6 +12832,11 @@ ${JSON.stringify(parsedContext)}` : "");
           break;
         }
         case "text-change" /* TEXT_CHANGE */: {
+          console.log("*** Assessing text changes in location element...", {
+            locationElement,
+            locationElementType: locationElement instanceof HTMLInputElement ? "input" : "non-input",
+            innerTextValue: locationElement instanceof HTMLInputElement ? locationElement?.value : locationElement?.innerText
+          });
           if (locationElement instanceof HTMLInputElement) {
             if (locationElement?.value?.includes(expectedText)) {
               onAssessmentSuccess(assessment);
@@ -12866,26 +12878,24 @@ ${JSON.stringify(parsedContext)}` : "");
     initDocumentObserver(window);
   };
   var initDocumentObserver = (0, import_lodash.default)((windowToObserve) => {
-    windowElement = windowToObserve;
-    documentElement = windowElement.document;
     console.log("*** Initializing document observer");
     assessments = getAssessmentsStorageData().assessments.filter(({ assessmentType }) => assessmentType === "recorded-flow");
-    if (!windowElement?.strigoObserver?.observer) {
+    if (!window?.strigoObserver?.observer) {
       console.log("*** Adding Strigo observer to document body");
-      windowElement.strigoObserver = {
+      window.strigoObserver = {
         observer: new MutationObserver(documentObserverHandler),
-        element: windowElement.document.body
+        observedBodyElement: window.document.body
       };
       evaluateAssessments();
       console.log("*** Starting to observe document body");
-      windowElement?.strigoObserver?.observer?.observe(windowElement.document, bodyObserverOptions);
+      window?.strigoObserver?.observer?.observe(window.document, bodyObserverOptions);
       return;
     }
     evaluateAssessments();
-    if (windowElement.strigoObserver.element !== windowElement.document.body) {
+    if (!window.document.contains(window.strigoObserver.observedBodyElement)) {
       console.log('*** Detected a "body" element change. Re-initializing the document observer...');
-      windowElement.strigoObserver.element = windowElement.document.body;
-      windowElement.strigoObserver.observer.observe(windowElement.document.body, bodyObserverOptions);
+      window.strigoObserver.observedBodyElement = window.document.body;
+      window.strigoObserver.observer.observe(window.document, bodyObserverOptions);
     }
   }, 500);
 

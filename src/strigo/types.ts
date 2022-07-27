@@ -39,6 +39,6 @@ export interface StrigoWindow extends Window {
 }
 
 export interface ElementObserver {
-  element?: Element;
+  observedBodyElement?: Element;
   observer: MutationObserver;
 }
