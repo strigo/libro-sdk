@@ -26,8 +26,6 @@ const bodyObserverOptions = {
 
 const locationHandlers = {};
 const assessmentState: AssessmentState = {};
-let windowElement;
-let documentElement;
 let currentLocation;
 let assessments;
 
@@ -102,9 +100,14 @@ function countAndUpdateExampleElements(assessment: Assessment, locationElement: 
 
 const onAssessmentSuccess = (assessment): void => {
   const { assessmentId, challengeSuccessEvent } = assessment;
+  console.log('*** Successfully detected assessment criteria!', {
+    assessmentId,
+    challengeSuccessEvent,
+    window
+  });
   updateAssessmentState(assessmentId, { status: AssessmentStatus.SUCCESS });
   Logger.info(`sent event ${challengeSuccessEvent}`);
-  windowElement.Strigo.sendEvent(challengeSuccessEvent);
+  window.Strigo.sendEvent(challengeSuccessEvent);
 };
 
 function assessAddedItems(mutations): void {
@@ -171,12 +174,15 @@ const getLocationElement = (assessmentId, locationElementProfile): HTMLElement |
         };
       });
 
-      const locationElementSelector = getElementSelector(locationElementProfile, { fallbackNodesInfo: softProfile });
+       // TODO: Optimize the fallback policy of the "location" element detection
+      const locationElementSelector = getElementSelector(locationElementProfile);
       console.log('*** Retrieving location element by selector:', locationElementSelector);
-      locationElement = documentElement.querySelector(locationElementSelector);
-      console.log('*** Found location element:', locationElement);
+      locationElement = window.document.querySelector(locationElementSelector);
+      console.log('*** Found location element:', {
+        locationElement,
+        locationElementSelector
+      });
       updateAssessmentState(assessmentId, { locationElement });
-      console.log('*** Identified a "Location Element" on the page!', { locationElement, locationElementSelector });
     } catch (err) {
       console.log('*** Error in selecting Location element', err);
 
@@ -221,7 +227,7 @@ const evaluateAssessments = function (): void {
 
     switch (actionType) {
       case AssessmentActionType.ADDED_ITEM: {
-        const boundedAssessAddedItems = assessAddedItems.bind({ assessment, locationElement, windowElement });
+        const boundedAssessAddedItems = assessAddedItems.bind({ assessment, locationElement, window });
 
         if (locationHandlers[_id]?.observer && locationElement === locationHandlers[_id].element) {
           locationHandlers[_id].element = locationElement;
@@ -270,6 +276,13 @@ const evaluateAssessments = function (): void {
       }
 
       case AssessmentActionType.TEXT_CHANGE: {
+        console.log('*** Assessing text changes in location element...', {
+          locationElement,
+          locationElementType: locationElement instanceof HTMLInputElement ? 'input' : 'non-input',
+          innerTextValue:
+            locationElement instanceof HTMLInputElement ? locationElement?.value : locationElement?.innerText,
+        });
+
         if (locationElement instanceof HTMLInputElement) {
           if (locationElement?.value?.includes(expectedText)) {
             onAssessmentSuccess(assessment);
@@ -325,35 +338,32 @@ const documentObserverHandler = function (pageMutations): void {
 };
 
 export const initDocumentObserver = debounce((windowToObserve: Window): void => {
-  windowElement = windowToObserve;
-  documentElement = windowElement.document;
-
   console.log('*** Initializing document observer');
 
   assessments = getAssessmentsStorageData().assessments.filter(
     ({ assessmentType }) => assessmentType === 'recorded-flow'
   );
 
-  if (!windowElement?.strigoObserver?.observer) {
+  if (!window?.strigoObserver?.observer) {
     console.log('*** Adding Strigo observer to document body');
 
-    windowElement.strigoObserver = {
+    window.strigoObserver = {
       observer: new MutationObserver(documentObserverHandler),
-      element: windowElement.document.body,
+      observedBodyElement: window.document.body,
     };
 
     evaluateAssessments();
     console.log('*** Starting to observe document body');
-    windowElement?.strigoObserver?.observer?.observe(windowElement.document, bodyObserverOptions);
+    window?.strigoObserver?.observer?.observe(window.document, bodyObserverOptions);
 
     return;
   }
 
   evaluateAssessments();
 
-  if (windowElement.strigoObserver.element !== windowElement.document.body) {
+  if (!window.document.contains(window.strigoObserver.observedBodyElement)) {
     console.log('*** Detected a "body" element change. Re-initializing the document observer...');
-    windowElement.strigoObserver.element = windowElement.document.body;
-    windowElement.strigoObserver.observer.observe(windowElement.document.body, bodyObserverOptions);
+    window.strigoObserver.observedBodyElement = window.document.body;
+    window.strigoObserver.observer.observe(window.document, bodyObserverOptions);
   }
 }, 500);
