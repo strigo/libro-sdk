@@ -12696,12 +12696,14 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     return currentExampleElementCount;
   }
-  var onAssessmentSuccess = (assessment) => {
-    const { assessmentId, challengeSuccessEvent } = assessment;
+  var onAssessmentSuccess = (assessment, detectedMeta = {}) => {
+    const { _id: assessmentId, challengeSuccessEvent } = assessment;
     console.log("*** Successfully detected assessment criteria!", {
       assessmentId,
       challengeSuccessEvent,
-      window
+      ...assessment,
+      window,
+      ...detectedMeta
     });
     updateAssessmentState(assessmentId, { status: "SUCCESS" /* SUCCESS */ });
     LoggerInstance.info(`sent event ${challengeSuccessEvent}`);
@@ -12753,7 +12755,7 @@ ${JSON.stringify(parsedContext)}` : "");
             nodeIdentifiers: nodeIdentifiers.filter(({ identifier }) => identifier !== "className")
           };
         });
-        const locationElementSelector = getElementSelector(locationElementProfile);
+        const locationElementSelector = getElementSelector(locationElementProfile, { threshold: 5e3 });
         console.log("*** Retrieving location element by selector:", locationElementSelector);
         locationElement = window.document.querySelector(locationElementSelector);
         console.log("*** Found location element:", {
@@ -12835,16 +12837,17 @@ ${JSON.stringify(parsedContext)}` : "");
           console.log("*** Assessing text changes in location element...", {
             locationElement,
             locationElementType: locationElement instanceof HTMLInputElement ? "input" : "non-input",
-            innerTextValue: locationElement instanceof HTMLInputElement ? locationElement?.value : locationElement?.innerText
+            innerTextValue: locationElement instanceof HTMLInputElement ? locationElement?.value : locationElement?.innerText,
+            expectedText
           });
           if (locationElement instanceof HTMLInputElement) {
             if (locationElement?.value?.includes(expectedText)) {
-              onAssessmentSuccess(assessment);
+              onAssessmentSuccess(assessment, { locationElement });
               break;
             }
           }
           if (locationElement?.innerText?.includes(expectedText)) {
-            onAssessmentSuccess(assessment);
+            onAssessmentSuccess(assessment, { locationElement });
             break;
           }
           break;
