@@ -11042,6 +11042,30 @@
       return null;
     }
   }
+  async function sendSuccessEvent(token, eventName) {
+    try {
+      LoggerInstance.info("Sending success event to strigo", { eventName });
+      const configDomain = window.Strigo.isDevelopment() ? LOCAL_STRIGO_URL : "https://app.strigo.io";
+      const response = await fetch(`${configDomain}/api/internal/academy/v1/success-event`, {
+        method: "POST",
+        body: JSON.stringify({
+          eventName
+        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token.token}`
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`Failed sending success event to Strigo: ${response.statusText}`);
+      }
+      const successEventResponse = await response.json();
+      LoggerInstance.info("Success event Response", { successEventResponse });
+    } catch (err) {
+      LoggerInstance.warn("Error sending success event to Strigo", { err });
+      return null;
+    }
+  }
 
   // src/services/logger.ts
   var Logger = class {
@@ -11883,7 +11907,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11892,7 +11916,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-widget.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11901,7 +11925,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateAcademyHatCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-academy-hat.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
@@ -11910,7 +11934,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-assessment-recorder.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -11918,7 +11942,7 @@ ${JSON.stringify(parsedContext)}` : "");
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL() {
-    return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;
+    return window.Strigo.isDevelopment() ? "http://local.strigo.io:7015" : ASSESSMENT_RECORDER_URL;
   }
   function isRecordingUrlParamExists() {
     const { search } = window.location;
@@ -12016,90 +12040,6 @@ ${JSON.stringify(parsedContext)}` : "");
         }
       }
     }, false);
-  }
-
-  // src/modules/events-storage/events-storage.ts
-  function getEventsStorageData() {
-    try {
-      return JSON.parse(window["localStorage" /* LOCAL_STORAGE */].getItem("strigoEvents" /* STRIGO_EVENTS */));
-    } catch (error) {
-      LoggerInstance.error("Get events storage error", { error });
-      return null;
-    }
-  }
-  function initEventsStorage() {
-    try {
-      const currentEventsStorage = getEventsStorageData();
-      if (currentEventsStorage) {
-        LoggerInstance.debug("Events storage already exists");
-        return currentEventsStorage;
-      }
-      const storageEvents = { events: [] };
-      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(storageEvents));
-      return storageEvents;
-    } catch (error) {
-      LoggerInstance.error("Init events storage error", { error });
-      return null;
-    }
-  }
-  function pushEventValue(event) {
-    try {
-      const initialState = getEventsStorageData();
-      if (!initialState) {
-        throw new Error("Can't find initial state");
-      }
-      const prev = JSON.stringify(initialState);
-      initialState.events.push(event);
-      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(initialState));
-      if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
-        const customEvent = new CustomEvent("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, {
-          bubbles: true,
-          detail: {
-            key: "strigoEvents",
-            oldValue: prev,
-            newValue: JSON.stringify(initialState)
-          }
-        });
-        window.dispatchEvent(customEvent);
-      }
-      return initialState;
-    } catch (error) {
-      LoggerInstance.error("Push event to storage error", { error });
-      return null;
-    }
-  }
-  function popEventValue() {
-    try {
-      const initialState = getEventsStorageData();
-      if (!initialState) {
-        throw new Error("Can't find events storage");
-      }
-      const event = initialState.events.pop();
-      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoEvents" /* STRIGO_EVENTS */, JSON.stringify(initialState));
-      return event;
-    } catch (error) {
-      LoggerInstance.error("Pop event from storage error", { error });
-      return null;
-    }
-  }
-  function getEventValue() {
-    try {
-      const initialState = getEventsStorageData();
-      if (!initialState) {
-        throw new Error("Can't find events storage");
-      }
-      return initialState.events.pop();
-    } catch (error) {
-      LoggerInstance.error("Get event from storage error", { error });
-      return null;
-    }
-  }
-  function clearEventsStorage() {
-    try {
-      window["localStorage" /* LOCAL_STORAGE */].removeItem("strigoEvents" /* STRIGO_EVENTS */);
-    } catch (error) {
-      LoggerInstance.error("Clear events storage error", { error });
-    }
   }
 
   // src/modules/assessments-storage/assessments-storage.ts
@@ -12610,25 +12550,6 @@ ${JSON.stringify(parsedContext)}` : "");
     });
   }
 
-  // src/modules/events-sender/events-sender.ts
-  function postEventMessage() {
-    const newEvent = getEventValue();
-    if (newEvent) {
-      LoggerInstance.info("Posting event", newEvent);
-      const strigoIframe = document.getElementById("strigo-exercises");
-      strigoIframe.contentWindow.postMessage(newEvent, "*");
-      const poppedEvent = popEventValue();
-      if (newEvent.eventName !== poppedEvent.eventName) {
-        console.error("Events storage error: popped event doesn't match new event", { newEvent, poppedEvent });
-      }
-    }
-  }
-  function postAllEventMessages() {
-    while (getEventValue()) {
-      postEventMessage();
-    }
-  }
-
   // src/modules/widgets/overlay.ts
   var import_interactjs = __toESM(require_interact_min(), 1);
 
@@ -12696,7 +12617,7 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     return currentExampleElementCount;
   }
-  var onAssessmentSuccess = (assessment, detectedMeta = {}) => {
+  var onAssessmentSuccess = async (assessment, detectedMeta = {}) => {
     const { _id: assessmentId, challengeSuccessEvent } = assessment;
     console.log("*** Successfully detected assessment criteria!", {
       assessmentId,
@@ -12707,7 +12628,7 @@ ${JSON.stringify(parsedContext)}` : "");
     });
     updateAssessmentState(assessmentId, { status: "SUCCESS" /* SUCCESS */ });
     LoggerInstance.info(`sent event ${challengeSuccessEvent}`);
-    window.Strigo.sendEvent(challengeSuccessEvent);
+    await window.Strigo.sendEvent(challengeSuccessEvent);
   };
   function assessAddedItems(mutations) {
     console.log("*** Got an item count mutation in the location element!");
@@ -12936,11 +12857,6 @@ ${JSON.stringify(parsedContext)}` : "");
     });
   }
   var OverlayWidget = class {
-    constructor() {
-      this.onStrigoEventHandler = (customEvent) => {
-        storageChanged(customEvent?.detail);
-      };
-    }
     init() {
       LoggerInstance.info("overlay init called");
       return "OVERLAY" /* OVERLAY */;
@@ -12985,27 +12901,14 @@ ${JSON.stringify(parsedContext)}` : "");
     initEventListeners(hostingAppWindow, academyPanelFrame) {
       initAcademyPanelLoadedListeners(academyPanelFrame, postDockableStateToStrigo);
       initHostEventListeners(hostingAppWindow);
-      hostingAppWindow.addEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
     }
     removeEventListeners(hostingAppWindow) {
       removeHostEventListeners();
-      hostingAppWindow.removeEventListener("overlay-widget-event" /* OVERLAY_WIDGET_EVENT */, this.onStrigoEventHandler);
     }
   };
   var overlay_default = new OverlayWidget();
 
   // src/modules/listeners/listeners.ts
-  function storageChanged({ key, oldValue, newValue }) {
-    if (key !== "strigoEvents" /* STRIGO_EVENTS */) {
-      return;
-    }
-    const newEventsStorage = JSON.parse(newValue)?.events;
-    const oldEventsStorage = JSON.parse(oldValue)?.events;
-    const difference = newEventsStorage.filter(({ eventName: newEventName }) => !oldEventsStorage.some(({ eventName: oldEventName }) => newEventName === oldEventName));
-    if (difference.length > 0) {
-      postEventMessage();
-    }
-  }
   function onHostEventHandler(ev) {
     if (!ev || !ev.data) {
       return;
@@ -13054,7 +12957,6 @@ ${JSON.stringify(parsedContext)}` : "");
         }
         setSessionValue("isLoading", false);
       }
-      postAllEventMessages();
     });
   }
   function initChildEventListeners(childIframe) {
@@ -13167,7 +13069,6 @@ ${JSON.stringify(parsedContext)}` : "");
       initAcademyPanelLoadedListeners(academyPanelFrame, makeIframeWidgetVisible);
       initChildEventListeners(childFrame);
       initHostEventListeners(childFrame.contentWindow);
-      window.addEventListener("storage" /* STORAGE */, storageChanged);
     }
   };
   var iframe_default = new IframeWidget();
@@ -13203,7 +13104,7 @@ ${JSON.stringify(parsedContext)}` : "");
       this.config = {};
     }
     isDevelopment() {
-      return false;
+      return true;
     }
     init() {
       try {
@@ -13212,7 +13113,6 @@ ${JSON.stringify(parsedContext)}` : "");
           LoggerInstance.info("SDK was already initialized");
           return;
         }
-        initEventsStorage();
         initAssessmentStorage();
         const { webApiKey, subDomain, selectedWidgetFlavor } = extractInitScriptParams();
         if (!webApiKey || !subDomain || !selectedWidgetFlavor) {
@@ -13351,7 +13251,6 @@ ${JSON.stringify(parsedContext)}` : "");
           return;
         }
         clearConfig();
-        clearEventsStorage();
         clearAssessmentStorage();
         this.shutdown();
         this.config = {};
@@ -13360,8 +13259,10 @@ ${JSON.stringify(parsedContext)}` : "");
         LoggerInstance.error("Could not destroy SDK", { err });
       }
     }
-    sendEvent(eventName) {
-      pushEventValue({ eventName });
+    async sendEvent(eventName) {
+      const user = getConfigValue("user");
+      const { token } = user;
+      await sendSuccessEvent(token, eventName);
       LoggerInstance.debug("sendEvent called", { eventName });
     }
     startElementSelector(onElementProfileCreated, rootElementSelector) {

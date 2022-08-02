@@ -8,7 +8,7 @@
     "build": "node esbuild.js",
     "build:extension": "node esbuild-extension.js",
     "start": "node esbuild-dev.js -w",
-    "start:extention": "node esbuild-dev-extension.js -w",
+    "start:extension": "node esbuild-dev-extension.js -w",
     "purge": "node purge-jsdelivr",
     "lint": "eslint --cache src",
     "lint:ci": "eslint --config .eslintrc.ci.cjs src"

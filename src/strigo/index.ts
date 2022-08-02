@@ -1,14 +1,13 @@
 import * as urlTools from '../modules/url/url';
 import * as configManager from '../modules/config/config';
 import * as sessionManager from '../modules/session/session';
-import * as eventsStorageManager from '../modules/events-storage/events-storage';
 import * as assessmentsStorage from '../modules/assessments-storage/assessments-storage';
 import * as assessmentRecorderModule from '../modules/assessment-recorder/assessment-recorder';
 import { Logger } from '../services/logger';
 import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MessageTypes } from '../modules/listeners/listeners.types';
 import { startElementSelector } from '../modules/element-selector/element-selector';
-import { DockingSide } from '../modules/config/config.types';
+import { DockingSide, User } from '../modules/config/config.types';
 import { shouldPanelBeOpen } from '../modules/session/session';
 
 import { IStrigoSDK, SdkConfig, SDKSetupData, SdkTypes } from './types';
@@ -30,7 +29,6 @@ class StrigoSDK implements IStrigoSDK {
         return;
       }
 
-      eventsStorageManager.initEventsStorage();
       assessmentsStorage.initAssessmentStorage();
 
       // Get init script parameters
@@ -218,7 +216,6 @@ class StrigoSDK implements IStrigoSDK {
       // Clear the local storage configs before widget shutdown to ensure that
       // the config will be erased even for iframe widget that reloads the page on shutdown.
       configManager.clearConfig();
-      eventsStorageManager.clearEventsStorage();
       assessmentsStorage.clearAssessmentStorage();
       this.shutdown();
 
@@ -230,8 +227,11 @@ class StrigoSDK implements IStrigoSDK {
     }
   }
 
-  sendEvent(eventName: string): void {
-    eventsStorageManager.pushEventValue({ eventName });
+  async sendEvent(eventName: string): Promise<void> {
+    const user = configManager.getConfigValue('user') as User;
+    const { token } = user;
+
+    await configManager.sendSuccessEvent(token, eventName);
     Logger.debug('sendEvent called', { eventName });
   }
 

@@ -149,7 +149,6 @@ class IframeWidget implements IStrigoWidget {
     listeners.initAcademyPanelLoadedListeners(academyPanelFrame, makeIframeWidgetVisible);
     listeners.initChildEventListeners(childFrame);
     listeners.initHostEventListeners(childFrame.contentWindow);
-    window.addEventListener(EventTypes.STORAGE, listeners.storageChanged);
   }
 }
 
