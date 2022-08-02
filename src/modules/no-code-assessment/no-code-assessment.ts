@@ -98,7 +98,7 @@ function countAndUpdateExampleElements(assessment: Assessment, locationElement: 
   return currentExampleElementCount;
 }
 
-const onAssessmentSuccess = (assessment, detectedMeta = {}): void => {
+const onAssessmentSuccess = async (assessment, detectedMeta = {}): Promise<void> => {
   const { _id: assessmentId, challengeSuccessEvent } = assessment;
   console.log('*** Successfully detected assessment criteria!', {
     assessmentId,
@@ -109,7 +109,7 @@ const onAssessmentSuccess = (assessment, detectedMeta = {}): void => {
   });
   updateAssessmentState(assessmentId, { status: AssessmentStatus.SUCCESS });
   Logger.info(`sent event ${challengeSuccessEvent}`);
-  window.Strigo.sendEvent(challengeSuccessEvent);
+  await window.Strigo.sendEvent(challengeSuccessEvent);
 };
 
 function assessAddedItems(mutations): void {

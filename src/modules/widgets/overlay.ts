@@ -108,19 +108,13 @@ class OverlayWidget implements IOverlayWidget {
     documentTools.move();
   }
 
-  private onStrigoEventHandler = (customEvent: CustomEvent): void => {
-    listeners.storageChanged(customEvent?.detail);
-  };
-
   private initEventListeners(hostingAppWindow: Window, academyPanelFrame: HTMLIFrameElement): void {
     listeners.initAcademyPanelLoadedListeners(academyPanelFrame, postDockableStateToStrigo);
     listeners.initHostEventListeners(hostingAppWindow);
-    hostingAppWindow.addEventListener(EventTypes.OVERLAY_WIDGET_EVENT, this.onStrigoEventHandler);
   }
 
   private removeEventListeners(hostingAppWindow: Window): void {
     listeners.removeHostEventListeners();
-    hostingAppWindow.removeEventListener(EventTypes.OVERLAY_WIDGET_EVENT, this.onStrigoEventHandler);
   }
 }
 

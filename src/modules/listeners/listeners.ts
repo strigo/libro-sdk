@@ -1,30 +1,10 @@
-import * as eventsSender from '../events-sender/events-sender';
 import * as sessionManager from '../session/session';
 import * as configManager from '../config/config';
-import { StorageNames } from '../storage-utils/storage-utils.types';
 import ovelayWidget from '../widgets/overlay';
 import { Logger } from '../../services/logger';
 import { WidgetFlavors } from '../widgets/widget.types';
-import { StrigoEventsStorage } from '../events-storage/events-storage.types';
 
 import { EventTypes, MessageTypes } from './listeners.types';
-
-export function storageChanged({ key, oldValue, newValue }): void {
-  if (key !== StorageNames.STRIGO_EVENTS) {
-    return;
-  }
-
-  const newEventsStorage = (JSON.parse(newValue) as StrigoEventsStorage)?.events;
-  const oldEventsStorage = (JSON.parse(oldValue) as StrigoEventsStorage)?.events;
-  const difference = newEventsStorage.filter(
-    ({ eventName: newEventName }) =>
-      !oldEventsStorage.some(({ eventName: oldEventName }) => newEventName === oldEventName)
-  );
-
-  if (difference.length > 0) {
-    eventsSender.postEventMessage();
-  }
-}
 
 function onHostEventHandler(ev: MessageEvent<any>): void {
   if (!ev || !ev.data) {
@@ -93,9 +73,6 @@ export function initAcademyPanelLoadedListeners(
 
       sessionManager.setSessionValue('isLoading', false);
     }
-
-    // Emptying events storage and posting all events
-    eventsSender.postAllEventMessages();
   });
 }
 

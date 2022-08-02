@@ -27,7 +27,7 @@ export interface IStrigoSDK {
   collapse?: () => void;
   shutdown: () => void;
   destroy: () => void;
-  sendEvent: (eventName: string) => void;
+  sendEvent: (eventName: string) => Promise<void>;
   assessmentRecorder: () => void;
   startElementSelector: (onElementProfileCreated: any, rootElementSelector?: string) => void;
   config: SdkConfig;

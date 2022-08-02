@@ -74,3 +74,33 @@ export async function fetchRemoteConfiguration(token: StrigoToken): Promise<Stri
     return null;
   }
 }
+
+export async function sendSuccessEvent(token: StrigoToken, eventName: string): Promise<void> {
+  try {
+    Logger.info('Sending success event to strigo', { eventName });
+    const configDomain = window.Strigo.isDevelopment() ? LOCAL_STRIGO_URL : 'https://app.strigo.io';
+    const response = await fetch(`${configDomain}/api/internal/academy/v1/success-event`, {
+      method: 'POST',
+      body: JSON.stringify({
+        eventName,
+      }),
+      headers: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token.token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed sending success event to Strigo: ${response.statusText}`);
+    }
+
+    const successEventResponse = await response.json();
+
+    Logger.info('Success event Response', { successEventResponse });
+  } catch (err) {
+    Logger.warn('Error sending success event to Strigo', { err });
+
+    return null;
+  }
+}
