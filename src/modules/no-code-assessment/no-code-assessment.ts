@@ -14,6 +14,9 @@ import {
   AssessmentStatus,
 } from './no-code-assessment.types';
 
+const strigoLocationDataIdCamelCased = 'strigoLocationId';
+const strigoLocationDataIdSnakeCased = 'strigo-location-id';
+
 const exampleElementCountObserverOptions = {
   subtree: true,
   childList: true,
@@ -192,12 +195,45 @@ const getLocationElement = (
       updateAssessmentState(assessmentId, { locationElement });
     } catch (err) {
       console.log('*** Error in selecting Location element', err);
-
-      return;
     }
   }
 
   return { locationElement, locationElementSelector };
+};
+
+const addLocationContextElement = function (
+  locationElementToDebug: HTMLElement,
+  locationElementSelector: string
+): HTMLElement {
+  const newStrigoContextElement = window.document.createElement('div') as HTMLElement;
+  newStrigoContextElement.dataset[strigoLocationDataIdCamelCased] = locationElementSelector;
+
+  const calcDimensions = {
+    top: -window.scrollY,
+    left: -window.scrollX,
+  };
+
+  let elem: HTMLElement = locationElementToDebug;
+
+  while (elem && elem !== window.document.body) {
+    calcDimensions.top += elem.offsetTop;
+    calcDimensions.left += elem.offsetLeft;
+    elem = elem.offsetParent as HTMLElement;
+  }
+
+  const locationContextElementStyle = `
+      position: fixed;
+      top: ${calcDimensions.top - 40}px;
+      left: ${calcDimensions.left}px;
+      z-index: 2147483646;
+      position: fixed;
+    `;
+
+  newStrigoContextElement.setAttribute('style', locationContextElementStyle);
+
+  window.document.body.appendChild(newStrigoContextElement);
+
+  return newStrigoContextElement;
 };
 
 const addAssessmentDebugUI = function (
@@ -218,47 +254,37 @@ const addAssessmentDebugUI = function (
   // eslint-disable-next-line no-param-reassign
   locationElementToDebug.style['border-radius'] = '4px';
 
-  const contextElement = window.document.createElement('div');
-  contextElement.setAttribute('id', `${assessment._id}-context-overlay`);
-
-  const calcDimensions = {
-    top: -window.scrollY,
-    left: -window.scrollX,
-  };
-
-  let elem: HTMLElement = locationElementToDebug;
-
-  while (elem && elem !== window.document.body) {
-    calcDimensions.top += elem.offsetTop;
-    calcDimensions.left += elem.offsetLeft;
-    elem = elem.offsetParent as HTMLElement;
-  }
-
-  contextElement.setAttribute(
-    'style',
-    `
-      position: fixed;
-      top: ${calcDimensions.top - 40}px;
-      left: ${calcDimensions.left}px;
+  const assessmentContextElement = window.document.createElement('div');
+  assessmentContextElement.setAttribute('id', `${assessment._id}-context-overlay`);
+  const assessmentContextElementStyle = `
       width: 400px;
-      z-index: 2147483646;
       padding: 1px;
-      position: fixed;
       background: rgba(226, 226, 252, 0.90);
       border: 1px solid #696CBF;
       box-sizing: border-box;
       border-radius: 4px;
       color: #696CBF;
-    `
-  );
-  contextElement.innerHTML = `
-  <span>assessmentId: ${assessment._id}</span>
-  <span>Expected text: ${assessment?.recordedAssessment?.expectedText}</span>
-  <span>Selector used: ${locationElementSelector}</span>
+  `;
+
+  assessmentContextElement.setAttribute('style', assessmentContextElementStyle);
+  assessmentContextElement.innerHTML = `
+    <div>assessmentId: ${assessment?._id}</div>
+    <div>Expected text: ${assessment?.recordedAssessment?.expectedText}</div>
+    <div>Selector used: ${locationElementSelector}</div>
   `;
 
   console.log('*** Appending assessment debug element.');
-  window.document.body.appendChild(contextElement);
+
+  const strigoContextElement = window.document.querySelectorAll(
+    `[data-${strigoLocationDataIdSnakeCased}="${locationElementSelector}"]`
+  )?.[0];
+
+  if (strigoContextElement) {
+    strigoContextElement.appendChild(assessmentContextElement);
+  } else {
+    const newLocationContextElement = addLocationContextElement(locationElementToDebug, locationElementSelector);
+    newLocationContextElement.appendChild(assessmentContextElement);
+  }
 };
 
 const evaluateAssessments = function (): void {

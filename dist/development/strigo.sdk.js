@@ -12555,6 +12555,8 @@ ${JSON.stringify(parsedContext)}` : "");
 
   // src/modules/no-code-assessment/no-code-assessment.ts
   var import_lodash = __toESM(require_lodash(), 1);
+  var strigoLocationDataIdCamelCased = "strigoLocationId";
+  var strigoLocationDataIdSnakeCased = "strigo-location-id";
   var exampleElementCountObserverOptions = {
     subtree: true,
     childList: true
@@ -12663,6 +12665,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   var getLocationElement = (assessmentId, locationElementProfile) => {
     let locationElement;
+    let locationElementSelector;
     const cachedLocationElement = assessmentState[assessmentId]?.locationElement;
     const isLocationElementStillOnDOM = window.document.contains(cachedLocationElement);
     if (cachedLocationElement && isLocationElementStillOnDOM) {
@@ -12676,7 +12679,7 @@ ${JSON.stringify(parsedContext)}` : "");
             nodeIdentifiers: nodeIdentifiers.filter(({ identifier }) => identifier !== "className")
           };
         });
-        const locationElementSelector = getElementSelector(locationElementProfile, { threshold: 5e3 });
+        locationElementSelector = getElementSelector(locationElementProfile, { threshold: 5e3 });
         console.log("*** Retrieving location element by selector:", locationElementSelector);
         locationElement = window.document.querySelector(locationElementSelector);
         console.log("*** Found location element:", {
@@ -12686,21 +12689,13 @@ ${JSON.stringify(parsedContext)}` : "");
         updateAssessmentState(assessmentId, { locationElement });
       } catch (err) {
         console.log("*** Error in selecting Location element", err);
-        return;
       }
     }
-    return locationElement;
+    return { locationElement, locationElementSelector };
   };
-  var addAssessmentDebugUI = function(locationElementToDebug, assessment) {
-    const previousDebugAssessmentContextElement = window.document.getElementById(`${assessment._id}-context-overlay`);
-    if (previousDebugAssessmentContextElement) {
-      console.log("*** Already got an existing debug element for this assessment.", assessment);
-      return;
-    }
-    locationElementToDebug.style.border = "2px dashed #696CBF";
-    locationElementToDebug.style["border-radius"] = "4px";
-    const contextElement = window.document.createElement("div");
-    contextElement.setAttribute("id", `${assessment._id}-context-overlay`);
+  var addLocationContextElement = function(locationElementToDebug, locationElementSelector) {
+    const newStrigoContextElement = window.document.createElement("div");
+    newStrigoContextElement.dataset[strigoLocationDataIdCamelCased] = locationElementSelector;
     const calcDimensions = {
       top: -window.scrollY,
       left: -window.scrollX
@@ -12711,26 +12706,50 @@ ${JSON.stringify(parsedContext)}` : "");
       calcDimensions.left += elem.offsetLeft;
       elem = elem.offsetParent;
     }
-    contextElement.setAttribute("style", `
+    const locationContextElementStyle = `
       position: fixed;
       top: ${calcDimensions.top - 40}px;
       left: ${calcDimensions.left}px;
-      width: 400px;
       z-index: 2147483646;
-      padding: 1px;
       position: fixed;
+    `;
+    newStrigoContextElement.setAttribute("style", locationContextElementStyle);
+    window.document.body.appendChild(newStrigoContextElement);
+    return newStrigoContextElement;
+  };
+  var addAssessmentDebugUI = function(locationElementToDebug, locationElementSelector, assessment) {
+    const previousDebugAssessmentContextElement = window.document.getElementById(`${assessment._id}-context-overlay`);
+    if (previousDebugAssessmentContextElement) {
+      console.log("*** Already got an existing debug element for this assessment.", assessment);
+      return;
+    }
+    locationElementToDebug.style.border = "2px dashed #696CBF";
+    locationElementToDebug.style["border-radius"] = "4px";
+    const assessmentContextElement = window.document.createElement("div");
+    assessmentContextElement.setAttribute("id", `${assessment._id}-context-overlay`);
+    const assessmentContextElementStyle = `
+      width: 400px;
+      padding: 1px;
       background: rgba(226, 226, 252, 0.90);
       border: 1px solid #696CBF;
       box-sizing: border-box;
       border-radius: 4px;
       color: #696CBF;
-    `);
-    contextElement.innerHTML = `
-  <span>assessmentId: ${assessment._id}</span>
-  <span>Expected text: ${assessment?.recordedAssessment?.expectedText}</span>
+  `;
+    assessmentContextElement.setAttribute("style", assessmentContextElementStyle);
+    assessmentContextElement.innerHTML = `
+    <div>assessmentId: ${assessment?._id}</div>
+    <div>Expected text: ${assessment?.recordedAssessment?.expectedText}</div>
+    <div>Selector used: ${locationElementSelector}</div>
   `;
     console.log("*** Appending assessment debug element.");
-    window.document.body.appendChild(contextElement);
+    const strigoContextElement = window.document.querySelectorAll(`[data-${strigoLocationDataIdSnakeCased}="${locationElementSelector}"]`)?.[0];
+    if (strigoContextElement) {
+      strigoContextElement.appendChild(assessmentContextElement);
+    } else {
+      const newLocationContextElement = addLocationContextElement(locationElementToDebug, locationElementSelector);
+      newLocationContextElement.appendChild(assessmentContextElement);
+    }
   };
   var evaluateAssessments = function() {
     console.log("*** Evaluating Assessments...", {
@@ -12749,14 +12768,14 @@ ${JSON.stringify(parsedContext)}` : "");
         return;
       }
       updateAssessmentState(_id, { status: "pending" /* PENDING */ });
-      const locationElement = getLocationElement(_id, locationElementProfile);
+      const { locationElement, locationElementSelector } = getLocationElement(_id, locationElementProfile);
       if (!locationElement) {
         console.log("*** Failed to find location element. Aborting assessment evaluation...");
         return;
       }
       const isInDebugMode = getLocalStorageConfig()?.isAcademyAssessmentDebug;
       if (isInDebugMode) {
-        addAssessmentDebugUI(locationElement, assessment);
+        addAssessmentDebugUI(locationElement, locationElementSelector, assessment);
       }
       switch (actionType) {
         case "added-item" /* ADDED_ITEM */: {
