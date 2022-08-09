@@ -3,6 +3,7 @@ import debounce from 'lodash.debounce';
 import { Logger } from '../../services/logger';
 import { getAssessmentsStorageData } from '../assessments-storage/assessments-storage';
 import { getElementSelector } from '../element-selector/element-selector';
+import * as configManager from '../config/config';
 
 import {
   Assessment,
@@ -157,8 +158,12 @@ function assessAddedItems(mutations): void {
   }
 }
 
-const getLocationElement = (assessmentId, locationElementProfile): HTMLElement | HTMLInputElement => {
+const getLocationElement = (
+  assessmentId,
+  locationElementProfile
+): { locationElement: HTMLElement | HTMLInputElement; locationElementSelector: string } => {
   let locationElement;
+  let locationElementSelector;
 
   const cachedLocationElement = assessmentState[assessmentId]?.locationElement;
 
@@ -177,7 +182,7 @@ const getLocationElement = (assessmentId, locationElementProfile): HTMLElement |
       });
 
       // TODO: Optimize the fallback policy of the "location" element detection
-      const locationElementSelector = getElementSelector(locationElementProfile, { threshold: 5000 });
+      locationElementSelector = getElementSelector(locationElementProfile, { threshold: 5000 });
       console.log('*** Retrieving location element by selector:', locationElementSelector);
       locationElement = window.document.querySelector(locationElementSelector);
       console.log('*** Found location element:', {
@@ -192,7 +197,68 @@ const getLocationElement = (assessmentId, locationElementProfile): HTMLElement |
     }
   }
 
-  return locationElement;
+  return { locationElement, locationElementSelector };
+};
+
+const addAssessmentDebugUI = function (
+  locationElementToDebug: HTMLElement,
+  locationElementSelector: string,
+  assessment
+): void {
+  const previousDebugAssessmentContextElement = window.document.getElementById(`${assessment._id}-context-overlay`);
+
+  if (previousDebugAssessmentContextElement) {
+    console.log('*** Already got an existing debug element for this assessment.', assessment);
+
+    return;
+  }
+
+  // eslint-disable-next-line no-param-reassign
+  locationElementToDebug.style.border = '2px dashed #696CBF';
+  // eslint-disable-next-line no-param-reassign
+  locationElementToDebug.style['border-radius'] = '4px';
+
+  const contextElement = window.document.createElement('div');
+  contextElement.setAttribute('id', `${assessment._id}-context-overlay`);
+
+  const calcDimensions = {
+    top: -window.scrollY,
+    left: -window.scrollX,
+  };
+
+  let elem: HTMLElement = locationElementToDebug;
+
+  while (elem && elem !== window.document.body) {
+    calcDimensions.top += elem.offsetTop;
+    calcDimensions.left += elem.offsetLeft;
+    elem = elem.offsetParent as HTMLElement;
+  }
+
+  contextElement.setAttribute(
+    'style',
+    `
+      position: fixed;
+      top: ${calcDimensions.top - 40}px;
+      left: ${calcDimensions.left}px;
+      width: 400px;
+      z-index: 2147483646;
+      padding: 1px;
+      position: fixed;
+      background: rgba(226, 226, 252, 0.90);
+      border: 1px solid #696CBF;
+      box-sizing: border-box;
+      border-radius: 4px;
+      color: #696CBF;
+    `
+  );
+  contextElement.innerHTML = `
+  <span>assessmentId: ${assessment._id}</span>
+  <span>Expected text: ${assessment?.recordedAssessment?.expectedText}</span>
+  <span>Selector used: ${locationElementSelector}</span>
+  `;
+
+  console.log('*** Appending assessment debug element.');
+  window.document.body.appendChild(contextElement);
 };
 
 const evaluateAssessments = function (): void {
@@ -219,12 +285,18 @@ const evaluateAssessments = function (): void {
 
     updateAssessmentState(_id, { status: AssessmentStatus.PENDING });
 
-    const locationElement = getLocationElement(_id, locationElementProfile);
+    const { locationElement, locationElementSelector } = getLocationElement(_id, locationElementProfile);
 
     if (!locationElement) {
       console.log('*** Failed to find location element. Aborting assessment evaluation...');
 
       return;
+    }
+
+    const isInDebugMode = configManager.getLocalStorageConfig()?.isAcademyAssessmentDebug;
+
+    if (isInDebugMode) {
+      addAssessmentDebugUI(locationElement, locationElementSelector, assessment);
     }
 
     switch (actionType) {

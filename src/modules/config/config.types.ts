@@ -18,6 +18,7 @@ export interface StrigoProtectedConfig {
   loggingConfig: LoggingConfig;
   userAssessments: Assessment[];
   allowedAcademyDomains: string[];
+  isAcademyAssessmentDebug: boolean;
 }
 
 export interface User {
@@ -37,6 +38,7 @@ export interface StrigoSetupConfig {
   version?: string;
   loggingConfig?: LoggingConfig;
   dockingSide?: DockingSide;
+  isAcademyAssessmentDebug?: boolean;
 }
 
 export enum DockingSide {
@@ -53,6 +55,7 @@ export interface StrigoConfig {
   selectedWidgetFlavor: WidgetFlavors;
   loggingConfig?: LoggingConfig;
   dockingSide?: DockingSide;
+  isAcademyAssessmentDebug?: boolean;
 }
 
 export interface StrigoToken {

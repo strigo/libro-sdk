@@ -12691,6 +12691,47 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     return locationElement;
   };
+  var addAssessmentDebugUI = function(locationElementToDebug, assessment) {
+    const previousDebugAssessmentContextElement = window.document.getElementById(`${assessment._id}-context-overlay`);
+    if (previousDebugAssessmentContextElement) {
+      console.log("*** Already got an existing debug element for this assessment.", assessment);
+      return;
+    }
+    locationElementToDebug.style.border = "2px dashed #696CBF";
+    locationElementToDebug.style["border-radius"] = "4px";
+    const contextElement = window.document.createElement("div");
+    contextElement.setAttribute("id", `${assessment._id}-context-overlay`);
+    const calcDimensions = {
+      top: -window.scrollY,
+      left: -window.scrollX
+    };
+    let elem = locationElementToDebug;
+    while (elem && elem !== window.document.body) {
+      calcDimensions.top += elem.offsetTop;
+      calcDimensions.left += elem.offsetLeft;
+      elem = elem.offsetParent;
+    }
+    contextElement.setAttribute("style", `
+      position: fixed;
+      top: ${calcDimensions.top - 40}px;
+      left: ${calcDimensions.left}px;
+      width: 400px;
+      z-index: 2147483646;
+      padding: 1px;
+      position: fixed;
+      background: rgba(226, 226, 252, 0.90);
+      border: 1px solid #696CBF;
+      box-sizing: border-box;
+      border-radius: 4px;
+      color: #696CBF;
+    `);
+    contextElement.innerHTML = `
+  <span>assessmentId: ${assessment._id}</span>
+  <span>Expected text: ${assessment?.recordedAssessment?.expectedText}</span>
+  `;
+    console.log("*** Appending assessment debug element.");
+    window.document.body.appendChild(contextElement);
+  };
   var evaluateAssessments = function() {
     console.log("*** Evaluating Assessments...", {
       bodyTextDuringAssessment: window.document.body.innerText.slice(0, 50)
@@ -12712,6 +12753,10 @@ ${JSON.stringify(parsedContext)}` : "");
       if (!locationElement) {
         console.log("*** Failed to find location element. Aborting assessment evaluation...");
         return;
+      }
+      const isInDebugMode = getLocalStorageConfig()?.isAcademyAssessmentDebug;
+      if (isInDebugMode) {
+        addAssessmentDebugUI(locationElement, assessment);
       }
       switch (actionType) {
         case "added-item" /* ADDED_ITEM */: {
@@ -13176,6 +13221,7 @@ ${JSON.stringify(parsedContext)}` : "");
           initSite: getUrlData(),
           version,
           loggingConfig: configuration?.loggingConfig,
+          isAcademyAssessmentDebug: configuration?.isAcademyAssessmentDebug,
           dockingSide
         });
         this.config.configured = true;
