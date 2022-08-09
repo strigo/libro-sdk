@@ -8,7 +8,6 @@ import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MessageTypes } from '../modules/listeners/listeners.types';
 import { startElementSelector } from '../modules/element-selector/element-selector';
 import { DockingSide, User } from '../modules/config/config.types';
-import { shouldPanelBeOpen } from '../modules/session/session';
 
 import { IStrigoSDK, SdkConfig, SDKSetupData, SdkTypes } from './types';
 
@@ -116,6 +115,7 @@ class StrigoSDK implements IStrigoSDK {
         initSite: urlTools.getUrlData(),
         version,
         loggingConfig: configuration?.loggingConfig,
+        isAcademyAssessmentDebug: configuration?.isAcademyAssessmentDebug,
         dockingSide,
       });
 
