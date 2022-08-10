@@ -273,7 +273,7 @@ const addAssessmentDebugUI = function (
     <div>Selector used: ${locationElementSelector}</div>
   `;
 
-  console.log('*** Appending assessment debug element.');
+  console.log('*** Appending assessment debug context element.');
 
   const strigoContextElement = window.document.querySelectorAll(
     `[data-${strigoLocationDataIdSnakeCased}="${locationElementSelector}"]`
