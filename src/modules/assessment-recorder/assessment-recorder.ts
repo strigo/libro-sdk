@@ -3,7 +3,12 @@ import html2canvas from 'html2canvas';
 import { Logger } from '../../services/logger';
 import { appendCssFile, appendIFrame, getHeadElement } from '../document/document';
 import { getElementSelector } from '../element-selector/element-selector';
-import { generateAssessmentRecorderURL, generateRecorderCssURL, isRecordingUrlParamExists } from '../url/url';
+import {
+  generateAssessmentRecorderURL,
+  generateRecorderCssURL,
+  getURLWithoutStrigoRecorderParams,
+  isRecordingUrlParamExists,
+} from '../url/url';
 
 import {
   AssessmentRecorderMessage,
@@ -100,11 +105,13 @@ export function addAssessmentRecorderIframe(): void {
         case AssessmentRecorderMessageTypes.SUBMIT_ASSESSMENT: {
           const recorderWindowId = window.sessionStorage.getItem(ASSESSMENT_RECORDER_ID_PARAM);
           window.sessionStorage.removeItem('isStrigoRecordingMode');
+          const urlToSave = getURLWithoutStrigoRecorderParams(window.location.href);
+
           window.opener.postMessage(
             {
               assessment: {
                 ...payload.assessment,
-                url: window.location.href,
+                url: urlToSave,
               },
               recorderWindowId,
             },
