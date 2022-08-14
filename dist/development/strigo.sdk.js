@@ -11853,6 +11853,10 @@ ${JSON.stringify(parsedContext)}` : "");
     rootDocument.addEventListener("mouseout", this.removeClickListenerFromHoveredElement);
   }
 
+  // src/modules/assessment-recorder/assessment-recorder.types.ts
+  var ASSESSMENT_RECORDER_ID_PARAM = "strigoAssessmentUuid";
+  var ASSESSMENT_RECORDER_PARAM = "strigoAssessmentRecorder";
+
   // src/modules/url/url.ts
   var STRIGO_CHILD_IFRAME_PARAM = "strigoChildIframe";
   function paramsToObject(entries) {
@@ -11907,7 +11911,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo.css`;
+      return `${"http://local.strigo.io:7002"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11916,7 +11920,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-widget.css`;
+      return `${"http://local.strigo.io:7002"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11925,7 +11929,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateAcademyHatCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-academy-hat.css`;
+      return `${"http://local.strigo.io:7002"}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
@@ -11934,7 +11938,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-assessment-recorder.css`;
+      return `${"http://local.strigo.io:7002"}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -11942,16 +11946,21 @@ ${JSON.stringify(parsedContext)}` : "");
     return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL() {
-    return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;
+    return window.Strigo.isDevelopment() ? "http://local.strigo.io:7015" : ASSESSMENT_RECORDER_URL;
   }
   function isRecordingUrlParamExists() {
     const { search } = window.location;
     const urlParams = extractUrlParams(search);
-    return "strigoAssessmentRecorder" in urlParams;
+    return ASSESSMENT_RECORDER_PARAM in urlParams;
   }
-
-  // src/modules/assessment-recorder/assessment-recorder.types.ts
-  var ASSESSMENT_RECORDER_ID_PARAM = "strigoAssessmentUuid";
+  function getURLWithoutStrigoRecorderParams(url) {
+    const capturedElementUrl = new URL(url);
+    const searchParams = new URLSearchParams(capturedElementUrl.search);
+    searchParams.delete(ASSESSMENT_RECORDER_ID_PARAM);
+    searchParams.delete(ASSESSMENT_RECORDER_PARAM);
+    capturedElementUrl.search = searchParams.toString();
+    return capturedElementUrl.toString();
+  }
 
   // src/modules/assessment-recorder/assessment-recorder.ts
   function isRecordingMode() {
@@ -12020,10 +12029,11 @@ ${JSON.stringify(parsedContext)}` : "");
         case "submit-assessment" /* SUBMIT_ASSESSMENT */: {
           const recorderWindowId = window.sessionStorage.getItem(ASSESSMENT_RECORDER_ID_PARAM);
           window.sessionStorage.removeItem("isStrigoRecordingMode");
+          const urlToSave = getURLWithoutStrigoRecorderParams(window.location.href);
           window.opener.postMessage({
             assessment: {
               ...payload.assessment,
-              url: window.location.href
+              url: urlToSave
             },
             recorderWindowId
           }, "*");
@@ -12742,7 +12752,7 @@ ${JSON.stringify(parsedContext)}` : "");
     <div>Expected text: ${assessment?.recordedAssessment?.expectedText}</div>
     <div>Selector used: ${locationElementSelector}</div>
   `;
-    console.log("*** Appending assessment debug element.");
+    console.log("*** Appending assessment debug context element.");
     const strigoContextElement = window.document.querySelectorAll(`[data-${strigoLocationDataIdSnakeCased}="${locationElementSelector}"]`)?.[0];
     if (strigoContextElement) {
       strigoContextElement.appendChild(assessmentContextElement);
@@ -13168,7 +13178,7 @@ ${JSON.stringify(parsedContext)}` : "");
       this.config = {};
     }
     isDevelopment() {
-      return false;
+      return true;
     }
     init() {
       try {

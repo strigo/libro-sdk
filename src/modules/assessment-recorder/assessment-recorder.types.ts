@@ -1,4 +1,5 @@
 export const ASSESSMENT_RECORDER_ID_PARAM = 'strigoAssessmentUuid';
+export const ASSESSMENT_RECORDER_PARAM = 'strigoAssessmentRecorder';
 
 export enum AssessmentActionType {
   TEXT_CHANGE = 'text-change',

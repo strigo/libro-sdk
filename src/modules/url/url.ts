@@ -7,6 +7,10 @@ import {
 } from '../../strigo/consts';
 import { StrigoConfig, SiteConfig } from '../config/config.types';
 import { WidgetFlavors } from '../widgets/widget.types';
+import {
+  ASSESSMENT_RECORDER_ID_PARAM,
+  ASSESSMENT_RECORDER_PARAM,
+} from '../assessment-recorder/assessment-recorder.types';
 
 import { InitScriptParams } from './url.types';
 
@@ -138,5 +142,15 @@ export function isRecordingUrlParamExists(): boolean {
   const { search } = window.location;
   const urlParams = extractUrlParams(search);
 
-  return 'strigoAssessmentRecorder' in urlParams;
+  return ASSESSMENT_RECORDER_PARAM in urlParams;
+}
+
+export function getURLWithoutStrigoRecorderParams(url): string {
+  const capturedElementUrl = new URL(url);
+  const searchParams = new URLSearchParams(capturedElementUrl.search);
+  searchParams.delete(ASSESSMENT_RECORDER_ID_PARAM);
+  searchParams.delete(ASSESSMENT_RECORDER_PARAM);
+  capturedElementUrl.search = searchParams.toString();
+
+  return capturedElementUrl.toString();
 }
