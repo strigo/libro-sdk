@@ -11769,20 +11769,23 @@ ${JSON.stringify(parsedContext)}` : "");
     return elementSelector;
   }
   function startElementSelector(rootDocument, options) {
-    this.saveSelectedSelector = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    this.removeOverlayElement = () => {
       console.log("Removing mouse over event listener from the selected element.");
       rootDocument.removeEventListener("mouseover", this.mouseOverEvent);
-      const elementProfile = getElementProfile(e, {
-        dataAttribute: "some-custom-strigo-attribute"
-      });
-      this.elementProfile = elementProfile || {};
       const selectorOverlay2 = rootDocument.getElementById("element-selector-overlay");
       if (!selectorOverlay2) {
         console.error("Missing selector overlay element!");
       }
       rootDocument?.body?.removeChild(selectorOverlay2);
+    };
+    this.saveSelectedSelector = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.removeOverlayElement();
+      const elementProfile = getElementProfile(e, {
+        dataAttribute: "some-custom-strigo-attribute"
+      });
+      this.elementProfile = elementProfile || {};
       console.log("Selected element with elementProfile:", this.elementProfile);
       options.onElementProfileCreated(this.elementProfile);
     };
@@ -11852,6 +11855,15 @@ ${JSON.stringify(parsedContext)}` : "");
     rootDocument.body.appendChild(selectorOverlay);
     rootDocument.addEventListener("mouseover", this.mouseOverEvent);
     rootDocument.addEventListener("mouseout", this.removeClickListenerFromHoveredElement);
+    window.focus();
+    rootDocument.body.focus();
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        console.log("Aborting element selection...", e.key);
+        this.removeOverlayElement();
+        options.onElementSelectionCancel();
+      }
+    }, true);
   }
 
   // src/modules/assessment-recorder/assessment-recorder.types.ts
@@ -11970,6 +11982,43 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     return false;
   }
+  function onElementProfileCreation(elementProfile, elementType) {
+    const recorederIframe = document.getElementById("strigo-assessment-recorder-iframe");
+    const elementSelector = getElementSelector(elementProfile);
+    recorederIframe.classList.remove("semi-open");
+    recorederIframe.classList.add("is-open");
+    (0, import_html2canvas.default)(document.querySelector(elementSelector), { backgroundColor: "#c6c7e7" }).then((canvas) => {
+      const selectedElement = {
+        imageData: canvas.toDataURL(),
+        profile: elementProfile,
+        querySelector: elementSelector
+      };
+      recorederIframe.contentWindow.postMessage(JSON.stringify({
+        messageType: "end-capture" /* END_CAPTURE */,
+        payload: {
+          elementType,
+          selectedElement
+        },
+        windowName: window.name
+      }), "*");
+    });
+  }
+  function onElementSelectionCancel(elementType) {
+    LoggerInstance.info("Aborting element selection...");
+    const recorederIframe = document.getElementById("strigo-assessment-recorder-iframe");
+    recorederIframe.contentWindow.postMessage(JSON.stringify({
+      messageType: "end-capture" /* END_CAPTURE */,
+      payload: {
+        elementType,
+        selectedElement: null
+      },
+      windowName: window.name
+    }), "*");
+    recorederIframe.classList.remove("semi-open");
+    setTimeout(() => {
+      recorederIframe.classList.add("is-open");
+    }, 400);
+  }
   function addAssessmentRecorderIframe() {
     window.sessionStorage.setItem("isStrigoRecordingMode", "true");
     const assessmentUuid = new URL(window.location.href).searchParams.get(ASSESSMENT_RECORDER_ID_PARAM);
@@ -12004,27 +12053,7 @@ ${JSON.stringify(parsedContext)}` : "");
             assessmentRecorderIframe.classList.add("semi-open");
           }, 600);
           const { elementType, rootElementSelector } = payload?.captureParams;
-          window.Strigo.startElementSelector((elementProfile) => {
-            const recorederIframe = document.getElementById("strigo-assessment-recorder-iframe");
-            const elementSelector = getElementSelector(elementProfile);
-            recorederIframe.classList.remove("semi-open");
-            recorederIframe.classList.add("is-open");
-            (0, import_html2canvas.default)(document.querySelector(elementSelector), { backgroundColor: "#c6c7e7" }).then((canvas) => {
-              const selectedElement = {
-                imageData: canvas.toDataURL(),
-                profile: elementProfile,
-                querySelector: elementSelector
-              };
-              recorederIframe.contentWindow.postMessage(JSON.stringify({
-                messageType: "end-capture" /* END_CAPTURE */,
-                payload: {
-                  elementType,
-                  selectedElement
-                },
-                windowName: window.name
-              }), "*");
-            });
-          }, rootElementSelector);
+          window.Strigo.startElementSelector((elementProfile) => onElementProfileCreation(elementProfile, elementType), () => onElementSelectionCancel(elementType), rootElementSelector);
           break;
         }
         case "submit-assessment" /* SUBMIT_ASSESSMENT */: {
@@ -13341,10 +13370,15 @@ ${JSON.stringify(parsedContext)}` : "");
       await sendSuccessEvent(token, eventName);
       LoggerInstance.debug("sendEvent called", { eventName });
     }
-    startElementSelector(onElementProfileCreated, rootElementSelector) {
+    startElementSelector(onElementProfileCreated, onElementSelectionCancel2, rootElementSelector) {
       LoggerInstance.debug("startElementSelector called");
       const rootElement = rootElementSelector ? window.document.querySelector(rootElementSelector) : window.document.body;
-      startElementSelector(window.document, { onElementProfileCreated, zIndex: 9999999999, rootElement });
+      startElementSelector(window.document, {
+        onElementProfileCreated,
+        onElementSelectionCancel: onElementSelectionCancel2,
+        zIndex: 9999999999,
+        rootElement
+      });
     }
     assessmentRecorder() {
       addAssessmentRecorderIframe();

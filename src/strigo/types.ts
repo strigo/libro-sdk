@@ -29,7 +29,11 @@ export interface IStrigoSDK {
   destroy: () => void;
   sendEvent: (eventName: string) => Promise<void>;
   assessmentRecorder: () => void;
-  startElementSelector: (onElementProfileCreated: any, rootElementSelector?: string) => void;
+  startElementSelector: (
+    onElementProfileCreated: any,
+    onElementSelectionCancel: any,
+    rootElementSelector?: string
+  ) => void;
   config: SdkConfig;
   isDevelopment: () => boolean;
 }

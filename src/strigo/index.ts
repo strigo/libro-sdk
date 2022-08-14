@@ -235,10 +235,19 @@ class StrigoSDK implements IStrigoSDK {
     Logger.debug('sendEvent called', { eventName });
   }
 
-  startElementSelector(onElementProfileCreated: any, rootElementSelector?: string): void {
+  startElementSelector(
+    onElementProfileCreated: any,
+    onElementSelectionCancel: any,
+    rootElementSelector?: string
+  ): void {
     Logger.debug('startElementSelector called');
     const rootElement = rootElementSelector ? window.document.querySelector(rootElementSelector) : window.document.body;
-    startElementSelector(window.document, { onElementProfileCreated, zIndex: 9999999999, rootElement });
+    startElementSelector(window.document, {
+      onElementProfileCreated,
+      onElementSelectionCancel,
+      zIndex: 9999999999,
+      rootElement,
+    });
   }
 
   assessmentRecorder(): void {
