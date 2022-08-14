@@ -21,6 +21,55 @@ export function isRecordingMode(): boolean {
   return false;
 }
 
+function onElementProfileCreation(elementProfile: any, elementType): void {
+  const recorederIframe = document.getElementById('strigo-assessment-recorder-iframe') as HTMLIFrameElement;
+  const elementSelector = getElementSelector(elementProfile);
+
+  recorederIframe.classList.remove('semi-open');
+  recorederIframe.classList.add('is-open');
+
+  html2canvas(document.querySelector(elementSelector), { backgroundColor: '#c6c7e7' }).then((canvas) => {
+    const selectedElement: SelectedElement = {
+      imageData: canvas.toDataURL(),
+      profile: elementProfile,
+      querySelector: elementSelector,
+    };
+
+    recorederIframe.contentWindow.postMessage(
+      JSON.stringify({
+        messageType: AssessmentRecorderMessageTypes.END_CAPTURE,
+        payload: {
+          elementType,
+          selectedElement,
+        },
+        windowName: window.name,
+      }),
+      '*'
+    );
+  });
+}
+
+function onElementSelectionCancel(elementType): void {
+  Logger.info('Aborting element selection...');
+  const recorederIframe = document.getElementById('strigo-assessment-recorder-iframe') as HTMLIFrameElement;
+  recorederIframe.contentWindow.postMessage(
+    JSON.stringify({
+      messageType: AssessmentRecorderMessageTypes.END_CAPTURE,
+      payload: {
+        elementType,
+        selectedElement: null,
+      },
+      windowName: window.name,
+    }),
+    '*'
+  );
+
+  recorederIframe.classList.remove('semi-open');
+  setTimeout(() => {
+    recorederIframe.classList.add('is-open');
+  }, 400);
+}
+
 export function addAssessmentRecorderIframe(): void {
   window.sessionStorage.setItem('isStrigoRecordingMode', 'true');
   const assessmentUuid = new URL(window.location.href).searchParams.get(ASSESSMENT_RECORDER_ID_PARAM);
@@ -66,33 +115,11 @@ export function addAssessmentRecorderIframe(): void {
 
           const { elementType, rootElementSelector } = payload?.captureParams as CaptureParams;
 
-          window.Strigo.startElementSelector((elementProfile: any) => {
-            const recorederIframe = document.getElementById('strigo-assessment-recorder-iframe') as HTMLIFrameElement;
-            const elementSelector = getElementSelector(elementProfile);
-
-            recorederIframe.classList.remove('semi-open');
-            recorederIframe.classList.add('is-open');
-
-            html2canvas(document.querySelector(elementSelector), { backgroundColor: '#c6c7e7' }).then((canvas) => {
-              const selectedElement: SelectedElement = {
-                imageData: canvas.toDataURL(),
-                profile: elementProfile,
-                querySelector: elementSelector,
-              };
-
-              recorederIframe.contentWindow.postMessage(
-                JSON.stringify({
-                  messageType: AssessmentRecorderMessageTypes.END_CAPTURE,
-                  payload: {
-                    elementType,
-                    selectedElement,
-                  },
-                  windowName: window.name,
-                }),
-                '*'
-              );
-            });
-          }, rootElementSelector);
+          window.Strigo.startElementSelector(
+            (elementProfile: any) => onElementProfileCreation(elementProfile, elementType),
+            () => onElementSelectionCancel(elementType),
+            rootElementSelector
+          );
 
           break;
         }

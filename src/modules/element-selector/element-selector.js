@@ -42,26 +42,16 @@ export function getElementSelector(nodesInfo, options) {
  * This function will add an overlay for hovered element to indicate the element selection functionality.
  * @param {Object} options - The element selector options
  * @param [options.onElementProfileCreated] { function } - A callback to return the selected element profile.
+ * @param [options.onElementSelectionCancel] { function } - A callback to cancel the element selection overlay.
  * @param [options.zIndex] { number } - A configurable z-index in which the selection overlay will appear.
  * @param [options.rootElement] { HtmlElement } - The starting dom element for the selection.
  * @param rootDocument- {DOMNode} The root document in which the selection overlay will append itself to hovered elements.
  */
 export function startElementSelector(rootDocument, options) {
-  // this.rootElement = options?.rootElement ? options.rootElement : rootDocument.body;
 
-  this.saveSelectedSelector = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  this.removeOverlayElement = () => {
     console.log('Removing mouse over event listener from the selected element.');
     rootDocument.removeEventListener("mouseover", this.mouseOverEvent);
-
-    // this.rootElement.removeEventListener('mouseover', this.mouseOverEvent);
-
-    const elementProfile = getElementProfile(e, {
-      dataAttribute: 'some-custom-strigo-attribute',
-    });
-
-    this.elementProfile = elementProfile || {};
 
     const selectorOverlay = rootDocument.getElementById('element-selector-overlay');
     if (!selectorOverlay) {
@@ -69,7 +59,18 @@ export function startElementSelector(rootDocument, options) {
     }
 
     rootDocument?.body?.removeChild(selectorOverlay);
-    // this.rootElement?.removeChild(selectorOverlay);
+  }
+
+  this.saveSelectedSelector = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.removeOverlayElement();
+
+    const elementProfile = getElementProfile(e, {
+      dataAttribute: 'some-custom-strigo-attribute',
+    });
+
+    this.elementProfile = elementProfile || {};
 
     console.log('Selected element with elementProfile:', this.elementProfile);
     options.onElementProfileCreated(this.elementProfile);
@@ -164,31 +165,20 @@ export function startElementSelector(rootDocument, options) {
     `
   );
 
-  // const rootElementDimensions = this.rootElement.getBoundingClientRect();
-  // selectorOverlay.setAttribute(
-  //   'style',
-  //   `
-  //     top: ${rootElementDimensions.top}px;
-  //     left: ${rootElementDimensions.left}px;
-  //     width: ${rootElementDimensions.width}px;
-  //     height: ${rootElementDimensions.height}px;
-  //     pointer-events: none;
-  //     z-index: ${options.zIndex || 2147483646};
-  //     padding: 1px;
-  //     position: fixed;
-  //     background: rgba(105, 108, 191, 0.2);
-  //     border: 2px dashed #696CBF;
-  //     box-sizing: border-box;
-  //     border-radius: 4px;
-  //   `
-  // );
-
   console.log('Appending overlay selector element.');
-  // this.rootElement.appendChild(selectorOverlay);
-  // this.rootElement.addEventListener('mouseover', this.mouseOverEvent);
-  // this.rootElement.addEventListener('mouseout', this.removeClickListenerFromHoveredElement);
 
   rootDocument.body.appendChild(selectorOverlay);
   rootDocument.addEventListener("mouseover", this.mouseOverEvent);
   rootDocument.addEventListener("mouseout", this.removeClickListenerFromHoveredElement);
+
+  // Setting "abort" action to the esc key
+  window.focus();
+  rootDocument.body.focus();
+  window.addEventListener("keydown", (e) => {
+    if (e.key === 'Escape') {
+      console.log('Aborting element selection...', e.key);
+      this.removeOverlayElement();
+      options.onElementSelectionCancel();
+    }
+  }, true);
 }
