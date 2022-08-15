@@ -11799,21 +11799,22 @@ ${JSON.stringify(parsedContext)}` : "");
       if (skippedSelectors.includes(element.id)) {
         return;
       }
-      const calcDimensions = {
-        top: -window.scrollY,
-        left: -window.scrollX
-      };
-      let elem = e.target;
-      while (elem && elem !== rootDocument.body) {
-        calcDimensions.top += elem.offsetTop;
-        calcDimensions.left += elem.offsetLeft;
-        elem = elem.offsetParent;
-      }
       const width = element.offsetWidth + 2;
       const height = element.offsetHeight + 2;
+      function getPosition(el) {
+        let x = 0;
+        let y = 0;
+        while (el && !isNaN(el.offsetLeft) && !isNaN(el.offsetTop)) {
+          x += el.offsetLeft - el.scrollLeft;
+          y += el.offsetTop - el.scrollTop;
+          el = el.offsetParent;
+        }
+        return { top: y - window.scrollY, left: x - window.scrollX };
+      }
+      const position = getPosition(element);
       const newDimensions = {
-        top: calcDimensions.top - 2 + "px",
-        left: calcDimensions.left - 2 + "px",
+        top: position.top - 2 + "px",
+        left: position.left - 2 + "px",
         width: width + "px",
         height: height + "px"
       };
@@ -12742,7 +12743,7 @@ ${JSON.stringify(parsedContext)}` : "");
     <div>Expected text: ${assessment?.recordedAssessment?.expectedText}</div>
     <div>Selector used: ${locationElementSelector}</div>
   `;
-    console.log("*** Appending assessment debug element.");
+    console.log("*** Appending assessment debug context element.");
     const strigoContextElement = window.document.querySelectorAll(`[data-${strigoLocationDataIdSnakeCased}="${locationElementSelector}"]`)?.[0];
     if (strigoContextElement) {
       strigoContextElement.appendChild(assessmentContextElement);

@@ -92,36 +92,25 @@ export function startElementSelector(rootDocument, options) {
       return;
     }
 
-    // if (element === this.rootElement) {
-    //   const rootElementDimensions = this.rootElement.getBoundingClientRect();
-    //   setStyle(overlayElement, {
-    //     top: `${rootElementDimensions.top}px`,
-    //     left: `${rootElementDimensions.left}px`,
-    //     width: `${rootElementDimensions.width}px`,
-    //     height: `${rootElementDimensions.height}px`,
-    //   });
-
-    //   return;
-    // }
-
-    const calcDimensions = {
-      top: -window.scrollY,
-      left: -window.scrollX,
-    };
-
-    let elem = e.target;
-    while (elem && elem !== rootDocument.body) {
-      calcDimensions.top += elem.offsetTop;
-      calcDimensions.left += elem.offsetLeft;
-      elem = elem.offsetParent;
-    }
-
     const width = element.offsetWidth + 2;
     const height = element.offsetHeight + 2;
 
+    function getPosition( el ) {
+      let x = 0;
+      let y = 0;
+      while( el && !isNaN( el.offsetLeft ) && !isNaN( el.offsetTop ) ) {
+        x += el.offsetLeft - el.scrollLeft;
+        y += el.offsetTop - el.scrollTop;
+        el = el.offsetParent;
+      }
+      return { top: y - window.scrollY, left: x - window.scrollX };
+    }
+
+    const position = getPosition(element);
+
     const newDimensions = {
-      top: calcDimensions.top - 2 + 'px',
-      left: calcDimensions.left - 2 + 'px',
+      top: position.top - 2 + 'px',
+      left: position.left - 2 + 'px',
       width: width + 'px',
       height: height + 'px',
     };
