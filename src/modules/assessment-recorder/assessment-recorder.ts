@@ -30,9 +30,6 @@ function onElementProfileCreation(elementProfile: any, elementType): void {
   const recorederIframe = document.getElementById('strigo-assessment-recorder-iframe') as HTMLIFrameElement;
   const elementSelector = getElementSelector(elementProfile);
 
-  recorederIframe.classList.remove('semi-open');
-  recorederIframe.classList.add('is-open');
-
   html2canvas(document.querySelector(elementSelector), { backgroundColor: '#c6c7e7' }).then((canvas) => {
     const selectedElement: SelectedElement = {
       imageData: canvas.toDataURL(),
@@ -51,12 +48,16 @@ function onElementProfileCreation(elementProfile: any, elementType): void {
       }),
       '*'
     );
+
+    recorederIframe.classList.replace('slide-from-opened-to-minimized', 'slide-from-minimized-to-opened');
   });
 }
 
-function onElementSelectionCancel(elementType): void {
+function onElementSelectionCancel(elementType?: string): void {
   Logger.info('Aborting element selection...');
   const recorederIframe = document.getElementById('strigo-assessment-recorder-iframe') as HTMLIFrameElement;
+  recorederIframe.classList.replace('slide-from-opened-to-minimized', 'slide-from-minimized-to-opened');
+
   recorederIframe.contentWindow.postMessage(
     JSON.stringify({
       messageType: AssessmentRecorderMessageTypes.END_CAPTURE,
@@ -68,11 +69,6 @@ function onElementSelectionCancel(elementType): void {
     }),
     '*'
   );
-
-  recorederIframe.classList.remove('semi-open');
-  setTimeout(() => {
-    recorederIframe.classList.add('is-open');
-  }, 400);
 }
 
 export function addAssessmentRecorderIframe(): void {
@@ -87,7 +83,7 @@ export function addAssessmentRecorderIframe(): void {
   const assessmentRecorderUrl = generateAssessmentRecorderURL();
   appendCssFile({ parentElement: getHeadElement(), url: generateRecorderCssURL() });
   const assessmentRecorderIframe = appendIFrame({
-    classNames: ['strigo-assessment-recorder-iframe', 'drawer', 'is-open'],
+    classNames: ['strigo-assessment-recorder-iframe', 'opened'],
     id: 'strigo-assessment-recorder-iframe',
     parentElement: window.document.body,
     url: assessmentRecorderUrl,
@@ -113,10 +109,14 @@ export function addAssessmentRecorderIframe(): void {
       switch (messageType) {
         case AssessmentRecorderMessageTypes.START_CAPTURE: {
           Logger.info('Start capturing message received');
-          assessmentRecorderIframe.classList.remove('is-open');
-          setTimeout(() => {
-            assessmentRecorderIframe.classList.add('semi-open');
-          }, 600);
+          const wasReplaced = assessmentRecorderIframe.classList.replace('opened', 'slide-from-opened-to-minimized');
+
+          if (!wasReplaced) {
+            assessmentRecorderIframe.classList.replace(
+              'slide-from-minimized-to-opened',
+              'slide-from-opened-to-minimized'
+            );
+          }
 
           const { elementType, rootElementSelector } = payload?.captureParams as CaptureParams;
 
@@ -125,6 +125,15 @@ export function addAssessmentRecorderIframe(): void {
             () => onElementSelectionCancel(elementType),
             rootElementSelector
           );
+
+          break;
+        }
+
+        case AssessmentRecorderMessageTypes.STOP_CAPTURE: {
+          Logger.info('Stop capturing message received');
+          assessmentRecorderIframe.classList.replace('slide-from-opened-to-minimized', 'slide-from-minimized-to-opened');
+
+          window.Strigo.stopElementSelector();
 
           break;
         }
