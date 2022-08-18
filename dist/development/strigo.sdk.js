@@ -11768,33 +11768,32 @@ ${JSON.stringify(parsedContext)}` : "");
     const elementSelector = elementProfiler.generateSelectorFromNodesInfo(nodesInfo, consolidatedOptions);
     return elementSelector;
   }
-  function startElementSelector(rootDocument, options) {
+  function getElementSelection(rootDocument, options) {
     this.removeOverlayElement = () => {
       console.log("Removing mouse over event listener from the selected element.");
       rootDocument.removeEventListener("mouseover", this.mouseOverEvent);
-      const selectorOverlay2 = rootDocument.getElementById("element-selector-overlay");
-      if (!selectorOverlay2) {
-        console.error("Missing selector overlay element!");
+      const selectorOverlay = rootDocument.getElementById("element-selector-overlay");
+      if (selectorOverlay) {
+        rootDocument?.body?.removeChild(selectorOverlay);
       }
-      rootDocument?.body?.removeChild(selectorOverlay2);
     };
     this.saveSelectedSelector = (e) => {
       e.preventDefault();
       e.stopPropagation();
       this.removeOverlayElement();
-      const elementProfile = getElementProfile(e, {
+      let elementProfile = getElementProfile(e, {
         dataAttribute: "some-custom-strigo-attribute"
       });
-      this.elementProfile = elementProfile || {};
-      console.log("Selected element with elementProfile:", this.elementProfile);
-      options.onElementProfileCreated(this.elementProfile);
+      elementProfile = elementProfile || {};
+      console.log("Selected element with elementProfile:", elementProfile);
+      options.onElementProfileCreated(elementProfile);
     };
     function setStyle(el, propertyObject) {
       for (const property in propertyObject) {
         el.style[property] = propertyObject[property];
       }
     }
-    this.move = (e, overlayElement, skippedSelectors = []) => {
+    const move2 = (e, overlayElement, skippedSelectors = []) => {
       if (overlayElement === e.target) {
         return;
       }
@@ -11824,8 +11823,8 @@ ${JSON.stringify(parsedContext)}` : "");
       setStyle(overlayElement, newDimensions);
     };
     this.mouseOverEvent = (e) => {
-      const overlayElement = rootDocument.getElementById("element-selector-overlay");
-      this.move(e, overlayElement, ["element-selector-overlay", "strigo-assessment-recorder-iframe"]);
+      const overlayElement = window.document.getElementById("element-selector-overlay");
+      move2(e, overlayElement, ["element-selector-overlay", "strigo-assessment-recorder-iframe"]);
       const hoveredElement = e.target;
       hoveredElement.addEventListener("click", this.saveSelectedSelector);
     };
@@ -11833,10 +11832,11 @@ ${JSON.stringify(parsedContext)}` : "");
       const hoveredElement = e.target;
       hoveredElement.removeEventListener("click", this.saveSelectedSelector);
     };
-    const selectorOverlay = rootDocument.createElement("div");
-    selectorOverlay.setAttribute("id", "element-selector-overlay");
-    selectorOverlay.setAttribute("id", "element-selector-overlay");
-    selectorOverlay.setAttribute("style", `
+    this.startElementSelector = () => {
+      const selectorOverlay = rootDocument.createElement("div");
+      selectorOverlay.setAttribute("id", "element-selector-overlay");
+      selectorOverlay.setAttribute("id", "element-selector-overlay");
+      selectorOverlay.setAttribute("style", `
       position: fixed;
       top: 0;
       left: 0;
@@ -11851,19 +11851,29 @@ ${JSON.stringify(parsedContext)}` : "");
       box-sizing: border-box;
       border-radius: 4px;
     `);
-    console.log("Appending overlay selector element.");
-    rootDocument.body.appendChild(selectorOverlay);
-    rootDocument.addEventListener("mouseover", this.mouseOverEvent);
-    rootDocument.addEventListener("mouseout", this.removeClickListenerFromHoveredElement);
-    window.focus();
-    rootDocument.body.focus();
-    window.addEventListener("keydown", (e) => {
+      console.log("Appending overlay selector element.");
+      rootDocument.body.appendChild(selectorOverlay);
+      rootDocument.addEventListener("mouseover", this.mouseOverEvent);
+      rootDocument.addEventListener("mouseout", this.removeClickListenerFromHoveredElement);
+      window.focus();
+      rootDocument.body.focus();
+      window.addEventListener("keydown", this.onEscSelection, true);
+    };
+    this.onEscSelection = (e) => {
       if (e.key === "Escape") {
         console.log("Aborting element selection...", e.key);
-        this.removeOverlayElement();
-        options.onElementSelectionCancel();
+        this.stopElementSelection();
       }
-    }, true);
+    };
+    this.stopElementSelection = () => {
+      this.removeOverlayElement();
+      window.removeEventListener("keydown", this.onEscSelection, true);
+      options.onElementSelectionCancel();
+    };
+    return {
+      startElementSelector: this.startElementSelector,
+      stopElementSelection: this.stopElementSelection
+    };
   }
 
   // src/modules/assessment-recorder/assessment-recorder.types.ts
@@ -11985,8 +11995,6 @@ ${JSON.stringify(parsedContext)}` : "");
   function onElementProfileCreation(elementProfile, elementType) {
     const recorederIframe = document.getElementById("strigo-assessment-recorder-iframe");
     const elementSelector = getElementSelector(elementProfile);
-    recorederIframe.classList.remove("semi-open");
-    recorederIframe.classList.add("is-open");
     (0, import_html2canvas.default)(document.querySelector(elementSelector), { backgroundColor: "#c6c7e7" }).then((canvas) => {
       const selectedElement = {
         imageData: canvas.toDataURL(),
@@ -12001,11 +12009,13 @@ ${JSON.stringify(parsedContext)}` : "");
         },
         windowName: window.name
       }), "*");
+      recorederIframe.classList.replace("slide-from-opened-to-minimized", "slide-from-minimized-to-opened");
     });
   }
   function onElementSelectionCancel(elementType) {
     LoggerInstance.info("Aborting element selection...");
     const recorederIframe = document.getElementById("strigo-assessment-recorder-iframe");
+    recorederIframe.classList.replace("slide-from-opened-to-minimized", "slide-from-minimized-to-opened");
     recorederIframe.contentWindow.postMessage(JSON.stringify({
       messageType: "end-capture" /* END_CAPTURE */,
       payload: {
@@ -12014,10 +12024,6 @@ ${JSON.stringify(parsedContext)}` : "");
       },
       windowName: window.name
     }), "*");
-    recorederIframe.classList.remove("semi-open");
-    setTimeout(() => {
-      recorederIframe.classList.add("is-open");
-    }, 400);
   }
   function addAssessmentRecorderIframe() {
     window.sessionStorage.setItem("isStrigoRecordingMode", "true");
@@ -12029,7 +12035,7 @@ ${JSON.stringify(parsedContext)}` : "");
     const assessmentRecorderUrl = generateAssessmentRecorderURL();
     appendCssFile({ parentElement: getHeadElement(), url: generateRecorderCssURL() });
     const assessmentRecorderIframe = appendIFrame({
-      classNames: ["strigo-assessment-recorder-iframe", "drawer", "is-open"],
+      classNames: ["strigo-assessment-recorder-iframe", "opened"],
       id: "strigo-assessment-recorder-iframe",
       parentElement: window.document.body,
       url: assessmentRecorderUrl
@@ -12048,12 +12054,18 @@ ${JSON.stringify(parsedContext)}` : "");
       switch (messageType) {
         case "start-capture" /* START_CAPTURE */: {
           LoggerInstance.info("Start capturing message received");
-          assessmentRecorderIframe.classList.remove("is-open");
-          setTimeout(() => {
-            assessmentRecorderIframe.classList.add("semi-open");
-          }, 600);
+          const wasReplaced = assessmentRecorderIframe.classList.replace("opened", "slide-from-opened-to-minimized");
+          if (!wasReplaced) {
+            assessmentRecorderIframe.classList.replace("slide-from-minimized-to-opened", "slide-from-opened-to-minimized");
+          }
           const { elementType, rootElementSelector } = payload?.captureParams;
           window.Strigo.startElementSelector((elementProfile) => onElementProfileCreation(elementProfile, elementType), () => onElementSelectionCancel(elementType), rootElementSelector);
+          break;
+        }
+        case "stop-capture" /* STOP_CAPTURE */: {
+          LoggerInstance.info("Stop capturing message received");
+          assessmentRecorderIframe.classList.replace("slide-from-opened-to-minimized", "slide-from-minimized-to-opened");
+          window.Strigo.stopElementSelector();
           break;
         }
         case "submit-assessment" /* SUBMIT_ASSESSMENT */: {
@@ -13373,12 +13385,16 @@ ${JSON.stringify(parsedContext)}` : "");
     startElementSelector(onElementProfileCreated, onElementSelectionCancel2, rootElementSelector) {
       LoggerInstance.debug("startElementSelector called");
       const rootElement = rootElementSelector ? window.document.querySelector(rootElementSelector) : window.document.body;
-      startElementSelector(window.document, {
+      const { startElementSelector, stopElementSelection } = getElementSelection(window.document, {
         onElementProfileCreated,
         onElementSelectionCancel: onElementSelectionCancel2,
-        zIndex: 9999999999,
+        zIndex: 2147483645,
         rootElement
       });
+      this.stopElementSelector = stopElementSelection;
+      startElementSelector();
+    }
+    stopElementSelector() {
     }
     assessmentRecorder() {
       addAssessmentRecorderIframe();

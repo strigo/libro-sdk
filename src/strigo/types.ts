@@ -34,6 +34,7 @@ export interface IStrigoSDK {
     onElementSelectionCancel: any,
     rootElementSelector?: string
   ) => void;
+  stopElementSelector: () => void;
   config: SdkConfig;
   isDevelopment: () => boolean;
 }

@@ -10,7 +10,8 @@ export const enum AssessmentRecorderMessageTypes {
   START_CAPTURE = 'start-capture',
   END_CAPTURE = 'end-capture',
   SUBMIT_ASSESSMENT = 'submit-assessment',
-  CANCEL_ASSESSMENT = 'cancel-assessment'
+  CANCEL_ASSESSMENT = 'cancel-assessment',
+  STOP_CAPTURE = "stop-capture"
 }
 
 export enum CaptureElementTypes {
@@ -24,7 +25,7 @@ export interface AssessmentRecorderMessage {
 }
 
 export interface CaptureParams {
-  rootElementSelector: string;
+  rootElementSelector?: string;
   elementType: CaptureElementTypes;
 }
 

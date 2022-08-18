@@ -38,8 +38,10 @@ export function getElementSelector(nodesInfo, options) {
   return elementSelector;
 }
 
+
 /**
- * This function will add an overlay for hovered element to indicate the element selection functionality.
+ * This function returns an element selector function that
+ * will add an overlay for hovered element to indicate the element selection functionality.
  * @param {Object} options - The element selector options
  * @param [options.onElementProfileCreated] { function } - A callback to return the selected element profile.
  * @param [options.onElementSelectionCancel] { function } - A callback to cancel the element selection overlay.
@@ -47,18 +49,16 @@ export function getElementSelector(nodesInfo, options) {
  * @param [options.rootElement] { HtmlElement } - The starting dom element for the selection.
  * @param rootDocument- {DOMNode} The root document in which the selection overlay will append itself to hovered elements.
  */
-export function startElementSelector(rootDocument, options) {
+export function getElementSelection(rootDocument, options) {
 
   this.removeOverlayElement = () => {
     console.log('Removing mouse over event listener from the selected element.');
     rootDocument.removeEventListener("mouseover", this.mouseOverEvent);
 
     const selectorOverlay = rootDocument.getElementById('element-selector-overlay');
-    if (!selectorOverlay) {
-      console.error('Missing selector overlay element!');
+    if (selectorOverlay) {
+      rootDocument?.body?.removeChild(selectorOverlay);
     }
-
-    rootDocument?.body?.removeChild(selectorOverlay);
   }
 
   this.saveSelectedSelector = (e) => {
@@ -66,14 +66,14 @@ export function startElementSelector(rootDocument, options) {
     e.stopPropagation();
     this.removeOverlayElement();
 
-    const elementProfile = getElementProfile(e, {
+    let elementProfile = getElementProfile(e, {
       dataAttribute: 'some-custom-strigo-attribute',
     });
 
-    this.elementProfile = elementProfile || {};
+    elementProfile = elementProfile || {};
 
-    console.log('Selected element with elementProfile:', this.elementProfile);
-    options.onElementProfileCreated(this.elementProfile);
+    console.log('Selected element with elementProfile:', elementProfile);
+    options.onElementProfileCreated(elementProfile);
   };
 
   function setStyle(el, propertyObject) {
@@ -82,7 +82,7 @@ export function startElementSelector(rootDocument, options) {
     }
   }
 
-  this.move = (e, overlayElement, skippedSelectors = []) => {
+  const move = (e, overlayElement, skippedSelectors = []) => {
     if (overlayElement === e.target) {
       return;
     }
@@ -120,8 +120,8 @@ export function startElementSelector(rootDocument, options) {
   };
 
   this.mouseOverEvent = (e) => {
-    const overlayElement = rootDocument.getElementById('element-selector-overlay'); // TODO: See if we can pass the element instead of fetching it
-    this.move(e, overlayElement, ['element-selector-overlay', 'strigo-assessment-recorder-iframe']);
+    const overlayElement = window.document.getElementById('element-selector-overlay'); // TODO: See if we can pass the element instead of fetching it
+    move(e, overlayElement, ['element-selector-overlay', 'strigo-assessment-recorder-iframe']);
     const hoveredElement = e.target;
     hoveredElement.addEventListener('click', this.saveSelectedSelector);
   };
@@ -131,13 +131,14 @@ export function startElementSelector(rootDocument, options) {
     hoveredElement.removeEventListener('click', this.saveSelectedSelector);
   };
 
-  const selectorOverlay = rootDocument.createElement('div');
-  selectorOverlay.setAttribute('id', 'element-selector-overlay');
+  this.startElementSelector = () => {
+    const selectorOverlay = rootDocument.createElement('div');
+    selectorOverlay.setAttribute('id', 'element-selector-overlay');
 
-  selectorOverlay.setAttribute("id", "element-selector-overlay");
-  selectorOverlay.setAttribute(
-    "style",
-    `
+    selectorOverlay.setAttribute("id", "element-selector-overlay");
+    selectorOverlay.setAttribute(
+      "style",
+      `
       position: fixed;
       top: 0;
       left: 0;
@@ -152,22 +153,35 @@ export function startElementSelector(rootDocument, options) {
       box-sizing: border-box;
       border-radius: 4px;
     `
-  );
+    );
 
-  console.log('Appending overlay selector element.');
+    console.log('Appending overlay selector element.');
 
-  rootDocument.body.appendChild(selectorOverlay);
-  rootDocument.addEventListener("mouseover", this.mouseOverEvent);
-  rootDocument.addEventListener("mouseout", this.removeClickListenerFromHoveredElement);
+    rootDocument.body.appendChild(selectorOverlay);
+    rootDocument.addEventListener("mouseover", this.mouseOverEvent);
+    rootDocument.addEventListener("mouseout", this.removeClickListenerFromHoveredElement);
 
-  // Setting "abort" action to the esc key
-  window.focus();
-  rootDocument.body.focus();
-  window.addEventListener("keydown", (e) => {
+    // Setting "abort" action to the esc key
+    window.focus();
+    rootDocument.body.focus();
+    window.addEventListener("keydown", this.onEscSelection, true);
+  }
+
+  this.onEscSelection = (e) => {
     if (e.key === 'Escape') {
       console.log('Aborting element selection...', e.key);
-      this.removeOverlayElement();
-      options.onElementSelectionCancel();
+      this.stopElementSelection()
     }
-  }, true);
+  }
+
+  this.stopElementSelection = () => {
+    this.removeOverlayElement();
+    window.removeEventListener("keydown", this.onEscSelection, true);
+    options.onElementSelectionCancel();
+  }
+
+  return {
+    startElementSelector: this.startElementSelector,
+    stopElementSelection: this.stopElementSelection
+  }
 }

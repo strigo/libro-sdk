@@ -6,8 +6,8 @@ import * as assessmentRecorderModule from '../modules/assessment-recorder/assess
 import { Logger } from '../services/logger';
 import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MessageTypes } from '../modules/listeners/listeners.types';
-import { startElementSelector } from '../modules/element-selector/element-selector';
 import { DockingSide, User } from '../modules/config/config.types';
+import { getElementSelection } from '../modules/element-selector/element-selector';
 
 import { IStrigoSDK, SdkConfig, SDKSetupData, SdkTypes } from './types';
 
@@ -242,13 +242,19 @@ class StrigoSDK implements IStrigoSDK {
   ): void {
     Logger.debug('startElementSelector called');
     const rootElement = rootElementSelector ? window.document.querySelector(rootElementSelector) : window.document.body;
-    startElementSelector(window.document, {
+
+    const { startElementSelector, stopElementSelection } = getElementSelection(window.document, {
       onElementProfileCreated,
       onElementSelectionCancel,
-      zIndex: 9999999999,
+      zIndex: 2147483645,
       rootElement,
     });
+
+    this.stopElementSelector = stopElementSelection;
+    startElementSelector();
   }
+
+  stopElementSelector(): void {}
 
   assessmentRecorder(): void {
     assessmentRecorderModule.addAssessmentRecorderIframe();
