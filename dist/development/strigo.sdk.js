@@ -10989,6 +10989,7 @@
   var CDN_BASE_PATH = "https://cdn.statically.io/gh/strigo/strigo-sdk";
   var ASSESSMENT_RECORDER_URL = "https://assessment-recorder.web.app";
   var LOCAL_STRIGO_URL = "http://local.strigo.io:3000";
+  var DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION = "v1.1.40";
 
   // src/modules/config/config.ts
   function getLocalStorageConfig() {
@@ -11966,7 +11967,7 @@ ${JSON.stringify(parsedContext)}` : "");
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
     }
-    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
+    return `${CDN_BASE_PATH}@${DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION}/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL() {
     return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;

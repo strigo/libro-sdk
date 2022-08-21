@@ -4,6 +4,7 @@ import {
   CDN_BASE_PATH,
   INIT_SCRIPT_ID,
   LOCAL_STRIGO_URL,
+  DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION,
 } from '../../strigo/consts';
 import { StrigoConfig, SiteConfig } from '../config/config.types';
 import { WidgetFlavors } from '../widgets/widget.types';
@@ -131,7 +132,10 @@ export function generateRecorderCssURL(version?: string): string {
     return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
 
-  return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-assessment-recorder.min.css`;
+  return (
+    `${CDN_BASE_PATH}@${DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION}` +
+    `/dist/production/styles/strigo-assessment-recorder.min.css`
+  );
 }
 
 export function generateAssessmentRecorderURL(): string {
