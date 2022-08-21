@@ -156,7 +156,6 @@ export function getElementSelection(rootDocument, options) {
     );
 
     console.log('Appending overlay selector element.');
-
     rootDocument.body.appendChild(selectorOverlay);
     rootDocument.addEventListener("mouseover", this.mouseOverEvent);
     rootDocument.addEventListener("mouseout", this.removeClickListenerFromHoveredElement);
