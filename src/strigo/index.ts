@@ -8,6 +8,7 @@ import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MessageTypes } from '../modules/listeners/listeners.types';
 import { DockingSide, User } from '../modules/config/config.types';
 import { getElementSelection } from '../modules/element-selector/element-selector';
+import { customizeHatColors } from '../modules/document/document';
 
 import { IStrigoSDK, SdkConfig, SDKSetupData, SdkTypes } from './types';
 
@@ -105,6 +106,7 @@ class StrigoSDK implements IStrigoSDK {
         Logger.setup(loggingConfig);
 
         assessmentsStorage.setupAssessmentStorage(userAssessments);
+        customizeHatColors(configuration?.academyColors);
       }
 
       configManager.setupLocalStorageConfig({

@@ -11342,6 +11342,13 @@ ${JSON.stringify(parsedContext)}` : "");
     };
     hostingAppWindow?.strigoNavigationObserver?.observer?.observe(hostingAppWindow.document, navigationObserverOptions);
   }
+  function customizeHatColors(academyColors) {
+    const { primaryColor, primaryHoverColor, primaryTextAccent } = academyColors;
+    const wrapper = document.querySelector(":root");
+    wrapper.style.setProperty("--customizable-hat-bg-color", primaryColor);
+    wrapper.style.setProperty("--customizable-hat-bg-hover-color", primaryHoverColor);
+    wrapper.style.setProperty("--customizable-hat-text-color", primaryTextAccent === "dark" /* DARK */ ? "#000000" : "#FFFFFF");
+  }
 
   // src/modules/element-selector/element-profiler.js
   function getElementProfiler() {
@@ -13284,6 +13291,7 @@ ${JSON.stringify(parsedContext)}` : "");
           LoggerInstance.debug("Configuration fetched from Strigo");
           LoggerInstance.setup(loggingConfig);
           setupAssessmentStorage(userAssessments);
+          customizeHatColors(configuration?.academyColors);
         }
         setupLocalStorageConfig({
           user: {

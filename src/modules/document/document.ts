@@ -1,7 +1,7 @@
 import { ACADEMY_HAT } from '../../strigo/consts';
 import * as sessionManager from '../session/session';
 import * as configManager from '../config/config';
-import { DockingSide } from '../config/config.types';
+import { DockingSide, OrganizationAcademyColors, TextAccents } from '../config/config.types';
 
 import { AppendCSSFileParams, AppendIframeParams } from './document.types';
 
@@ -236,4 +236,16 @@ export function initNavigationObserver(hostingAppWindow: Window): void {
   };
 
   hostingAppWindow?.strigoNavigationObserver?.observer?.observe(hostingAppWindow.document, navigationObserverOptions);
+}
+
+export function customizeHatColors(academyColors: OrganizationAcademyColors): void {
+  const { primaryColor, primaryHoverColor, primaryTextAccent } = academyColors;
+
+  const wrapper: HTMLElement = document.querySelector(':root');
+  wrapper.style.setProperty('--customizable-hat-bg-color', primaryColor);
+  wrapper.style.setProperty('--customizable-hat-bg-hover-color', primaryHoverColor);
+  wrapper.style.setProperty(
+    '--customizable-hat-text-color',
+    primaryTextAccent === TextAccents.DARK ? '#000000' : '#FFFFFF'
+  );
 }

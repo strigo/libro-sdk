@@ -1,3 +1,9 @@
+
+:root {
+  --customizable-hat-bg-color: #3d408f;
+  --customizable-hat-bg-hover-color: #696cbf;
+  --customizable-hat-text-color: #e2e2e7;
+}
 .strigo-academy-hat {
   position: fixed;
   top: 50%;
@@ -14,7 +20,7 @@
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2), 0px 8px 24px rgba(0, 0, 0, 0.14);
   border-radius: 8px 0px 0px 8px;
 
-  background-color: #3d408f;
+  background-color: var(--customizable-hat-bg-color);
   z-index: 9999999999;
   opacity: 0;
 
@@ -48,12 +54,12 @@
   }
 
   &:hover {
-    background-color: #696cbf;
+    background-color: var(--customizable-hat-bg-hover-color);
   }
 
   .strigo-academy-hat-icon {
     width: 13px;
     padding-bottom: 2px;
-    fill: #e2e2e7;
+    fill: var(--customizable-hat-text-color);
   }
 }

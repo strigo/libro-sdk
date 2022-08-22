@@ -1,6 +1,19 @@
 import { Assessment } from '../no-code-assessment/no-code-assessment.types';
 import { WidgetFlavors } from '../widgets/widget.types';
 
+export enum TextAccents {
+  LIGHT = 'light',
+  DARK = 'dark',
+}
+
+export interface OrganizationAcademyColors {
+  headerColor: string;
+  primaryColor: string;
+  primaryHoverColor: string;
+  headerTextAccent: TextAccents;
+  primaryTextAccent: TextAccents;
+}
+
 export interface SiteConfig {
   host: string;
   pathName: string;
@@ -19,6 +32,7 @@ export interface StrigoProtectedConfig {
   userAssessments: Assessment[];
   allowedAcademyDomains: string[];
   isAcademyAssessmentDebug: boolean;
+  academyColors?: OrganizationAcademyColors;
 }
 
 export interface User {
