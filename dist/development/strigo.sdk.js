@@ -13291,7 +13291,9 @@ ${JSON.stringify(parsedContext)}` : "");
           LoggerInstance.debug("Configuration fetched from Strigo");
           LoggerInstance.setup(loggingConfig);
           setupAssessmentStorage(userAssessments);
-          customizeHatColors(configuration?.academyColors);
+          if (configuration.academyColors) {
+            customizeHatColors(configuration?.academyColors);
+          }
         }
         setupLocalStorageConfig({
           user: {
