@@ -106,7 +106,10 @@ class StrigoSDK implements IStrigoSDK {
         Logger.setup(loggingConfig);
 
         assessmentsStorage.setupAssessmentStorage(userAssessments);
-        customizeHatColors(configuration?.academyColors);
+
+        if (configuration.academyColors) {
+          customizeHatColors(configuration?.academyColors);
+        }
       }
 
       configManager.setupLocalStorageConfig({
