@@ -7,7 +7,7 @@ export function getElementProfiler() {
   })(Limit || (Limit = {}));
   let config;
   let rootDocument;
-  function getElementProfileNodesInfo(input, options) {
+  function getElementProfileNodeTree(input, options) {
     if (input.nodeType !== Node.ELEMENT_NODE) {
       throw new Error(`Can't generate CSS selector for non-element node type.`);
     }
@@ -21,17 +21,128 @@ export function getElementProfiler() {
       tagName: (name) => true,
       attr: (name, value) => false,
       seedMinLength: 1,
-      buildNodesInfoUpToRoot: false,
+      buildNodeTreeUpToRoot: false,
       threshold: 1000,
       maxNumberOfTries: 2000
     };
     config = Object.assign(Object.assign({}, defaults), options);
     rootDocument = findRootDocument(config.root, defaults);
-    let nodesInfo = bottomUpSearch(input);
+    let nodeTree = bottomUpSearch(input);
 
-    return nodesInfo;
+    return nodeTree;
   }
-  function generateSelectorFromNodesInfo(nodesInfo, options) {
+  function selector(path) {
+    let node = path[0];
+    let query = node.name;
+    for (let i = 1; i < path.length; i++) {
+      const level = path[i].level || 0;
+      if (level === node.level - 1) {
+        query = `${path[i].name} > ${query}`;
+      } else {
+        query = `${path[i].name} ${query}`;
+      }
+      node = path[i];
+    }
+    return query;
+  }
+  function buildSelectorUpToTopParent(pathTreeNode, childPathToAdd) {
+    let parent = pathTreeNode.parent;
+    const pathStack = [];
+    pathStack.push(childPathToAdd);
+
+    if (pathTreeNode.path) {
+      pathStack.push(pathTreeNode.path);
+    }
+
+    while(parent?.path) {
+      pathStack.push(parent.path);
+      parent = parent.parent;
+    }
+
+    const selectorString = selector(pathStack);
+    return selectorString;
+  }
+  function branchAndBound(nodeTree, rootDocument) {
+    const topDownNodes = nodeTree.sort((a, b) => b.level - a.level);
+
+    // Create a Stack and add our initial node in it
+    let selectorPathTreeTop = {
+      path: null,
+      children: [],
+      parent:null,
+      level: -1
+    }
+
+    let stack = [];
+    let explored = new Set();
+    let generatedSelector = null;
+    let level = 0;
+
+    stack.push(selectorPathTreeTop);
+    // Mark the first node as explored
+    explored.add(selectorPathTreeTop);
+    // We'll continue till our Stack gets empty
+    while (stack.length > 0 && topDownNodes[level]) {
+      let pathTreeNode = stack.pop();
+
+      const { nodeIdentifiers } = topDownNodes[level];
+      const fullLevelPaths = getFullLevelPaths(nodeIdentifiers, level);
+
+      const levelPaths = []
+      for (const pathToAdd of fullLevelPaths) {
+        const selectorToTest = buildSelectorUpToTopParent(pathTreeNode, pathToAdd);
+
+        const numOfOccurrences = rootDocument.querySelectorAll(selectorToTest).length;
+
+        if (numOfOccurrences === 0) {
+          continue;
+        }
+
+        if (numOfOccurrences === 1) {
+          // Purge all siblings before adding this one, true path
+          levelPaths.splice(0,levelPaths.length);
+          levelPaths.push({
+            path: pathToAdd,
+            children: [],
+            parent: pathTreeNode,
+            level
+          });
+          generatedSelector = selectorToTest;
+          break;
+        }
+
+        levelPaths.push({
+          path: pathToAdd,
+          children: [],
+          parent: pathTreeNode,
+          level
+        });
+      }
+
+      if (levelPaths.length === 0) {
+        // no valid selector was found... no point on keep building
+        // aborting...
+        return;
+      }
+      // if we got here - we did not fail to get an element in the hierarchy of the DOM (no FN yet for the entire level)
+      pathTreeNode.children.push(...levelPaths);
+
+      // Register the children to be visited:
+
+      // 1. We filter out the nodes that have already been explored.
+      // 2. Then we mark each unexplored node as explored and push it to the Stack.
+      pathTreeNode.children.filter(n => !explored.has(n))
+        .forEach(child => {
+          explored.add(child);
+          stack.push(child);
+        });
+
+      level = level + 1;
+    }
+
+    return generatedSelector;
+  }
+  function generateSelectorFromNodeTree(nodeTree, options) {
     const defaults = {
       root: document.body,
       idName: (name) => true,
@@ -41,93 +152,32 @@ export function getElementProfiler() {
       optimizedMinLength: 6,
       threshold: 1000,
       maxNumberOfTries: 2000,
-      fallbackNodesInfo: nodesInfo,
+      fallbackNodeTree: nodeTree,
       permutationsThreshold: 50000
     };
     config = Object.assign(Object.assign({}, defaults), options);
     rootDocument = findRootDocument(config.root, defaults);
 
-    const generateUniquePathWithFallbackPolicy =
-      () => generateUniquePath(nodesInfo, Limit.All,
-      () => generateUniquePath(nodesInfo, Limit.Two,
-        () => generateUniquePath(nodesInfo, Limit.One,
-          () => generateUniquePath(config.fallbackNodesInfo, Limit.All,
-            () => generateUniquePath(config.fallbackNodesInfo, Limit.Two,
-              () => generateUniquePath(config.fallbackNodesInfo, Limit.One)
-            )))));
-
-    let pathToProduceSelectorsFrom = generateUniquePathWithFallbackPolicy();
-
-    if (pathToProduceSelectorsFrom) {
-      let selectorToFindElementBy = selector(pathToProduceSelectorsFrom);
-      const element = rootDocument.querySelector(selectorToFindElementBy);
-      const optimized = sort(optimize(pathToProduceSelectorsFrom, element)); // TODO: change optimize to use the nodesInfo and not input
-      if (optimized.length > 0) {
-        pathToProduceSelectorsFrom = optimized[0];
-      }
-      return selector(pathToProduceSelectorsFrom);
-    } else {
-      console.log('*** Selector was not found.');
-      throw new Error(`Selector was not found.`);
-    }
+    return branchAndBound(nodeTree);
   }
-  function getLevelPath(nodeIdentifiers, limit){
+  function getFullLevelPaths(nodeIdentifiers, level){
     const id = maybe(nodeIdentifiers.find(node => node.identifier === 'id'));
     const attributes = maybe(...nodeIdentifiers.filter(node => node.identifier === 'attribute'));
     const classNames = maybe(...nodeIdentifiers.filter(node => node.identifier === 'className'));
     const tagName = maybe(...nodeIdentifiers.filter(node => node.identifier === 'tagName'));
-    const nth = nodeIdentifiers.find(node => node.identifier === 'index').index;
+    const nth = nodeIdentifiers.filter(node => node.identifier === 'index' && node.identifier.outOf !== '1')?.[0]?.index;
 
-    let levelPath = id || attributes || classNames || tagName || [any()];
+    let levelPath = [...id || [], ...attributes || [], ...classNames || [], ...tagName || [] ] || [any()];
 
-    if (limit === Limit.All) {
-      if (nth) {
-        levelPath = levelPath.concat(
-          levelPath.filter(dispensableNth).map((node) => nthChild(node, nth))
-        );
-      }
-    } else if (limit === Limit.Two) {
-      levelPath = levelPath.slice(0, 1);
-      if (nth) {
-        levelPath = levelPath.concat(
-          levelPath.filter(dispensableNth).map((node) => nthChild(node, nth))
-        );
-      }
-    } else if (limit === Limit.One) {
-      const [node] = (levelPath = levelPath.slice(0, 1));
-      if (nth && dispensableNth(node)) {
-        levelPath = [nthChild(node, nth)];
-      }
+    if (nth) {
+      levelPath = levelPath.concat(
+        levelPath.filter(dispensableNth).map((node) => nthChild(node, nth))
+      );
     }
 
-    return levelPath;
-  }
-  function countNumberOfPermutations(stack) {
-    let numberOfPathPermutations = 1;
+    const selectorCombinations = levelPath ? sort(combinations([levelPath])) : null;
 
-    stack.forEach((nodeLevel) => {
-      numberOfPathPermutations = numberOfPathPermutations * nodeLevel.length;
-    });
-
-    return numberOfPathPermutations;
-  }
-  function generatePathStack(nodesInfo, limit) {
-    let stack = nodesInfo.map(({nodeIdentifiers, level}) =>{
-      let levelPath = getLevelPath(nodeIdentifiers, limit);
-
-      for (let node of levelPath) {
-        node.level = level;
-      }
-
-      return levelPath;
-    })
-
-    let numberOfPathPermutations = countNumberOfPermutations(stack);
-    if (numberOfPathPermutations > config.permutationsThreshold) {
-      return null;
-    }
-
-    return stack;
+    return selectorCombinations.map(([path]) => { return { ...path, level } });
   }
   function findRootDocument(rootNode, defaults) {
     if (rootNode.nodeType === Node.DOCUMENT_NODE) {
@@ -139,7 +189,7 @@ export function getElementProfiler() {
     return rootNode;
   }
   function bottomUpSearch(input) {
-    let nodesInfo = [];
+    let nodeTree = [];
     let current = input;
     let i = 0;
     while (current && current !== config.root.parentElement) {
@@ -152,75 +202,12 @@ export function getElementProfiler() {
       ].filter(notEmpty).flat()
         .sort((a,b) => a.penalty - b.penalty)
 
-      nodesInfo.push({ nodeIdentifiers, level: i });
-
-      if (!config.buildNodesInfoUpToRoot && nodesInfo.length >= config.seedMinLength) {
-        const generateUniquePathWithFallbackPolicy =
-          generateUniquePath(nodesInfo, Limit.All,
-            () => generateUniquePath(nodesInfo, Limit.Two,
-              () => generateUniquePath(nodesInfo, Limit.One,
-                () => generateUniquePath(config.fallbackNodesInfo, Limit.All,
-                  () => generateUniquePath(config.fallbackNodesInfo, Limit.Two,
-                    () => generateUniquePath(config.fallbackNodesInfo, Limit.One)
-                  )))));
-
-        let pathToProduceSelectorsFrom = generateUniquePathWithFallbackPolicy()
-
-        if (pathToProduceSelectorsFrom) {
-          break;
-        }
-      }
-
+      nodeTree.push({ nodeIdentifiers, level: i });
       current = current.parentElement;
       i++;
     }
 
-    return nodesInfo;
-  }
-  function generateUniquePath (nodesInfo, limit, fallback) {
-    const pathStack = generatePathStack(nodesInfo, limit);
-
-    if (!pathStack) {
-      return fallback ? fallback() : null;
-    }
-
-    return findUniquePath(pathStack, fallback);
-  }
-  function findUniquePath(stack, fallback) {
-    const paths = sort(combinations(stack));
-    if (paths.length > config.threshold) {
-      return fallback ? fallback() : null;
-    }
-
-    for (let candidate of paths) {
-      let isUnique = false;
-      try {
-        isUnique = unique(candidate);
-      } catch(err) {
-        continue;
-      }
-
-      if (isUnique || config.allowDuplicates) {
-        return candidate;
-      }
-    }
-
-    console.log('*** Did not found a unique path. returning null.');
-    return fallback ? fallback() : null;
-  }
-  function selector(path) {
-    let node = path[0];
-    let query = node.name;
-    for (let i = 1; i < path.length; i++) {
-      const level = path[i].level || 0;
-      if (node.level === level - 1) {
-        query = `${path[i].name} > ${query}`;
-      } else {
-        query = `${path[i].name} ${query}`;
-      }
-      node = path[i];
-    }
-    return query;
+    return nodeTree;
   }
   function penalty(path) {
     return path.map((node) => node.penalty).reduce((acc, i) => acc + i, 0);
@@ -468,5 +455,5 @@ export function getElementProfiler() {
     return output;
   }
 
-  return { getElementProfileNodesInfo, generateSelectorFromNodesInfo };
+  return { getElementProfileNodeTree, generateSelectorFromNodeTree };
 }

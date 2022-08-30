@@ -4,23 +4,23 @@ function getElementProfile(e, { dataAttribute } = {}) {
   const elementProfiler = getElementProfiler();
 
   const options = {
-    buildNodesInfoUpToRoot: true,
+    buildNodeTreeUpToRoot: true,
     optimizedMinLength: e.target.id ? 2 : 10,
     threshold: 1000,
     attr: (name) => name === dataAttribute,
     // className: className => !className.includes('sc-')
   };
 
-  const nodesInfo = elementProfiler.getElementProfileNodesInfo(e.target, options);
+  const nodeTree = elementProfiler.getElementProfileNodeTree(e.target, options);
 
   console.log('*** Just FYI - this is how it can generate css selector:',
-    elementProfiler.generateSelectorFromNodesInfo(nodesInfo, options)
+    elementProfiler.generateSelectorFromNodeTree(nodeTree, options)
   );
 
-  return nodesInfo;
+  return nodeTree;
 }
 
-export function getElementSelector(nodesInfo, options) {
+export function getElementSelector(nodeTree, options) {
   const elementProfiler = getElementProfiler();
 
   const defaultOptions = {
@@ -28,12 +28,12 @@ export function getElementSelector(nodesInfo, options) {
     optimizedMinLength: 10,
     threshold: 1000,
     attr: (name) => name === dataAttribute,
-    fallbackNodesInfo: nodesInfo
+    fallbackNodeTree: nodeTree
   };
 
   const consolidatedOptions = { ...defaultOptions, ...options };
 
-  const elementSelector = elementProfiler.generateSelectorFromNodesInfo(nodesInfo, consolidatedOptions);
+  const elementSelector = elementProfiler.generateSelectorFromNodeTree(nodeTree, consolidatedOptions);
 
   return elementSelector;
 }

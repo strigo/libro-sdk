@@ -11360,7 +11360,7 @@ ${JSON.stringify(parsedContext)}` : "");
     })(Limit || (Limit = {}));
     let config;
     let rootDocument;
-    function getElementProfileNodesInfo(input, options) {
+    function getElementProfileNodeTree(input, options) {
       if (input.nodeType !== Node.ELEMENT_NODE) {
         throw new Error(`Can't generate CSS selector for non-element node type.`);
       }
@@ -11374,16 +11374,99 @@ ${JSON.stringify(parsedContext)}` : "");
         tagName: (name) => true,
         attr: (name, value) => false,
         seedMinLength: 1,
-        buildNodesInfoUpToRoot: false,
+        buildNodeTreeUpToRoot: false,
         threshold: 1e3,
         maxNumberOfTries: 2e3
       };
       config = Object.assign(Object.assign({}, defaults), options);
       rootDocument = findRootDocument(config.root, defaults);
-      let nodesInfo = bottomUpSearch(input);
-      return nodesInfo;
+      let nodeTree = bottomUpSearch(input);
+      return nodeTree;
     }
-    function generateSelectorFromNodesInfo(nodesInfo, options) {
+    function selector(path) {
+      let node = path[0];
+      let query = node.name;
+      for (let i = 1; i < path.length; i++) {
+        const level = path[i].level || 0;
+        if (level === node.level - 1) {
+          query = `${path[i].name} > ${query}`;
+        } else {
+          query = `${path[i].name} ${query}`;
+        }
+        node = path[i];
+      }
+      return query;
+    }
+    function buildSelectorUpToTopParent(pathTreeNode, childPathToAdd) {
+      let parent = pathTreeNode.parent;
+      const pathStack = [];
+      pathStack.push(childPathToAdd);
+      if (pathTreeNode.path) {
+        pathStack.push(pathTreeNode.path);
+      }
+      while (parent?.path) {
+        pathStack.push(parent.path);
+        parent = parent.parent;
+      }
+      const selectorString = selector(pathStack);
+      return selectorString;
+    }
+    function branchAndBound(nodeTree, rootDocument2) {
+      const topDownNodes = nodeTree.sort((a, b) => b.level - a.level);
+      let selectorPathTreeTop = {
+        path: null,
+        children: [],
+        parent: null,
+        level: -1
+      };
+      let stack = [];
+      let explored = /* @__PURE__ */ new Set();
+      let generatedSelector = null;
+      let level = 0;
+      stack.push(selectorPathTreeTop);
+      explored.add(selectorPathTreeTop);
+      while (stack.length > 0 && topDownNodes[level]) {
+        let pathTreeNode = stack.pop();
+        const { nodeIdentifiers } = topDownNodes[level];
+        const fullLevelPaths = getFullLevelPaths(nodeIdentifiers, level);
+        const levelPaths = [];
+        for (const pathToAdd of fullLevelPaths) {
+          const selectorToTest = buildSelectorUpToTopParent(pathTreeNode, pathToAdd);
+          const numOfOccurrences = rootDocument2.querySelectorAll(selectorToTest).length;
+          if (numOfOccurrences === 0) {
+            continue;
+          }
+          if (numOfOccurrences === 1) {
+            levelPaths.splice(0, levelPaths.length);
+            levelPaths.push({
+              path: pathToAdd,
+              children: [],
+              parent: pathTreeNode,
+              level
+            });
+            generatedSelector = selectorToTest;
+            break;
+          }
+          levelPaths.push({
+            path: pathToAdd,
+            children: [],
+            parent: pathTreeNode,
+            level
+          });
+        }
+        if (levelPaths.length === 0) {
+          return;
+        }
+        pathTreeNode.children.push(...levelPaths);
+        pathTreeNode.children.filter((n) => !explored.has(n)).forEach((child) => {
+          explored.add(child);
+          stack.push(child);
+        });
+        level = level + 1;
+      }
+      return generatedSelector;
+    }
+    function generateSelectorFromNodeTree(nodeTree, options) {
       const defaults = {
         root: document.body,
         idName: (name) => true,
@@ -11393,70 +11476,27 @@ ${JSON.stringify(parsedContext)}` : "");
         optimizedMinLength: 6,
         threshold: 1e3,
         maxNumberOfTries: 2e3,
-        fallbackNodesInfo: nodesInfo,
+        fallbackNodeTree: nodeTree,
         permutationsThreshold: 5e4
       };
       config = Object.assign(Object.assign({}, defaults), options);
       rootDocument = findRootDocument(config.root, defaults);
-      const generateUniquePathWithFallbackPolicy = () => generateUniquePath(nodesInfo, Limit.All, () => generateUniquePath(nodesInfo, Limit.Two, () => generateUniquePath(nodesInfo, Limit.One, () => generateUniquePath(config.fallbackNodesInfo, Limit.All, () => generateUniquePath(config.fallbackNodesInfo, Limit.Two, () => generateUniquePath(config.fallbackNodesInfo, Limit.One))))));
-      let pathToProduceSelectorsFrom = generateUniquePathWithFallbackPolicy();
-      if (pathToProduceSelectorsFrom) {
-        let selectorToFindElementBy = selector(pathToProduceSelectorsFrom);
-        const element = rootDocument.querySelector(selectorToFindElementBy);
-        const optimized = sort(optimize(pathToProduceSelectorsFrom, element));
-        if (optimized.length > 0) {
-          pathToProduceSelectorsFrom = optimized[0];
-        }
-        return selector(pathToProduceSelectorsFrom);
-      } else {
-        console.log("*** Selector was not found.");
-        throw new Error(`Selector was not found.`);
-      }
+      return branchAndBound(nodeTree);
     }
-    function getLevelPath(nodeIdentifiers, limit) {
+    function getFullLevelPaths(nodeIdentifiers, level) {
       const id2 = maybe(nodeIdentifiers.find((node) => node.identifier === "id"));
       const attributes = maybe(...nodeIdentifiers.filter((node) => node.identifier === "attribute"));
       const classNames2 = maybe(...nodeIdentifiers.filter((node) => node.identifier === "className"));
       const tagName2 = maybe(...nodeIdentifiers.filter((node) => node.identifier === "tagName"));
-      const nth = nodeIdentifiers.find((node) => node.identifier === "index").index;
-      let levelPath = id2 || attributes || classNames2 || tagName2 || [any()];
-      if (limit === Limit.All) {
-        if (nth) {
-          levelPath = levelPath.concat(levelPath.filter(dispensableNth).map((node) => nthChild(node, nth)));
-        }
-      } else if (limit === Limit.Two) {
-        levelPath = levelPath.slice(0, 1);
-        if (nth) {
-          levelPath = levelPath.concat(levelPath.filter(dispensableNth).map((node) => nthChild(node, nth)));
-        }
-      } else if (limit === Limit.One) {
-        const [node] = levelPath = levelPath.slice(0, 1);
-        if (nth && dispensableNth(node)) {
-          levelPath = [nthChild(node, nth)];
-        }
+      const nth = nodeIdentifiers.filter((node) => node.identifier === "index" && node.identifier.outOf !== "1")?.[0]?.index;
+      let levelPath = [...id2 || [], ...attributes || [], ...classNames2 || [], ...tagName2 || []];
+      if (nth) {
+        levelPath = levelPath.concat(levelPath.filter(dispensableNth).map((node) => nthChild(node, nth)));
       }
-      return levelPath;
-    }
-    function countNumberOfPermutations(stack) {
-      let numberOfPathPermutations = 1;
-      stack.forEach((nodeLevel) => {
-        numberOfPathPermutations = numberOfPathPermutations * nodeLevel.length;
+      const selectorCombinations = levelPath ? sort(combinations([levelPath])) : null;
+      return selectorCombinations.map(([path]) => {
+        return { ...path, level };
       });
-      return numberOfPathPermutations;
-    }
-    function generatePathStack(nodesInfo, limit) {
-      let stack = nodesInfo.map(({ nodeIdentifiers, level }) => {
-        let levelPath = getLevelPath(nodeIdentifiers, limit);
-        for (let node of levelPath) {
-          node.level = level;
-        }
-        return levelPath;
-      });
-      let numberOfPathPermutations = countNumberOfPermutations(stack);
-      if (numberOfPathPermutations > config.permutationsThreshold) {
-        return null;
-      }
-      return stack;
     }
     function findRootDocument(rootNode, defaults) {
       if (rootNode.nodeType === Node.DOCUMENT_NODE) {
@@ -11468,7 +11508,7 @@ ${JSON.stringify(parsedContext)}` : "");
       return rootNode;
     }
     function bottomUpSearch(input) {
-      let nodesInfo = [];
+      let nodeTree = [];
       let current = input;
       let i = 0;
       while (current && current !== config.root.parentElement) {
@@ -11479,58 +11519,11 @@ ${JSON.stringify(parsedContext)}` : "");
           maybe(...classNames(current)),
           maybe(index(current))
         ].filter(notEmpty).flat().sort((a, b) => a.penalty - b.penalty);
-        nodesInfo.push({ nodeIdentifiers, level: i });
-        if (!config.buildNodesInfoUpToRoot && nodesInfo.length >= config.seedMinLength) {
-          const generateUniquePathWithFallbackPolicy = generateUniquePath(nodesInfo, Limit.All, () => generateUniquePath(nodesInfo, Limit.Two, () => generateUniquePath(nodesInfo, Limit.One, () => generateUniquePath(config.fallbackNodesInfo, Limit.All, () => generateUniquePath(config.fallbackNodesInfo, Limit.Two, () => generateUniquePath(config.fallbackNodesInfo, Limit.One))))));
-          let pathToProduceSelectorsFrom = generateUniquePathWithFallbackPolicy();
-          if (pathToProduceSelectorsFrom) {
-            break;
-          }
-        }
+        nodeTree.push({ nodeIdentifiers, level: i });
         current = current.parentElement;
         i++;
       }
-      return nodesInfo;
-    }
-    function generateUniquePath(nodesInfo, limit, fallback) {
-      const pathStack = generatePathStack(nodesInfo, limit);
-      if (!pathStack) {
-        return fallback ? fallback() : null;
-      }
-      return findUniquePath(pathStack, fallback);
-    }
-    function findUniquePath(stack, fallback) {
-      const paths = sort(combinations(stack));
-      if (paths.length > config.threshold) {
-        return fallback ? fallback() : null;
-      }
-      for (let candidate of paths) {
-        let isUnique = false;
-        try {
-          isUnique = unique(candidate);
-        } catch (err) {
-          continue;
-        }
-        if (isUnique || config.allowDuplicates) {
-          return candidate;
-        }
-      }
-      console.log("*** Did not found a unique path. returning null.");
-      return fallback ? fallback() : null;
-    }
-    function selector(path) {
-      let node = path[0];
-      let query = node.name;
-      for (let i = 1; i < path.length; i++) {
-        const level = path[i].level || 0;
-        if (node.level === level - 1) {
-          query = `${path[i].name} > ${query}`;
-        } else {
-          query = `${path[i].name} ${query}`;
-        }
-        node = path[i];
-      }
-      return query;
+      return nodeTree;
     }
     function penalty(path) {
       return path.map((node) => node.penalty).reduce((acc, i) => acc + i, 0);
@@ -11747,33 +11740,33 @@ ${JSON.stringify(parsedContext)}` : "");
       }
       return output;
     }
-    return { getElementProfileNodesInfo, generateSelectorFromNodesInfo };
+    return { getElementProfileNodeTree, generateSelectorFromNodeTree };
   }
 
   // src/modules/element-selector/element-selector.js
   function getElementProfile(e, { dataAttribute: dataAttribute2 } = {}) {
     const elementProfiler = getElementProfiler();
     const options = {
-      buildNodesInfoUpToRoot: true,
+      buildNodeTreeUpToRoot: true,
       optimizedMinLength: e.target.id ? 2 : 10,
       threshold: 1e3,
       attr: (name) => name === dataAttribute2
     };
-    const nodesInfo = elementProfiler.getElementProfileNodesInfo(e.target, options);
-    console.log("*** Just FYI - this is how it can generate css selector:", elementProfiler.generateSelectorFromNodesInfo(nodesInfo, options));
-    return nodesInfo;
+    const nodeTree = elementProfiler.getElementProfileNodeTree(e.target, options);
+    console.log("*** Just FYI - this is how it can generate css selector:", elementProfiler.generateSelectorFromNodeTree(nodeTree, options));
+    return nodeTree;
   }
-  function getElementSelector(nodesInfo, options) {
+  function getElementSelector(nodeTree, options) {
     const elementProfiler = getElementProfiler();
     const defaultOptions = {
       allowDuplicates: false,
       optimizedMinLength: 10,
       threshold: 1e3,
       attr: (name) => name === dataAttribute,
-      fallbackNodesInfo: nodesInfo
+      fallbackNodeTree: nodeTree
     };
     const consolidatedOptions = { ...defaultOptions, ...options };
-    const elementSelector = elementProfiler.generateSelectorFromNodesInfo(nodesInfo, consolidatedOptions);
+    const elementSelector = elementProfiler.generateSelectorFromNodeTree(nodeTree, consolidatedOptions);
     return elementSelector;
   }
   function getElementSelection(rootDocument, options) {
@@ -11942,7 +11935,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo.css`;
+      return `${"http://local.strigo.io:7002"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11951,7 +11944,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-widget.css`;
+      return `${"http://local.strigo.io:7002"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11960,7 +11953,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateAcademyHatCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-academy-hat.css`;
+      return `${"http://local.strigo.io:7002"}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
@@ -11969,7 +11962,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-assessment-recorder.css`;
+      return `${"http://local.strigo.io:7002"}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -11977,7 +11970,7 @@ ${JSON.stringify(parsedContext)}` : "");
     return `${CDN_BASE_PATH}@${DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION}/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL() {
-    return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;
+    return window.Strigo.isDevelopment() ? "http://local.strigo.io:7015" : ASSESSMENT_RECORDER_URL;
   }
   function isRecordingUrlParamExists() {
     const { search } = window.location;
@@ -12651,7 +12644,7 @@ ${JSON.stringify(parsedContext)}` : "");
     try {
       exampleElementSelector = getElementSelector(exampleElementProfile, {
         allowDuplicates: true,
-        fallbackNodesInfo: softProfile
+        fallbackNodeTree: softProfile
       });
     } catch (e) {
       console.log("*** Failed to retrieve a selector for the example element");
@@ -13228,7 +13221,7 @@ ${JSON.stringify(parsedContext)}` : "");
       this.config = {};
     }
     isDevelopment() {
-      return false;
+      return true;
     }
     init() {
       try {
