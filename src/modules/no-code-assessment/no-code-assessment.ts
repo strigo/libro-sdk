@@ -59,7 +59,7 @@ function countAndUpdateExampleElements(assessment: Assessment, locationElement: 
   try {
     exampleElementSelector = getElementSelector(exampleElementProfile, {
       allowDuplicates: true,
-      fallbackNodesInfo: softProfile,
+      fallbackNodeTree: softProfile,
     });
   } catch (e) {
     console.log('*** Failed to retrieve a selector for the example element');
