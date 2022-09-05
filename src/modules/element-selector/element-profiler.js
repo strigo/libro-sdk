@@ -22,7 +22,6 @@ export function getElementProfiler() {
       attr: (name, value) => false,
       seedMinLength: 1,
       buildNodeTreeUpToRoot: false,
-      threshold: 1000,
       maxNumberOfTries: 2000
     };
     config = Object.assign(Object.assign({}, defaults), options);
@@ -150,10 +149,8 @@ export function getElementProfiler() {
       tagName: (name) => true,
       attr: (name, value) => false,
       optimizedMinLength: 6,
-      threshold: 1000,
       maxNumberOfTries: 2000,
-      fallbackNodeTree: nodeTree,
-      permutationsThreshold: 50000
+      fallbackNodeTree: nodeTree
     };
     config = Object.assign(Object.assign({}, defaults), options);
     rootDocument = findRootDocument(config.root, defaults);
