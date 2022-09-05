@@ -267,11 +267,31 @@ const addAssessmentDebugUI = function (
   `;
 
   assessmentContextElement.setAttribute('style', assessmentContextElementStyle);
+  const closeButton = document.createElement('button');
+  closeButton.innerHTML = 'X';
+  const assessmentIdStyle = `
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+  `;
+
+  closeButton.onclick = () => {
+    const assessmentDebugElement = window.document.querySelectorAll(
+      `[data-${strigoLocationDataIdSnakeCased}="${locationElementSelector}"]`
+    )?.[0];
+    assessmentDebugElement.remove();
+  };
+
   assessmentContextElement.innerHTML = `
-    <div>assessmentId: ${assessment?._id}</div>
+    <div style="${assessmentIdStyle}">
+      <span>assessmentId: ${assessment?._id}</span>
+      <span class="closeButton"></span>
+    </div>
     <div>Expected text: ${assessment?.recordedAssessment?.expectedText}</div>
     <div>Selector used: ${locationElementSelector}</div>
   `;
+
+  assessmentContextElement.children[0].children[1].appendChild(closeButton);
 
   console.log('*** Appending assessment debug context element.');
 
