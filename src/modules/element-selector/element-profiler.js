@@ -92,7 +92,7 @@ export function getElementProfiler() {
       for (const pathToAdd of fullLevelPaths) {
         const selectorToTest = buildSelectorUpToTopParent(pathTreeNode, pathToAdd);
 
-        const numOfOccurrences = rootDocument.querySelectorAll(selectorToTest).length;
+        const numOfOccurrences = document.querySelectorAll(selectorToTest).length;
 
         if (numOfOccurrences === 0) {
           continue;
@@ -158,7 +158,7 @@ export function getElementProfiler() {
     config = Object.assign(Object.assign({}, defaults), options);
     rootDocument = findRootDocument(config.root, defaults);
 
-    return branchAndBound(nodeTree);
+    return branchAndBound(nodeTree, rootDocument);
   }
   function getFullLevelPaths(nodeIdentifiers, level){
     const id = maybe(nodeIdentifiers.find(node => node.identifier === 'id'));
