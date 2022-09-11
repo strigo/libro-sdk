@@ -11,13 +11,13 @@ function getElementProfile(e, { dataAttribute } = {}) {
     // className: className => !className.includes('sc-')
   };
 
-  const nodeTree = elementProfiler.getElementProfileNodeTree(e.target, options);
+  const { nodeTree, recordedElementInfo } = elementProfiler.getElementProfileNodeTree(e.target, options);
 
   console.log('*** Just FYI - this is how it can generate css selector:',
     elementProfiler.generateSelectorFromNodeTree(nodeTree, options)
   );
 
-  return nodeTree;
+  return { nodeTree, recordedElementInfo };
 }
 
 export function getElementSelector(nodeTree, options) {

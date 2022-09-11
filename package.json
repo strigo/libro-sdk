@@ -28,7 +28,8 @@
     "html2canvas": "1.4.1",
     "interactjs": "1.10.14",
     "lodash.debounce": "^4.0.8",
-    "split.js": "1.6.5"
+    "split.js": "1.6.5",
+    "string-similarity": "^4.0.4"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.191",

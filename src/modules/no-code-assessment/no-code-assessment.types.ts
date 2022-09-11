@@ -27,8 +27,25 @@ export interface NodeProfile {
   nodeIdentifiers: NodeIdentifier[];
 }
 
+export interface RecordedChildElementInfo {
+  classes: string[];
+  nodeName: string;
+}
+
+export interface RecordedElementInfo {
+  classes: string[];
+  tagName: string;
+  directInnerText: string;
+  internalStructure: RecordedChildElementInfo[];
+}
+
+export interface RecordedElementProfile {
+  nodeTree: NodeProfile[];
+  recordedElementInfo: RecordedElementInfo;
+}
+
 export interface SelectedElement {
-  profile: NodeProfile[];
+  profile: RecordedElementProfile;
   imageData: string; // TODO: upload to s3 if we want to visit this image again
 }
 
@@ -58,6 +75,7 @@ export enum AssessmentStatus {
 export interface AssessmentState {
   status?: AssessmentStatus;
   locationElement?: HTMLElement;
+  locationElementSelector?: string;
 }
 
 // url: count

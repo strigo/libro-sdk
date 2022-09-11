@@ -27,8 +27,9 @@ export function getElementProfiler() {
     config = Object.assign(Object.assign({}, defaults), options);
     rootDocument = findRootDocument(config.root, defaults);
     let nodeTree = bottomUpSearch(input);
+    const recordedElementInfo = getRecordedElementInfo(input);
 
-    return nodeTree;
+    return { nodeTree, recordedElementInfo };
   }
   function selector(path) {
     let node = path[0];
@@ -184,6 +185,35 @@ export function getElementProfiler() {
       return rootNode.ownerDocument;
     }
     return rootNode;
+  }
+  function getRecordedElementInfo(inputElement) {
+    const directInnerText = Array.from(inputElement.childNodes).reduce((accTextArray,node) => {
+      // nodeType(3) is a text node
+      if (node.nodeType === 3) {
+        accTextArray.push(node.nodeValue);
+      }
+
+      return accTextArray;
+    }, []).join('');
+
+    const internalStructure = Array.from(inputElement.childNodes).map(childNode => {
+      const nodeName = childNode.nodeName.toLowerCase();
+      const childNodeClasses = childNode.classList ? Array.from(childNode.classList) : [];
+
+      return {
+        classes: childNodeClasses,
+        nodeName
+      }
+    })
+
+    const classes = inputElement.classList ? Array.from(inputElement.classList) : [];
+    const tagName = inputElement.tagName.toLowerCase();
+    return {
+      tagName,
+      classes,
+      internalStructure,
+      directInnerText
+    };
   }
   function bottomUpSearch(input) {
     let nodeTree = [];

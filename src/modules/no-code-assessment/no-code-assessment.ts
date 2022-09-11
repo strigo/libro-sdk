@@ -5,6 +5,7 @@ import { getAssessmentsStorageData } from '../assessments-storage/assessments-st
 import { getElementSelector } from '../element-selector/element-selector';
 import * as configManager from '../config/config';
 
+import { isSimilar } from './element-similarity';
 import {
   Assessment,
   AssessmentActionType,
@@ -45,21 +46,21 @@ function updateAssessmentStorageState(assessmentId: string, updatedRecord: Asses
 }
 
 function countAndUpdateExampleElements(assessment: Assessment, locationElement: HTMLElement): number {
-  const exampleElementProfile = assessment.recordedAssessment?.exampleElement?.profile;
+  const elementProfile = assessment.recordedAssessment?.exampleElement?.profile;
 
-  const softProfile = exampleElementProfile.map(({ nodeIdentifiers, level }) => {
-    return {
-      level,
-      nodeIdentifiers: nodeIdentifiers.filter(({ identifier }) => identifier !== 'className'),
-    };
-  });
+  if (elementProfile) {
+    console.log('*** No example element profile. Aborting count...');
+
+    return;
+  }
+
+  const { nodeTree, recordedElementInfo } = elementProfile;
 
   let exampleElementSelector;
 
   try {
-    exampleElementSelector = getElementSelector(exampleElementProfile, {
+    exampleElementSelector = getElementSelector(nodeTree, {
       allowDuplicates: true,
-      fallbackNodeTree: softProfile,
     });
   } catch (e) {
     console.log('*** Failed to retrieve a selector for the example element');
@@ -175,27 +176,28 @@ const getLocationElement = (
   if (cachedLocationElement && isLocationElementStillOnDOM) {
     console.log('*** Got a cached location element...', cachedLocationElement);
     locationElement = cachedLocationElement;
+    locationElementSelector = assessmentState[assessmentId]?.locationElementSelector;
   } else {
-    try {
-      const softProfile = locationElementProfile.map(({ nodeIdentifiers, level }) => {
-        return {
-          level,
-          nodeIdentifiers: nodeIdentifiers.filter(({ identifier }) => identifier !== 'className'),
-        };
-      });
+    const { nodeTree, recordedElementInfo } = locationElementProfile;
 
-      // TODO: Optimize the fallback policy of the "location" element detection
-      locationElementSelector = getElementSelector(locationElementProfile, { threshold: 5000 });
-      console.log('*** Retrieving location element by selector:', locationElementSelector);
-      locationElement = window.document.querySelector(locationElementSelector);
-      console.log('*** Found location element:', {
-        locationElement,
-        locationElementSelector,
-      });
-      updateAssessmentState(assessmentId, { locationElement });
-    } catch (err) {
-      console.log('*** Error in selecting Location element', err);
+    // TODO: Optimize the fallback policy of the "location" element detection
+    locationElementSelector = getElementSelector(nodeTree, { threshold: 5000 });
+    console.log('*** Retrieving location element by selector:', locationElementSelector);
+    locationElement = window.document.querySelector(locationElementSelector);
+    console.log('*** Found location element:', {
+      locationElement,
+      locationElementSelector,
+    });
+
+    if (locationElement) {
+      const isSimilarToRecordedElement = isSimilar(recordedElementInfo, locationElement);
+
+      if (!isSimilarToRecordedElement) {
+        throw new Error('*** Not similar to the recorded element.');
+      }
     }
+
+    updateAssessmentState(assessmentId, { locationElement, locationElementSelector });
   }
 
   return { locationElement, locationElementSelector };
@@ -331,15 +333,19 @@ const evaluateAssessments = function (): void {
 
     updateAssessmentState(_id, { status: AssessmentStatus.PENDING });
 
-    const { locationElement, locationElementSelector } = getLocationElement(_id, locationElementProfile);
+    let locationElementResult;
 
-    if (!locationElement) {
+    try {
+      locationElementResult = getLocationElement(_id, locationElementProfile);
+    } catch (err) {
       console.log('*** Failed to find location element. Aborting assessment evaluation...');
 
       return;
     }
 
     const isInDebugMode = configManager.getLocalStorageConfig()?.isAcademyAssessmentDebug;
+
+    const { locationElement, locationElementSelector } = locationElementResult;
 
     if (isInDebugMode) {
       addAssessmentDebugUI(locationElement, locationElementSelector, assessment);

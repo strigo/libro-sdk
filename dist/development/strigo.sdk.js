@@ -10931,6 +10931,70 @@
     }
   });
 
+  // node_modules/string-similarity/src/index.js
+  var require_src = __commonJS({
+    "node_modules/string-similarity/src/index.js"(exports, module) {
+      module.exports = {
+        compareTwoStrings,
+        findBestMatch
+      };
+      function compareTwoStrings(first, second) {
+        first = first.replace(/\s+/g, "");
+        second = second.replace(/\s+/g, "");
+        if (first === second)
+          return 1;
+        if (first.length < 2 || second.length < 2)
+          return 0;
+        let firstBigrams = /* @__PURE__ */ new Map();
+        for (let i = 0; i < first.length - 1; i++) {
+          const bigram = first.substring(i, i + 2);
+          const count = firstBigrams.has(bigram) ? firstBigrams.get(bigram) + 1 : 1;
+          firstBigrams.set(bigram, count);
+        }
+        ;
+        let intersectionSize = 0;
+        for (let i = 0; i < second.length - 1; i++) {
+          const bigram = second.substring(i, i + 2);
+          const count = firstBigrams.has(bigram) ? firstBigrams.get(bigram) : 0;
+          if (count > 0) {
+            firstBigrams.set(bigram, count - 1);
+            intersectionSize++;
+          }
+        }
+        return 2 * intersectionSize / (first.length + second.length - 2);
+      }
+      function findBestMatch(mainString, targetStrings) {
+        if (!areArgsValid(mainString, targetStrings))
+          throw new Error("Bad arguments: First argument should be a string, second should be an array of strings");
+        const ratings = [];
+        let bestMatchIndex = 0;
+        for (let i = 0; i < targetStrings.length; i++) {
+          const currentTargetString = targetStrings[i];
+          const currentRating = compareTwoStrings(mainString, currentTargetString);
+          ratings.push({ target: currentTargetString, rating: currentRating });
+          if (currentRating > ratings[bestMatchIndex].rating) {
+            bestMatchIndex = i;
+          }
+        }
+        const bestMatch = ratings[bestMatchIndex];
+        return { ratings, bestMatch, bestMatchIndex };
+      }
+      function areArgsValid(mainString, targetStrings) {
+        if (typeof mainString !== "string")
+          return false;
+        if (!Array.isArray(targetStrings))
+          return false;
+        if (!targetStrings.length)
+          return false;
+        if (targetStrings.find(function(s) {
+          return typeof s !== "string";
+        }))
+          return false;
+        return true;
+      }
+    }
+  });
+
   // src/modules/assessment-recorder/assessment-recorder.ts
   var import_html2canvas = __toESM(require_html2canvas(), 1);
 
@@ -11380,7 +11444,8 @@ ${JSON.stringify(parsedContext)}` : "");
       config = Object.assign(Object.assign({}, defaults), options);
       rootDocument = findRootDocument(config.root, defaults);
       let nodeTree = bottomUpSearch(input);
-      return nodeTree;
+      const recordedElementInfo = getRecordedElementInfo(input);
+      return { nodeTree, recordedElementInfo };
     }
     function selector(path) {
       let node = path[0];
@@ -11503,6 +11568,30 @@ ${JSON.stringify(parsedContext)}` : "");
         return rootNode.ownerDocument;
       }
       return rootNode;
+    }
+    function getRecordedElementInfo(inputElement) {
+      const directInnerText = Array.from(inputElement.childNodes).reduce((accTextArray, node) => {
+        if (node.nodeType === 3) {
+          accTextArray.push(node.nodeValue);
+        }
+        return accTextArray;
+      }, []).join("");
+      const internalStructure = Array.from(inputElement.childNodes).map((childNode) => {
+        const nodeName = childNode.nodeName.toLowerCase();
+        const childNodeClasses = childNode.classList ? Array.from(childNode.classList) : [];
+        return {
+          classes: childNodeClasses,
+          nodeName
+        };
+      });
+      const classes = inputElement.classList ? Array.from(inputElement.classList) : [];
+      const tagName2 = inputElement.tagName.toLowerCase();
+      return {
+        tagName: tagName2,
+        classes,
+        internalStructure,
+        directInnerText
+      };
     }
     function bottomUpSearch(input) {
       let nodeTree = [];
@@ -11749,9 +11838,9 @@ ${JSON.stringify(parsedContext)}` : "");
       threshold: 1e3,
       attr: (name) => name === dataAttribute2
     };
-    const nodeTree = elementProfiler.getElementProfileNodeTree(e.target, options);
+    const { nodeTree, recordedElementInfo } = elementProfiler.getElementProfileNodeTree(e.target, options);
     console.log("*** Just FYI - this is how it can generate css selector:", elementProfiler.generateSelectorFromNodeTree(nodeTree, options));
-    return nodeTree;
+    return { nodeTree, recordedElementInfo };
   }
   function getElementSelector(nodeTree, options) {
     const elementProfiler = getElementProfiler();
@@ -11991,8 +12080,9 @@ ${JSON.stringify(parsedContext)}` : "");
     return false;
   }
   function onElementProfileCreation(elementProfile, elementType) {
+    const { nodeTree, recordedElementInfo } = elementProfile;
     const recorederIframe = document.getElementById("strigo-assessment-recorder-iframe");
-    const elementSelector = getElementSelector(elementProfile);
+    const elementSelector = getElementSelector(nodeTree);
     (0, import_html2canvas.default)(document.querySelector(elementSelector), { backgroundColor: "#c6c7e7" }).then((canvas) => {
       const selectedElement = {
         imageData: canvas.toDataURL(),
@@ -12605,6 +12695,68 @@ ${JSON.stringify(parsedContext)}` : "");
 
   // src/modules/no-code-assessment/no-code-assessment.ts
   var import_lodash = __toESM(require_lodash(), 1);
+
+  // src/modules/no-code-assessment/element-similarity.ts
+  var import_string_similarity = __toESM(require_src(), 1);
+  var SIMILARITY_RATING_THRESHOLD = 0.75;
+  function getStyleSimilarityRating(recordedElementClasses, capturedElementClasses) {
+    if (recordedElementClasses.length === 0 && capturedElementClasses.length === 0) {
+      return 1;
+    }
+    const intersection = recordedElementClasses.filter((className) => capturedElementClasses.includes(className));
+    const denominator = recordedElementClasses.length + capturedElementClasses.length - intersection.length;
+    if (denominator === 0) {
+      return 0;
+    }
+    const similarityRatio = intersection.length / denominator;
+    console.log("*** Style similarity ratio:", similarityRatio);
+    return similarityRatio;
+  }
+  function getStructureSimilarityRating(recordedElementInfo, capturedElement) {
+    const capturedElementChildNodeNames = Array.from(capturedElement.childNodes).map(({ nodeName }) => nodeName.toLowerCase());
+    const recordedElementChildNodeNames = recordedElementInfo.internalStructure?.map(({ nodeName }) => nodeName.toLowerCase());
+    const internalStructureSimilarity = import_string_similarity.default.compareTwoStrings(capturedElementChildNodeNames.join(""), recordedElementChildNodeNames.join(""));
+    console.log("*** Internal structure similarity ratio:", internalStructureSimilarity);
+    return internalStructureSimilarity;
+  }
+  function getTextSimilarityRating(recordedElementInfo, capturedElement) {
+    const capturedElementDirectInnerText = Array.from(capturedElement.childNodes).reduce((accTextArray, node) => {
+      if (node.nodeType === 3) {
+        accTextArray.push(node.nodeValue);
+      }
+      return accTextArray;
+    }, []).join("");
+    const textSimilarity = import_string_similarity.default.compareTwoStrings(recordedElementInfo.directInnerText, capturedElementDirectInnerText);
+    console.log("*** Text similarity ratio: ", textSimilarity);
+    return textSimilarity;
+  }
+  function getSimilarityRating(recordedElementInfo, capturedElement) {
+    if (recordedElementInfo.tagName !== capturedElement.tagName.toLocaleLowerCase()) {
+      console.log("*** Mismatching element type. Similarity rating is 0.", {
+        recordedElementTagName: recordedElementInfo.tagName,
+        capturedElementTagName: capturedElement.tagName.toLocaleLowerCase()
+      });
+      return 0;
+    }
+    const recordedElementClasses = recordedElementInfo.classes;
+    const capturedElementClasses = Array.from(capturedElement.classList);
+    const styleSimilarityRating = getStyleSimilarityRating(recordedElementClasses, capturedElementClasses);
+    const structureSimilarityRating = getStructureSimilarityRating(recordedElementInfo, capturedElement);
+    const textSimilarityRating = getTextSimilarityRating(recordedElementInfo, capturedElement);
+    const avgSimilarityRating = (styleSimilarityRating + structureSimilarityRating + textSimilarityRating) / 3;
+    console.log("*** Avg. similarity rating: ", avgSimilarityRating);
+    return avgSimilarityRating;
+  }
+  function isSimilar(recordedElementInfo, capturedElement) {
+    console.log("*** elementInfo", recordedElementInfo);
+    const similarityRating = getSimilarityRating(recordedElementInfo, capturedElement);
+    if (similarityRating < SIMILARITY_RATING_THRESHOLD) {
+      return false;
+    }
+    return true;
+  }
+
+  // src/modules/no-code-assessment/no-code-assessment.ts
   var strigoLocationDataIdCamelCased = "strigoLocationId";
   var strigoLocationDataIdSnakeCased = "strigo-location-id";
   var exampleElementCountObserverOptions = {
@@ -12630,18 +12782,16 @@ ${JSON.stringify(parsedContext)}` : "");
     window.sessionStorage.setItem(assessmentId, JSON.stringify(stateToUpdate));
   }
   function countAndUpdateExampleElements(assessment, locationElement) {
-    const exampleElementProfile = assessment.recordedAssessment?.exampleElement?.profile;
-    const softProfile = exampleElementProfile.map(({ nodeIdentifiers, level }) => {
-      return {
-        level,
-        nodeIdentifiers: nodeIdentifiers.filter(({ identifier }) => identifier !== "className")
-      };
-    });
+    const elementProfile = assessment.recordedAssessment?.exampleElement?.profile;
+    if (elementProfile) {
+      console.log("*** No example element profile. Aborting count...");
+      return;
+    }
+    const { nodeTree, recordedElementInfo } = elementProfile;
     let exampleElementSelector;
     try {
-      exampleElementSelector = getElementSelector(exampleElementProfile, {
-        allowDuplicates: true,
-        fallbackNodeTree: softProfile
+      exampleElementSelector = getElementSelector(nodeTree, {
+        allowDuplicates: true
       });
     } catch (e) {
       console.log("*** Failed to retrieve a selector for the example element");
@@ -12721,25 +12871,23 @@ ${JSON.stringify(parsedContext)}` : "");
     if (cachedLocationElement && isLocationElementStillOnDOM) {
       console.log("*** Got a cached location element...", cachedLocationElement);
       locationElement = cachedLocationElement;
+      locationElementSelector = assessmentState[assessmentId]?.locationElementSelector;
     } else {
-      try {
-        const softProfile = locationElementProfile.map(({ nodeIdentifiers, level }) => {
-          return {
-            level,
-            nodeIdentifiers: nodeIdentifiers.filter(({ identifier }) => identifier !== "className")
-          };
-        });
-        locationElementSelector = getElementSelector(locationElementProfile, { threshold: 5e3 });
-        console.log("*** Retrieving location element by selector:", locationElementSelector);
-        locationElement = window.document.querySelector(locationElementSelector);
-        console.log("*** Found location element:", {
-          locationElement,
-          locationElementSelector
-        });
-        updateAssessmentState(assessmentId, { locationElement });
-      } catch (err) {
-        console.log("*** Error in selecting Location element", err);
+      const { nodeTree, recordedElementInfo } = locationElementProfile;
+      locationElementSelector = getElementSelector(nodeTree, { threshold: 5e3 });
+      console.log("*** Retrieving location element by selector:", locationElementSelector);
+      locationElement = window.document.querySelector(locationElementSelector);
+      console.log("*** Found location element:", {
+        locationElement,
+        locationElementSelector
+      });
+      if (locationElement) {
+        const isSimilarToRecordedElement = isSimilar(recordedElementInfo, locationElement);
+        if (!isSimilarToRecordedElement) {
+          throw new Error("*** Not similar to the recorded element.");
+        }
       }
+      updateAssessmentState(assessmentId, { locationElement, locationElementSelector });
     }
     return { locationElement, locationElementSelector };
   };
@@ -12833,12 +12981,15 @@ ${JSON.stringify(parsedContext)}` : "");
         return;
       }
       updateAssessmentState(_id, { status: "pending" /* PENDING */ });
-      const { locationElement, locationElementSelector } = getLocationElement(_id, locationElementProfile);
-      if (!locationElement) {
+      let locationElementResult;
+      try {
+        locationElementResult = getLocationElement(_id, locationElementProfile);
+      } catch (err) {
         console.log("*** Failed to find location element. Aborting assessment evaluation...");
         return;
       }
       const isInDebugMode = getLocalStorageConfig()?.isAcademyAssessmentDebug;
+      const { locationElement, locationElementSelector } = locationElementResult;
       if (isInDebugMode) {
         addAssessmentDebugUI(locationElement, locationElementSelector, assessment);
       }
