@@ -9,6 +9,7 @@ import {
   getURLWithoutStrigoRecorderParams,
   isRecordingUrlParamExists,
 } from '../url/url';
+import { RecordedElementProfile } from '../no-code-assessment/no-code-assessment.types';
 
 import {
   AssessmentRecorderMessage,
@@ -26,9 +27,10 @@ export function isRecordingMode(): boolean {
   return false;
 }
 
-function onElementProfileCreation(elementProfile: any, elementType): void {
+function onElementProfileCreation(elementProfile: RecordedElementProfile, elementType): void {
+  const { nodeTree, recordedElementInfo } = elementProfile;
   const recorederIframe = document.getElementById('strigo-assessment-recorder-iframe') as HTMLIFrameElement;
-  const elementSelector = getElementSelector(elementProfile);
+  const elementSelector = getElementSelector(nodeTree);
 
   html2canvas(document.querySelector(elementSelector), { backgroundColor: '#c6c7e7' }).then((canvas) => {
     const selectedElement: SelectedElement = {
@@ -121,7 +123,7 @@ export function addAssessmentRecorderIframe(): void {
           const { elementType, rootElementSelector } = payload?.captureParams as CaptureParams;
 
           window.Strigo.startElementSelector(
-            (elementProfile: any) => onElementProfileCreation(elementProfile, elementType),
+            (elementProfile: RecordedElementProfile) => onElementProfileCreation(elementProfile, elementType),
             () => onElementSelectionCancel(elementType),
             rootElementSelector
           );
@@ -131,7 +133,10 @@ export function addAssessmentRecorderIframe(): void {
 
         case AssessmentRecorderMessageTypes.STOP_CAPTURE: {
           Logger.info('Stop capturing message received');
-          assessmentRecorderIframe.classList.replace('slide-from-opened-to-minimized', 'slide-from-minimized-to-opened');
+          assessmentRecorderIframe.classList.replace(
+            'slide-from-opened-to-minimized',
+            'slide-from-minimized-to-opened'
+          );
 
           window.Strigo.stopElementSelector();
 

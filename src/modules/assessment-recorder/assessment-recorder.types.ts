@@ -1,3 +1,5 @@
+import { RecordedElementProfile } from "../no-code-assessment/no-code-assessment.types";
+
 export const ASSESSMENT_RECORDER_ID_PARAM = 'strigoAssessmentUuid';
 export const ASSESSMENT_RECORDER_PARAM = 'strigoAssessmentRecorder';
 
@@ -30,7 +32,7 @@ export interface CaptureParams {
 }
 
 export interface SelectedElement {
-  profile: any;
+  profile: RecordedElementProfile;
   querySelector: string;
   imageData: string;
 }
