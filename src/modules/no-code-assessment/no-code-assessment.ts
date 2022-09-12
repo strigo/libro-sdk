@@ -5,7 +5,7 @@ import { getAssessmentsStorageData } from '../assessments-storage/assessments-st
 import { getElementSelector } from '../element-selector/element-selector';
 import * as configManager from '../config/config';
 
-import { isSimilar } from './element-similarity';
+import { isSimilar, isUrlStructureFormatSimilar } from './element-similarity';
 import {
   Assessment,
   AssessmentActionType,
@@ -179,9 +179,12 @@ const getLocationElement = (
     locationElementSelector = assessmentState[assessmentId]?.locationElementSelector;
   } else {
     const { nodeTree, recordedElementInfo } = locationElementProfile;
-
-    // TODO: Optimize the fallback policy of the "location" element detection
     locationElementSelector = getElementSelector(nodeTree, { threshold: 5000 });
+
+    if (!locationElementSelector) {
+      throw new Error('*** No location element selector was found fitting.');
+    }
+
     console.log('*** Retrieving location element by selector:', locationElementSelector);
     locationElement = window.document.querySelector(locationElementSelector);
     console.log('*** Found location element:', {
@@ -313,7 +316,19 @@ const evaluateAssessments = function (): void {
   console.log('*** Evaluating Assessments...', {
     bodyTextDuringAssessment: window.document.body.innerText.slice(0, 50),
   });
-  assessments.forEach((assessment) => {
+  const relevantAssessments = assessments.filter(({ recordedAssessment }) => {
+    const recordedElementUrl = recordedAssessment?.locationElement?.profile?.recordedElementInfo?.url;
+
+    if (!recordedElementUrl) {
+      return false;
+    }
+
+    const currentUrl = window.location.href;
+
+    return isUrlStructureFormatSimilar(recordedElementUrl, currentUrl);
+  });
+
+  relevantAssessments.forEach((assessment) => {
     const { recordedAssessment, challengeSuccessEvent, _id } = assessment;
     const { actionType, expectedText } = recordedAssessment;
 
