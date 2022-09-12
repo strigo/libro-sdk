@@ -3,6 +3,7 @@ import stringSimilarity from 'string-similarity';
 import { RecordedElementInfo } from './no-code-assessment.types';
 
 const SIMILARITY_RATING_THRESHOLD = 0.75;
+const PATH_SIMILARITY_RATING_THRESHOLD = 0.5;
 
 /**
  *  Calculate similarity ration between to string arrays of class names.
@@ -99,4 +100,50 @@ export function isSimilar(recordedElementInfo, capturedElement): boolean {
   }
 
   return true;
+}
+
+const stripTrailingSlash = function (str: string): string {
+  return str.endsWith('/') ? str.slice(0, -1) : str;
+};
+
+export function isUrlStructureFormatSimilar(urlToEvaluate1: string, urlToEvaluate2: string): boolean {
+  const strippedUrl1 = stripTrailingSlash(urlToEvaluate1);
+  const strippedUrl2 = stripTrailingSlash(urlToEvaluate2);
+  const url1 = new URL(strippedUrl1);
+  const url2 = new URL(strippedUrl2);
+
+  if (url1.hostname !== url2.hostname) {
+    return false;
+  }
+
+  if (url1.pathname === url2.pathname) {
+    return true;
+  }
+
+  const pathSegments1 = url1.pathname.split('/').filter((v) => v !== '');
+  const pathSegments2 = url2.pathname.split('/').filter((v) => v !== '');
+
+  if (pathSegments1.length !== pathSegments2.length) {
+    return false;
+  }
+
+  const intersection = pathSegments1.filter((className) => pathSegments2.includes(className));
+  const onlyIn1 = pathSegments1.filter((className) => !pathSegments2.includes(className));
+  const onlyIn2 = pathSegments2.filter((className) => !pathSegments1.includes(className));
+
+  const denominator = pathSegments1.length; // both path segments are same length...
+
+  const pathProportionSimilarity = intersection.length / denominator;
+
+  const nonIdenticalPathSimilarity = stringSimilarity.compareTwoStrings(onlyIn1.join(''), onlyIn2.join(''));
+
+  if (intersection.length === 0) {
+    return nonIdenticalPathSimilarity > 0.1;
+  }
+
+  const pathSimilarityRating = pathProportionSimilarity + (1 - pathProportionSimilarity) * nonIdenticalPathSimilarity;
+
+  console.log('*** Url path similarity rating:', pathSimilarityRating);
+
+  return pathSimilarityRating >= PATH_SIMILARITY_RATING_THRESHOLD;
 }

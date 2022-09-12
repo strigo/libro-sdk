@@ -37,6 +37,7 @@ export interface RecordedElementInfo {
   tagName: string;
   directInnerText: string;
   internalStructure: RecordedChildElementInfo[];
+  url: string;
 }
 
 export interface RecordedElementProfile {

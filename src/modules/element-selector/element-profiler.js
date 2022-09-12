@@ -1,3 +1,5 @@
+import { getURLWithoutStrigoRecorderParams } from "../url/url.js";
+
 export function getElementProfiler() {
   var Limit;
   (function (Limit) {
@@ -208,11 +210,15 @@ export function getElementProfiler() {
 
     const classes = inputElement.classList ? Array.from(inputElement.classList) : [];
     const tagName = inputElement.tagName.toLowerCase();
+
+    const recordedUrl = getURLWithoutStrigoRecorderParams(window.location.href);
+
     return {
       tagName,
       classes,
       internalStructure,
-      directInnerText
+      directInnerText,
+      url: recordedUrl
     };
   }
   function bottomUpSearch(input) {

@@ -11414,6 +11414,115 @@ ${JSON.stringify(parsedContext)}` : "");
     wrapper.style.setProperty("--customizable-hat-text-color", primaryTextAccent === "dark" /* DARK */ ? "#000000" : "#FFFFFF");
   }
 
+  // src/modules/assessment-recorder/assessment-recorder.types.ts
+  var ASSESSMENT_RECORDER_ID_PARAM = "strigoAssessmentUuid";
+  var ASSESSMENT_RECORDER_PARAM = "strigoAssessmentRecorder";
+
+  // src/modules/url/url.ts
+  var STRIGO_CHILD_IFRAME_PARAM = "strigoChildIframe";
+  function paramsToObject(entries) {
+    const result = {};
+    for (const [key, value] of entries) {
+      result[key] = value;
+    }
+    return result;
+  }
+  function extractUrlParams(search) {
+    const urlParams = new URLSearchParams(search);
+    const entries = urlParams.entries();
+    return paramsToObject(entries);
+  }
+  function getUrlData() {
+    const { host, pathname, href, origin, search } = window.location;
+    return {
+      host,
+      pathName: pathname,
+      href,
+      origin,
+      search,
+      params: extractUrlParams(search)
+    };
+  }
+  function generateStrigoIframeURL(config) {
+    const { subDomain, user, webApiKey } = config;
+    return window.Strigo.isDevelopment() ? `${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}` : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`;
+  }
+  function generateStrigoChildIframeURL(url) {
+    const currentUrl = new URL(url);
+    currentUrl.searchParams.set(STRIGO_CHILD_IFRAME_PARAM, "true");
+    return currentUrl.toString();
+  }
+  function isStrigoChildIframe() {
+    return window.location.search.includes(STRIGO_CHILD_IFRAME_PARAM);
+  }
+  function removeStrigoChildIframeParam() {
+    const url = new URL(window.location.href);
+    const searchParams = new URLSearchParams(url.search);
+    searchParams.delete(STRIGO_CHILD_IFRAME_PARAM);
+    url.search = searchParams.toString();
+    window.history.replaceState(window.history.state, "", url);
+  }
+  function extractInitScriptParams() {
+    const initScript = document.getElementById(INIT_SCRIPT_ID);
+    return {
+      webApiKey: initScript?.getAttribute("data-web-api-key") || "",
+      subDomain: initScript?.getAttribute("data-subdomain") || "",
+      selectedWidgetFlavor: initScript?.getAttribute("data-layout-flavor") || "dynamic" /* DYNAMIC */
+    };
+  }
+  function generateCssURL(version) {
+    if (window.Strigo.isDevelopment()) {
+      return `${SDK_LOCAL_URL}/styles/strigo.css`;
+    }
+    if (version) {
+      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
+    }
+    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo.min.css`;
+  }
+  function generateWidgetCssURL(version) {
+    if (window.Strigo.isDevelopment()) {
+      return `${SDK_LOCAL_URL}/styles/strigo-widget.css`;
+    }
+    if (version) {
+      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
+    }
+    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-widget.min.css`;
+  }
+  function generateAcademyHatCssURL(version) {
+    if (window.Strigo.isDevelopment()) {
+      return `${SDK_LOCAL_URL}/styles/strigo-academy-hat.css`;
+    }
+    if (version) {
+      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
+    }
+    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-academy-hat.min.css`;
+  }
+  function generateRecorderCssURL(version) {
+    if (window.Strigo.isDevelopment()) {
+      return `${SDK_LOCAL_URL}/styles/strigo-assessment-recorder.css`;
+    }
+    if (version) {
+      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
+    }
+    return `${CDN_BASE_PATH}@${DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION}/dist/production/styles/strigo-assessment-recorder.min.css`;
+  }
+  function generateAssessmentRecorderURL() {
+    return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;
+  }
+  function isRecordingUrlParamExists() {
+    const { search } = window.location;
+    const urlParams = extractUrlParams(search);
+    return ASSESSMENT_RECORDER_PARAM in urlParams;
+  }
+  function getURLWithoutStrigoRecorderParams(url) {
+    const capturedElementUrl = new URL(url);
+    const searchParams = new URLSearchParams(capturedElementUrl.search);
+    searchParams.delete(ASSESSMENT_RECORDER_ID_PARAM);
+    searchParams.delete(ASSESSMENT_RECORDER_PARAM);
+    capturedElementUrl.search = searchParams.toString();
+    return capturedElementUrl.toString();
+  }
+
   // src/modules/element-selector/element-profiler.js
   function getElementProfiler() {
     var Limit;
@@ -11586,11 +11695,13 @@ ${JSON.stringify(parsedContext)}` : "");
       });
       const classes = inputElement.classList ? Array.from(inputElement.classList) : [];
       const tagName2 = inputElement.tagName.toLowerCase();
+      const recordedUrl = getURLWithoutStrigoRecorderParams(window.location.href);
       return {
         tagName: tagName2,
         classes,
         internalStructure,
-        directInnerText
+        directInnerText,
+        url: recordedUrl
       };
     }
     function bottomUpSearch(input) {
@@ -11961,115 +12072,6 @@ ${JSON.stringify(parsedContext)}` : "");
       startElementSelector: this.startElementSelector,
       stopElementSelection: this.stopElementSelection
     };
-  }
-
-  // src/modules/assessment-recorder/assessment-recorder.types.ts
-  var ASSESSMENT_RECORDER_ID_PARAM = "strigoAssessmentUuid";
-  var ASSESSMENT_RECORDER_PARAM = "strigoAssessmentRecorder";
-
-  // src/modules/url/url.ts
-  var STRIGO_CHILD_IFRAME_PARAM = "strigoChildIframe";
-  function paramsToObject(entries) {
-    const result = {};
-    for (const [key, value] of entries) {
-      result[key] = value;
-    }
-    return result;
-  }
-  function extractUrlParams(search) {
-    const urlParams = new URLSearchParams(search);
-    const entries = urlParams.entries();
-    return paramsToObject(entries);
-  }
-  function getUrlData() {
-    const { host, pathname, href, origin, search } = window.location;
-    return {
-      host,
-      pathName: pathname,
-      href,
-      origin,
-      search,
-      params: extractUrlParams(search)
-    };
-  }
-  function generateStrigoIframeURL(config) {
-    const { subDomain, user, webApiKey } = config;
-    return window.Strigo.isDevelopment() ? `${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}` : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`;
-  }
-  function generateStrigoChildIframeURL(url) {
-    const currentUrl = new URL(url);
-    currentUrl.searchParams.set(STRIGO_CHILD_IFRAME_PARAM, "true");
-    return currentUrl.toString();
-  }
-  function isStrigoChildIframe() {
-    return window.location.search.includes(STRIGO_CHILD_IFRAME_PARAM);
-  }
-  function removeStrigoChildIframeParam() {
-    const url = new URL(window.location.href);
-    const searchParams = new URLSearchParams(url.search);
-    searchParams.delete(STRIGO_CHILD_IFRAME_PARAM);
-    url.search = searchParams.toString();
-    window.history.replaceState(window.history.state, "", url);
-  }
-  function extractInitScriptParams() {
-    const initScript = document.getElementById(INIT_SCRIPT_ID);
-    return {
-      webApiKey: initScript?.getAttribute("data-web-api-key") || "",
-      subDomain: initScript?.getAttribute("data-subdomain") || "",
-      selectedWidgetFlavor: initScript?.getAttribute("data-layout-flavor") || "dynamic" /* DYNAMIC */
-    };
-  }
-  function generateCssURL(version) {
-    if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo.css`;
-    }
-    if (version) {
-      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
-    }
-    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo.min.css`;
-  }
-  function generateWidgetCssURL(version) {
-    if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-widget.css`;
-    }
-    if (version) {
-      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
-    }
-    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-widget.min.css`;
-  }
-  function generateAcademyHatCssURL(version) {
-    if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-academy-hat.css`;
-    }
-    if (version) {
-      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
-    }
-    return `${CDN_BASE_PATH}@master/dist/production/styles/strigo-academy-hat.min.css`;
-  }
-  function generateRecorderCssURL(version) {
-    if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-assessment-recorder.css`;
-    }
-    if (version) {
-      return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
-    }
-    return `${CDN_BASE_PATH}@${DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION}/dist/production/styles/strigo-assessment-recorder.min.css`;
-  }
-  function generateAssessmentRecorderURL() {
-    return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;
-  }
-  function isRecordingUrlParamExists() {
-    const { search } = window.location;
-    const urlParams = extractUrlParams(search);
-    return ASSESSMENT_RECORDER_PARAM in urlParams;
-  }
-  function getURLWithoutStrigoRecorderParams(url) {
-    const capturedElementUrl = new URL(url);
-    const searchParams = new URLSearchParams(capturedElementUrl.search);
-    searchParams.delete(ASSESSMENT_RECORDER_ID_PARAM);
-    searchParams.delete(ASSESSMENT_RECORDER_PARAM);
-    capturedElementUrl.search = searchParams.toString();
-    return capturedElementUrl.toString();
   }
 
   // src/modules/assessment-recorder/assessment-recorder.ts
@@ -12699,6 +12701,7 @@ ${JSON.stringify(parsedContext)}` : "");
   // src/modules/no-code-assessment/element-similarity.ts
   var import_string_similarity = __toESM(require_src(), 1);
   var SIMILARITY_RATING_THRESHOLD = 0.75;
+  var PATH_SIMILARITY_RATING_THRESHOLD = 0.5;
   function getStyleSimilarityRating(recordedElementClasses, capturedElementClasses) {
     if (recordedElementClasses.length === 0 && capturedElementClasses.length === 0) {
       return 1;
@@ -12754,6 +12757,38 @@ ${JSON.stringify(parsedContext)}` : "");
       return false;
     }
     return true;
+  }
+  var stripTrailingSlash = function(str) {
+    return str.endsWith("/") ? str.slice(0, -1) : str;
+  };
+  function isUrlStructureFormatSimilar(urlToEvaluate1, urlToEvaluate2) {
+    const strippedUrl1 = stripTrailingSlash(urlToEvaluate1);
+    const strippedUrl2 = stripTrailingSlash(urlToEvaluate2);
+    const url1 = new URL(strippedUrl1);
+    const url2 = new URL(strippedUrl2);
+    if (url1.hostname !== url2.hostname) {
+      return false;
+    }
+    if (url1.pathname === url2.pathname) {
+      return true;
+    }
+    const pathSegments1 = url1.pathname.split("/").filter((v) => v !== "");
+    const pathSegments2 = url2.pathname.split("/").filter((v) => v !== "");
+    if (pathSegments1.length !== pathSegments2.length) {
+      return false;
+    }
+    const intersection = pathSegments1.filter((className) => pathSegments2.includes(className));
+    const onlyIn1 = pathSegments1.filter((className) => !pathSegments2.includes(className));
+    const onlyIn2 = pathSegments2.filter((className) => !pathSegments1.includes(className));
+    const denominator = pathSegments1.length;
+    const pathProportionSimilarity = intersection.length / denominator;
+    const nonIdenticalPathSimilarity = import_string_similarity.default.compareTwoStrings(onlyIn1.join(""), onlyIn2.join(""));
+    if (intersection.length === 0) {
+      return nonIdenticalPathSimilarity > 0.1;
+    }
+    const pathSimilarityRating = pathProportionSimilarity + (1 - pathProportionSimilarity) * nonIdenticalPathSimilarity;
+    console.log("*** Url path similarity rating:", pathSimilarityRating);
+    return pathSimilarityRating >= PATH_SIMILARITY_RATING_THRESHOLD;
   }
 
   // src/modules/no-code-assessment/no-code-assessment.ts
@@ -12875,6 +12910,9 @@ ${JSON.stringify(parsedContext)}` : "");
     } else {
       const { nodeTree, recordedElementInfo } = locationElementProfile;
       locationElementSelector = getElementSelector(nodeTree, { threshold: 5e3 });
+      if (!locationElementSelector) {
+        throw new Error("*** No location element selector was found fitting.");
+      }
       console.log("*** Retrieving location element by selector:", locationElementSelector);
       locationElement = window.document.querySelector(locationElementSelector);
       console.log("*** Found location element:", {
@@ -12968,7 +13006,15 @@ ${JSON.stringify(parsedContext)}` : "");
     console.log("*** Evaluating Assessments...", {
       bodyTextDuringAssessment: window.document.body.innerText.slice(0, 50)
     });
-    assessments.forEach((assessment) => {
+    const relevantAssessments = assessments.filter(({ recordedAssessment }) => {
+      const recordedElementUrl = recordedAssessment?.locationElement?.profile?.recordedElementInfo?.url;
+      if (!recordedElementUrl) {
+        return false;
+      }
+      const currentUrl = window.location.href;
+      return isUrlStructureFormatSimilar(recordedElementUrl, currentUrl);
+    });
+    relevantAssessments.forEach((assessment) => {
       const { recordedAssessment, challengeSuccessEvent, _id } = assessment;
       const { actionType, expectedText } = recordedAssessment;
       const locationElementProfile = recordedAssessment?.locationElement?.profile;
