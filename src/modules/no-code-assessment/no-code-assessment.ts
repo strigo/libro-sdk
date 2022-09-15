@@ -465,7 +465,6 @@ const documentObserverHandler = function (pageMutations): void {
   if (currentLocation === document.location.href) {
     console.log('*** No URL change and no nodes were added.');
   } else {
-    // TODO: Reload the widget
     console.log('*** Detected URL change!', {
       previousLocation: currentLocation || '',
       newLocation: document.location.href,
