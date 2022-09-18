@@ -11054,6 +11054,7 @@
   var ASSESSMENT_RECORDER_URL = "https://assessment-recorder.web.app";
   var LOCAL_STRIGO_URL = "http://local.strigo.io:3000";
   var DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION = "v1.1.40";
+  var STRIGO_PREVIEW_USER_TOKEN_PARAM = "strigoPreviewUserToken";
 
   // src/modules/config/config.ts
   function getLocalStorageConfig() {
@@ -11445,7 +11446,10 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateStrigoIframeURL(config) {
     const { subDomain, user, webApiKey } = config;
-    return window.Strigo.isDevelopment() ? `${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}` : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`;
+    const strigoUrl = new URL(`${window.Strigo.isDevelopment() ? LOCAL_STRIGO_URL : `https://${subDomain}.${BASE_STRIGO_URL}`}/academy/courses`);
+    strigoUrl.searchParams.set("token", user.token.token);
+    strigoUrl.searchParams.set("webApiKey", webApiKey);
+    return strigoUrl.toString();
   }
   function generateStrigoChildIframeURL(url) {
     const currentUrl = new URL(url);
@@ -11521,6 +11525,11 @@ ${JSON.stringify(parsedContext)}` : "");
     searchParams.delete(ASSESSMENT_RECORDER_PARAM);
     capturedElementUrl.search = searchParams.toString();
     return capturedElementUrl.toString();
+  }
+  function getStrigoPreviewUserTokenFromURL() {
+    const { search } = window.location;
+    const urlParams = extractUrlParams(search);
+    return urlParams[STRIGO_PREVIEW_USER_TOKEN_PARAM] || null;
   }
 
   // src/modules/element-selector/element-profiler.js
@@ -13195,7 +13204,18 @@ ${JSON.stringify(parsedContext)}` : "");
         parentElement: getHeadElement(),
         url: generateAcademyHatCssURL(version)
       });
-      const academyPlayerFrame = createWidget(generateStrigoIframeURL(getLocalStorageConfig()));
+      const localConfig = getLocalStorageConfig();
+      const urlStrigoUserToken = sessionStorage.getItem("strigoPreviewUserToken");
+      const academyPlayerFrame = createWidget(generateStrigoIframeURL({
+        ...localConfig,
+        user: {
+          token: {
+            token: urlStrigoUserToken ? urlStrigoUserToken : localConfig.user.token.token,
+            expiration: localConfig.user.token.expiration
+          },
+          email: localConfig.user.email
+        }
+      }));
       const hostingAppWindow = getHostingAppWindow();
       this.initEventListeners(hostingAppWindow, academyPlayerFrame);
       console.log("adding observer");
@@ -13436,6 +13456,10 @@ ${JSON.stringify(parsedContext)}` : "");
         if (this.config.initialized) {
           LoggerInstance.info("SDK was already initialized");
           return;
+        }
+        const strigoPreviewUserToken = getStrigoPreviewUserTokenFromURL();
+        if (strigoPreviewUserToken) {
+          sessionStorage.setItem("strigoPreviewUserToken", strigoPreviewUserToken);
         }
         initAssessmentStorage();
         const { webApiKey, subDomain, selectedWidgetFlavor } = extractInitScriptParams();

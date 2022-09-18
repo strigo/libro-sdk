@@ -18,3 +18,5 @@ export const ASSESSMENT_RECORDER_URL = 'https://assessment-recorder.web.app';
 export const LOCAL_STRIGO_URL = 'http://local.strigo.io:3000';
 
 export const DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION = 'v1.1.40';
+
+export const STRIGO_PREVIEW_USER_TOKEN_PARAM = 'strigoPreviewUserToken';
