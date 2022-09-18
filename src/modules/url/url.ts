@@ -5,6 +5,7 @@ import {
   INIT_SCRIPT_ID,
   LOCAL_STRIGO_URL,
   DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION,
+  STRIGO_PREVIEW_USER_TOKEN_PARAM,
 } from '../../strigo/consts';
 import { StrigoConfig, SiteConfig } from '../config/config.types';
 import { WidgetFlavors } from '../widgets/widget.types';
@@ -51,10 +52,14 @@ export function getUrlData(): SiteConfig {
 
 export function generateStrigoIframeURL(config: StrigoConfig): string {
   const { subDomain, user, webApiKey } = config;
+  const strigoUrl = new URL(
+    `${window.Strigo.isDevelopment() ? LOCAL_STRIGO_URL : `https://${subDomain}.${BASE_STRIGO_URL}`}/academy/courses`
+  );
 
-  return window.Strigo.isDevelopment()
-    ? `${LOCAL_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`
-    : `https://${subDomain}.${BASE_STRIGO_URL}/academy/courses?token=${user.token.token}&webApiKey=${webApiKey}`;
+  strigoUrl.searchParams.set('token', user.token.token);
+  strigoUrl.searchParams.set('webApiKey', webApiKey);
+
+  return strigoUrl.toString();
 }
 
 export function generateStrigoChildIframeURL(url: string): string {
@@ -157,4 +162,11 @@ export function getURLWithoutStrigoRecorderParams(url): string {
   capturedElementUrl.search = searchParams.toString();
 
   return capturedElementUrl.toString();
+}
+
+export function getStrigoPreviewUserTokenFromURL(): string | null {
+  const { search } = window.location;
+  const urlParams = extractUrlParams(search);
+
+  return urlParams[STRIGO_PREVIEW_USER_TOKEN_PARAM] || null;
 }

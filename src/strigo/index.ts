@@ -29,6 +29,12 @@ class StrigoSDK implements IStrigoSDK {
         return;
       }
 
+      const strigoPreviewUserToken = urlTools.getStrigoPreviewUserTokenFromURL();
+
+      if (strigoPreviewUserToken) {
+        sessionStorage.setItem('strigoPreviewUserToken', strigoPreviewUserToken);
+      }
+
       assessmentsStorage.initAssessmentStorage();
 
       // Get init script parameters

@@ -1,4 +1,4 @@
-import { RecordedElementProfile } from "../no-code-assessment/no-code-assessment.types";
+import { RecordedElementProfile } from '../no-code-assessment/no-code-assessment.types';
 
 export const ASSESSMENT_RECORDER_ID_PARAM = 'strigoAssessmentUuid';
 export const ASSESSMENT_RECORDER_PARAM = 'strigoAssessmentRecorder';
@@ -13,7 +13,7 @@ export const enum AssessmentRecorderMessageTypes {
   END_CAPTURE = 'end-capture',
   SUBMIT_ASSESSMENT = 'submit-assessment',
   CANCEL_ASSESSMENT = 'cancel-assessment',
-  STOP_CAPTURE = "stop-capture"
+  STOP_CAPTURE = 'stop-capture',
 }
 
 export enum CaptureElementTypes {
