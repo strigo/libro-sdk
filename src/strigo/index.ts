@@ -120,6 +120,7 @@ class StrigoSDK implements IStrigoSDK {
         initSite: urlTools.getUrlData(),
         version,
         loggingConfig: configuration?.loggingConfig,
+        assessmentThresholds: configuration?.assessmentThresholds,
         isAcademyAssessmentDebug: configuration?.isAcademyAssessmentDebug,
         dockingSide,
       });

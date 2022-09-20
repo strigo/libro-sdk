@@ -12700,8 +12700,6 @@ ${JSON.stringify(parsedContext)}` : "");
 
   // src/modules/no-code-assessment/element-similarity.ts
   var import_string_similarity = __toESM(require_src(), 1);
-  var SIMILARITY_RATING_THRESHOLD = 0.75;
-  var PATH_SIMILARITY_RATING_THRESHOLD = 0.5;
   function getStyleSimilarityRating(recordedElementClasses, capturedElementClasses) {
     if (recordedElementClasses.length === 0 && capturedElementClasses.length === 0) {
       return 1;
@@ -12753,7 +12751,7 @@ ${JSON.stringify(parsedContext)}` : "");
   function isSimilar(recordedElementInfo, capturedElement) {
     console.log("*** elementInfo", recordedElementInfo);
     const similarityRating = getSimilarityRating(recordedElementInfo, capturedElement);
-    if (similarityRating < SIMILARITY_RATING_THRESHOLD) {
+    if (similarityRating < getLocalStorageConfig()?.assessmentThresholds?.totalSimilarityThreshold) {
       return false;
     }
     return true;
@@ -12788,7 +12786,7 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     const pathSimilarityRating = pathProportionSimilarity + (1 - pathProportionSimilarity) * nonIdenticalPathSimilarity;
     console.log("*** Url path similarity rating:", pathSimilarityRating);
-    return pathSimilarityRating >= PATH_SIMILARITY_RATING_THRESHOLD;
+    return pathSimilarityRating >= getLocalStorageConfig()?.assessmentThresholds?.urlPathSimilarityThreshold;
   }
 
   // src/modules/no-code-assessment/no-code-assessment.ts
@@ -13505,6 +13503,7 @@ ${JSON.stringify(parsedContext)}` : "");
           initSite: getUrlData(),
           version,
           loggingConfig: configuration?.loggingConfig,
+          assessmentThresholds: configuration?.assessmentThresholds,
           isAcademyAssessmentDebug: configuration?.isAcademyAssessmentDebug,
           dockingSide
         });

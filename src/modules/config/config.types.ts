@@ -6,6 +6,14 @@ export enum TextAccents {
   DARK = 'dark',
 }
 
+export interface AssessmentThresholds {
+  structureSimilarityThreshold: number;
+  styleSimilarityThreshold: number;
+  textSimilarityThreshold: number;
+  totalSimilarityThreshold: number;
+  urlPathSimilarityThreshold: number;
+}
+
 export interface OrganizationAcademyColors {
   headerColor: string;
   primaryColor: string;
@@ -33,6 +41,7 @@ export interface StrigoProtectedConfig {
   allowedAcademyDomains: string[];
   isAcademyAssessmentDebug: boolean;
   academyColors?: OrganizationAcademyColors;
+  assessmentThresholds?: AssessmentThresholds;
 }
 
 export interface User {
@@ -53,6 +62,7 @@ export interface StrigoSetupConfig {
   loggingConfig?: LoggingConfig;
   dockingSide?: DockingSide;
   isAcademyAssessmentDebug?: boolean;
+  assessmentThresholds?: AssessmentThresholds;
 }
 
 export enum DockingSide {
@@ -70,6 +80,7 @@ export interface StrigoConfig {
   loggingConfig?: LoggingConfig;
   dockingSide?: DockingSide;
   isAcademyAssessmentDebug?: boolean;
+  assessmentThresholds?: AssessmentThresholds;
 }
 
 export interface StrigoToken {

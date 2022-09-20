@@ -1,9 +1,8 @@
 import stringSimilarity from 'string-similarity';
 
-import { RecordedElementInfo } from './no-code-assessment.types';
+import * as configManager from '../config/config';
 
-const SIMILARITY_RATING_THRESHOLD = 0.75;
-const PATH_SIMILARITY_RATING_THRESHOLD = 0.5;
+import { RecordedElementInfo } from './no-code-assessment.types';
 
 /**
  *  Calculate similarity ration between to string arrays of class names.
@@ -95,7 +94,7 @@ export function isSimilar(recordedElementInfo, capturedElement): boolean {
   console.log('*** elementInfo', recordedElementInfo);
   const similarityRating = getSimilarityRating(recordedElementInfo, capturedElement);
 
-  if (similarityRating < SIMILARITY_RATING_THRESHOLD) {
+  if (similarityRating < configManager.getLocalStorageConfig()?.assessmentThresholds?.totalSimilarityThreshold) {
     return false;
   }
 
@@ -145,5 +144,7 @@ export function isUrlStructureFormatSimilar(urlToEvaluate1: string, urlToEvaluat
 
   console.log('*** Url path similarity rating:', pathSimilarityRating);
 
-  return pathSimilarityRating >= PATH_SIMILARITY_RATING_THRESHOLD;
+  return (
+    pathSimilarityRating >= configManager.getLocalStorageConfig()?.assessmentThresholds?.urlPathSimilarityThreshold
+  );
 }
