@@ -11476,7 +11476,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11485,7 +11485,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-widget.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11494,7 +11494,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateAcademyHatCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-academy-hat.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
@@ -11503,7 +11503,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-assessment-recorder.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -11511,7 +11511,7 @@ ${JSON.stringify(parsedContext)}` : "");
     return `${CDN_BASE_PATH}@${DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION}/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL() {
-    return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;
+    return window.Strigo.isDevelopment() ? "http://local.strigo.io:7015" : ASSESSMENT_RECORDER_URL;
   }
   function isRecordingUrlParamExists() {
     const { search } = window.location;
@@ -13130,6 +13130,11 @@ ${JSON.stringify(parsedContext)}` : "");
         previousLocation: currentLocation || "",
         newLocation: document.location.href
       });
+      console.log(document.location.href);
+      if (document.location.href.includes("https://linear.app/strigo/issue/ACA")) {
+        console.log("ACA");
+        openWidget();
+      }
       currentLocation = document.location.href;
     }
     initDocumentObserver(window);
@@ -13448,7 +13453,7 @@ ${JSON.stringify(parsedContext)}` : "");
       this.config = {};
     }
     isDevelopment() {
-      return false;
+      return true;
     }
     init() {
       try {

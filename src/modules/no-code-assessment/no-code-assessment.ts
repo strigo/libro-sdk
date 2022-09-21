@@ -14,6 +14,7 @@ import {
   AssessmentState,
   AssessmentStatus,
 } from './no-code-assessment.types';
+import { openWidget } from '../document/document';
 
 const strigoLocationDataIdCamelCased = 'strigoLocationId';
 const strigoLocationDataIdSnakeCased = 'strigo-location-id';
@@ -469,6 +470,13 @@ const documentObserverHandler = function (pageMutations): void {
       previousLocation: currentLocation || '',
       newLocation: document.location.href,
     });
+
+    console.log(document.location.href);
+
+    if (document.location.href.includes('https://linear.app/strigo/issue/ACA')) {
+      console.log('ACA');
+      openWidget();
+    }
 
     // location changed!
     currentLocation = document.location.href;
