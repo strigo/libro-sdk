@@ -32,6 +32,7 @@ class StrigoSDK implements IStrigoSDK {
       const strigoPreviewUserToken = urlTools.getStrigoPreviewUserTokenFromURL();
 
       if (strigoPreviewUserToken) {
+        Logger.info('strigoPreviewUserToken found - SDK will be initialized with token');
         sessionStorage.setItem('strigoPreviewUserToken', strigoPreviewUserToken);
       }
 
