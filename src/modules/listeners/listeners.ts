@@ -5,7 +5,6 @@ import { Logger } from '../../services/logger';
 import { WidgetFlavors } from '../widgets/widget.types';
 
 import { EventTypes, MessageTypes } from './listeners.types';
-import { observeUrlTriggerChanges } from '../url-trigger/url-trigger';
 
 function onHostEventHandler(ev: MessageEvent<any>): void {
   if (!ev || !ev.data) {

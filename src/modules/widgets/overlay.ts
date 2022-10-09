@@ -3,11 +3,11 @@ import interact from 'interactjs';
 import { Logger } from '../../services/logger';
 import * as documentTools from '../document/document';
 import * as noCodeAssessment from '../no-code-assessment/no-code-assessment';
+import * as urlTrigger from '../url-trigger/url-trigger';
 import * as urlTools from '../url/url';
 import * as listeners from '../listeners/listeners';
 import * as configManager from '../config/config';
 import { SdkTypes } from '../../strigo/types';
-import { EventTypes } from '../listeners/listeners.types';
 
 import { IOverlayWidget } from './widget.types';
 
@@ -92,6 +92,7 @@ class OverlayWidget implements IOverlayWidget {
     this.initEventListeners(hostingAppWindow, academyPlayerFrame);
     console.log('adding observer');
     noCodeAssessment.initDocumentObserver(hostingAppWindow);
+    urlTrigger.initUrlTriggerObserver(hostingAppWindow);
     documentTools.initNavigationObserver(hostingAppWindow);
 
     console.log('observer added');

@@ -9,6 +9,7 @@ import { MessageTypes } from '../modules/listeners/listeners.types';
 import { DockingSide, User } from '../modules/config/config.types';
 import { getElementSelection } from '../modules/element-selector/element-selector';
 import { customizeHatColors } from '../modules/document/document';
+import { setupUrlTriggers } from '../modules/url-trigger/url-trigger';
 
 import { IStrigoSDK, SdkConfig, SDKSetupData, SdkTypes } from './types';
 
@@ -115,7 +116,11 @@ class StrigoSDK implements IStrigoSDK {
         assessmentsStorage.setupAssessmentStorage(userAssessments);
 
         if (configuration.academyColors) {
-          customizeHatColors(configuration?.academyColors);
+          customizeHatColors(configuration.academyColors);
+        }
+
+        if (configuration.urlTriggers) {
+          setupUrlTriggers(configuration.urlTriggers);
         }
       }
 
