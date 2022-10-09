@@ -6,6 +6,10 @@ export enum TextAccents {
   DARK = 'dark',
 }
 
+export enum UrlTriggerMatchType {
+  EXACT = 'exact',
+  STARTS_WITH = 'starts_with',
+}
 export interface AssessmentThresholds {
   structureSimilarityThreshold: number;
   styleSimilarityThreshold: number;
@@ -42,6 +46,7 @@ export interface StrigoProtectedConfig {
   isAcademyAssessmentDebug: boolean;
   academyColors?: OrganizationAcademyColors;
   assessmentThresholds?: AssessmentThresholds;
+  urlTriggers?: UrlTrigger[];
 }
 
 export interface User {
@@ -86,4 +91,10 @@ export interface StrigoConfig {
 export interface StrigoToken {
   token: string;
   expiration: string;
+}
+
+export interface UrlTrigger {
+  publishmentId: string;
+  urlTriggerMatchType: UrlTriggerMatchType;
+  urlTriggerUrl: string;
 }

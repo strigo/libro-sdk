@@ -4,6 +4,7 @@ declare global {
   interface Window {
     Strigo: IStrigoSDK;
     strigoObserver: ElementObserver;
+    strigoUrlTriggerObserver: ElementObserver;
     strigoNavigationObserver: ElementObserver;
   }
 

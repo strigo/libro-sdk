@@ -6,6 +6,7 @@ export enum StorageNames {
   STRIGO_SESSION = 'strigoSession',
   STRIGO_EVENTS = 'strigoEvents',
   STRIGO_ASSESSMENTS = 'strigoAssessments',
+  STRIGO_URL_TRIGGERS = 'strigoUrlTriggers',
 }
 
 export enum StorageTypes {

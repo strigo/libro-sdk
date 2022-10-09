@@ -10819,7 +10819,7 @@
       var now = function() {
         return root.Date.now();
       };
-      function debounce2(func, wait, options) {
+      function debounce3(func, wait, options) {
         var lastArgs, lastThis, maxWait, result, timerId, lastCallTime, lastInvokeTime = 0, leading = false, maxing = false, trailing = true;
         if (typeof func != "function") {
           throw new TypeError(FUNC_ERROR_TEXT);
@@ -10927,7 +10927,7 @@
         var isBinary = reIsBinary.test(value);
         return isBinary || reIsOctal.test(value) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : reIsBadHex.test(value) ? NAN : +value;
       }
-      module.exports = debounce2;
+      module.exports = debounce3;
     }
   });
 
@@ -13130,11 +13130,6 @@ ${JSON.stringify(parsedContext)}` : "");
         previousLocation: currentLocation || "",
         newLocation: document.location.href
       });
-      console.log(document.location.href);
-      if (document.location.href.includes("https://linear.app/strigo/issue/ACA")) {
-        console.log("ACA");
-        openWidget();
-      }
       currentLocation = document.location.href;
     }
     initDocumentObserver(window);
@@ -13158,6 +13153,104 @@ ${JSON.stringify(parsedContext)}` : "");
       console.log('*** Detected a "body" element change. Re-initializing the document observer...');
       window.strigoObserver.observedBodyElement = window.document.body;
       window.strigoObserver.observer.observe(window.document, bodyObserverOptions);
+    }
+  }, 500);
+
+  // src/modules/url-trigger/url-trigger.ts
+  var import_lodash2 = __toESM(require_lodash(), 1);
+  var bodyObserverOptions2 = {
+    subtree: true,
+    characterData: true,
+    childList: true
+  };
+  var currentLocation2;
+  function setupUrlTriggers(urlTriggers) {
+    try {
+      window["localStorage" /* LOCAL_STORAGE */].setItem("strigoUrlTriggers" /* STRIGO_URL_TRIGGERS */, JSON.stringify(urlTriggers));
+    } catch (error) {
+      LoggerInstance.error("Url triggers setup error", { error });
+      return null;
+    }
+  }
+  function getUrlTriggers() {
+    try {
+      const urlTriggersValue = window["localStorage" /* LOCAL_STORAGE */].getItem("strigoUrlTriggers" /* STRIGO_URL_TRIGGERS */);
+      if (urlTriggersValue) {
+        return JSON.parse(urlTriggersValue);
+      }
+    } catch (error) {
+      LoggerInstance.error("Get url triggers error", { error });
+      return null;
+    }
+  }
+  function detectUrlTrigger(currentWindow) {
+    const currentHref = currentWindow.document.location.href.toLowerCase();
+    const urlTriggers = getUrlTriggers();
+    if (!urlTriggers) {
+      return;
+    }
+    for (const urlTrigger of urlTriggers) {
+      const { publishmentId, urlTriggerMatchType } = urlTrigger;
+      const urlTriggerUrl = urlTrigger.urlTriggerUrl.toLowerCase();
+      console.log({ urlTrigger, currentHref });
+      switch (urlTriggerMatchType) {
+        case "exact" /* EXACT */: {
+          if (urlTriggerUrl === currentHref) {
+            openWidget();
+          }
+          return;
+        }
+        case "starts_with" /* STARTS_WITH */: {
+          if (currentHref.startsWith(urlTriggerUrl)) {
+            openWidget();
+          }
+          return;
+        }
+        default:
+          break;
+      }
+    }
+  }
+  var documentObserverHandler2 = function(pageMutations) {
+    const isAddedNodes = pageMutations.some((mutation) => mutation.addedNodes?.length > 0);
+    const isCharacterDataChanged = pageMutations.some((mutation) => mutation.type == "characterData");
+    console.log("#####", { isAddedNodes, isCharacterDataChanged });
+    if (!isAddedNodes && !isCharacterDataChanged) {
+      console.log("*** No added nodes and no character data change were detected after url change.", {
+        previousLocation: currentLocation2 || "",
+        newLocation: document.location.href
+      });
+      return;
+    }
+    if (currentLocation2 === document.location.href) {
+      console.log("*** No URL change and no nodes were added.");
+    } else {
+      console.log("*** Detected URL change!", {
+        previousLocation: currentLocation2 || "",
+        newLocation: document.location.href
+      });
+      currentLocation2 = document.location.href;
+    }
+    initUrlTriggerObserver(window);
+  };
+  var initUrlTriggerObserver = (0, import_lodash2.default)((windowToObserve) => {
+    console.log("*** Initializing url trigger observer");
+    if (!windowToObserve?.strigoUrlTriggerObserver?.observer) {
+      console.log("*** Adding Strigo url trigger observer to document body");
+      windowToObserve.strigoUrlTriggerObserver = {
+        observer: new MutationObserver(documentObserverHandler2),
+        observedBodyElement: windowToObserve.document.body
+      };
+      detectUrlTrigger(windowToObserve);
+      console.log("*** Starting to observe document body - url trigger observer");
+      windowToObserve?.strigoUrlTriggerObserver?.observer?.observe(windowToObserve.document, bodyObserverOptions2);
+      return;
+    }
+    detectUrlTrigger(windowToObserve);
+    if (!windowToObserve.document.contains(windowToObserve.strigoUrlTriggerObserver.observedBodyElement)) {
+      console.log('*** Detected a "body" element change. Re-initializing the document observer - url trigger observer...');
+      windowToObserve.strigoUrlTriggerObserver.observedBodyElement = windowToObserve.document.body;
+      windowToObserve.strigoUrlTriggerObserver.observer.observe(windowToObserve.document, bodyObserverOptions2);
     }
   }, 500);
 
@@ -13225,6 +13318,7 @@ ${JSON.stringify(parsedContext)}` : "");
       this.initEventListeners(hostingAppWindow, academyPlayerFrame);
       console.log("adding observer");
       initDocumentObserver(hostingAppWindow);
+      initUrlTriggerObserver(hostingAppWindow);
       initNavigationObserver(hostingAppWindow);
       console.log("observer added");
       setupResizeFunctionality();
@@ -13522,7 +13616,10 @@ ${JSON.stringify(parsedContext)}` : "");
           LoggerInstance.setup(loggingConfig);
           setupAssessmentStorage(userAssessments);
           if (configuration.academyColors) {
-            customizeHatColors(configuration?.academyColors);
+            customizeHatColors(configuration.academyColors);
+          }
+          if (configuration.urlTriggers) {
+            setupUrlTriggers(configuration.urlTriggers);
           }
         }
         setupLocalStorageConfig({
