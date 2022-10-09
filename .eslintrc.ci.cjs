@@ -2,6 +2,7 @@ module.exports = {
   'extends': './.eslintrc.cjs',
   'rules': {
     'prettier/prettier': 'off',
+    'no-param-reassign': 'off',
     '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/no-floating-promises': 'off',
     '@typescript-eslint/no-unsafe-assignment': 'off',
