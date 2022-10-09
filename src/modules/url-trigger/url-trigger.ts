@@ -38,9 +38,8 @@ export function getUrlTriggers(): UrlTrigger[] | undefined {
 }
 
 export function detectUrlTrigger(currentWindow: Window): void {
-
-  const currentHref = currentWindow.document.location.href.toLowerCase();
-
+  const strigoIframe = document.getElementById('strigo-exercises') as HTMLIFrameElement;
+  const currentHref = currentWindow.document.location.href;
   const urlTriggers: UrlTrigger[] = getUrlTriggers();
 
   if (!urlTriggers) {
@@ -48,26 +47,23 @@ export function detectUrlTrigger(currentWindow: Window): void {
   }
 
   for (const urlTrigger of urlTriggers) {
-    const { publishmentId, urlTriggerMatchType } = urlTrigger;
-    const urlTriggerUrl = urlTrigger.urlTriggerUrl.toLowerCase();
-
-    console.log({ urlTrigger, currentHref });
+    const { publishmentId, urlTriggerMatchType, urlTriggerUrl } = urlTrigger;
 
     switch (urlTriggerMatchType) {
       case UrlTriggerMatchType.EXACT: {
-        if (urlTriggerUrl === currentHref) {
+        if (urlTriggerUrl.trim() === currentHref.trim()) {
+          strigoIframe.contentWindow.postMessage({ selectedCourseId: publishmentId }, '*');
           openWidget();
         }
-
-        return;
+        break;
       }
 
       case UrlTriggerMatchType.STARTS_WITH: {
-        if (currentHref.startsWith(urlTriggerUrl)) {
+        if (currentHref.trim().startsWith(urlTriggerUrl.trim())) {
+          strigoIframe.contentWindow.postMessage({ selectedCourseId: publishmentId }, '*');
           openWidget();
         }
-
-        return;
+        break;
       }
 
       default:

@@ -108,6 +108,7 @@ module.exports = {
         format: ['UPPER_CASE'],
       },
     ],
+    'no-param-reassign': 'off',
     '@typescript-eslint/ban-types': 'warn',
     '@typescript-eslint/no-floating-promises': 'warn',
     '@typescript-eslint/no-unsafe-assignment': 'warn',
