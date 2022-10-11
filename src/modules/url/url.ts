@@ -5,7 +5,7 @@ import {
   INIT_SCRIPT_ID,
   LOCAL_STRIGO_URL,
   DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION,
-  STRIGO_PREVIEW_USER_TOKEN_PARAM,
+  LOCAL_STRIGO_PREVIEW_URL,
 } from '../../strigo/consts';
 import { StrigoConfig, SiteConfig } from '../config/config.types';
 import { WidgetFlavors } from '../widgets/widget.types';
@@ -50,11 +50,15 @@ export function getUrlData(): SiteConfig {
   };
 }
 
-export function generateStrigoIframeURL(config: StrigoConfig): string {
+export function generateStrigoIframeURL(config: StrigoConfig, isPreview: boolean): string {
   const { subDomain, user, webApiKey } = config;
-  const strigoUrl = new URL(
-    `${window.Strigo.isDevelopment() ? LOCAL_STRIGO_URL : `https://${subDomain}.${BASE_STRIGO_URL}`}/academy/courses`
-  );
+  const localStrigoUrl = isPreview ? LOCAL_STRIGO_PREVIEW_URL : LOCAL_STRIGO_URL;
+  const prodStrigoUrl = isPreview
+    ? `https://academy-preview.${BASE_STRIGO_URL}`
+    : `https://${subDomain}.${BASE_STRIGO_URL}`;
+
+  const strigoUrlPrefix = window.Strigo.isDevelopment() ? localStrigoUrl : prodStrigoUrl;
+  const strigoUrl = new URL(`${strigoUrlPrefix}/academy/courses`);
 
   strigoUrl.searchParams.set('token', user.token.token);
   strigoUrl.searchParams.set('webApiKey', webApiKey);
@@ -147,13 +151,6 @@ export function generateAssessmentRecorderURL(): string {
   return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;
 }
 
-export function isRecordingUrlParamExists(): boolean {
-  const { search } = window.location;
-  const urlParams = extractUrlParams(search);
-
-  return ASSESSMENT_RECORDER_PARAM in urlParams;
-}
-
 export function getURLWithoutStrigoRecorderParams(url): string {
   const capturedElementUrl = new URL(url);
   const searchParams = new URLSearchParams(capturedElementUrl.search);
@@ -162,11 +159,4 @@ export function getURLWithoutStrigoRecorderParams(url): string {
   capturedElementUrl.search = searchParams.toString();
 
   return capturedElementUrl.toString();
-}
-
-export function getStrigoPreviewUserTokenFromURL(): string | null {
-  const { search } = window.location;
-  const urlParams = extractUrlParams(search);
-
-  return urlParams[STRIGO_PREVIEW_USER_TOKEN_PARAM] || null;
 }

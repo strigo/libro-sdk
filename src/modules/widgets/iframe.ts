@@ -77,7 +77,7 @@ class IframeWidget implements IStrigoWidget {
     // Append academy player Iframe
     const academyPanelFrame = documentTools.appendIFrame({
       parentElement: mainDiv,
-      url: urlTools.generateStrigoIframeURL(config),
+      url: urlTools.generateStrigoIframeURL(config, false),
       classNames: STRIGO_IFRAME_CLASSES,
       id: 'strigo-exercises',
     });

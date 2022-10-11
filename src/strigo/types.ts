@@ -1,10 +1,11 @@
 import { StrigoToken } from '../modules/config/config.types';
 
 export interface SDKSetupData {
-  email: string;
-  token: StrigoToken;
+  email?: string;
+  token?: StrigoToken;
   version?: string;
   openWidget?: boolean;
+  isPreview?: boolean;
 }
 
 export enum SdkTypes {
