@@ -3,12 +3,7 @@ import html2canvas from 'html2canvas';
 import { Logger } from '../../services/logger';
 import { appendCssFile, appendIFrame, getHeadElement } from '../document/document';
 import { getElementSelector } from '../element-selector/element-selector';
-import {
-  generateAssessmentRecorderURL,
-  generateRecorderCssURL,
-  getURLWithoutStrigoRecorderParams,
-  isRecordingUrlParamExists,
-} from '../url/url';
+import { generateAssessmentRecorderURL, generateRecorderCssURL, getURLWithoutStrigoRecorderParams } from '../url/url';
 import { RecordedElementProfile } from '../no-code-assessment/no-code-assessment.types';
 
 import {
@@ -20,16 +15,12 @@ import {
 } from './assessment-recorder.types';
 
 export function isRecordingMode(): boolean {
-  if (isRecordingUrlParamExists() || window.sessionStorage.getItem('isStrigoRecordingMode')) {
-    return true;
-  }
-
-  return false;
+  return !!window.sessionStorage.getItem(ASSESSMENT_RECORDER_ID_PARAM);
 }
 
 function onElementProfileCreation(elementProfile: RecordedElementProfile, elementType): void {
-  const { nodeTree, recordedElementInfo } = elementProfile;
   const recorederIframe = document.getElementById('strigo-assessment-recorder-iframe') as HTMLIFrameElement;
+  const { nodeTree } = elementProfile;
   const elementSelector = getElementSelector(nodeTree);
 
   html2canvas(document.querySelector(elementSelector), { backgroundColor: '#c6c7e7' }).then((canvas) => {
@@ -74,10 +65,6 @@ function onElementSelectionCancel(elementType?: string): void {
 }
 
 export function addAssessmentRecorderIframe(): void {
-  window.sessionStorage.setItem('isStrigoRecordingMode', 'true');
-  const assessmentUuid = new URL(window.location.href).searchParams.get(ASSESSMENT_RECORDER_ID_PARAM);
-  window.sessionStorage.setItem(ASSESSMENT_RECORDER_ID_PARAM, assessmentUuid);
-
   if (document.getElementById('strigo-assessment-recorder-iframe')) {
     return;
   }
@@ -145,7 +132,6 @@ export function addAssessmentRecorderIframe(): void {
 
         case AssessmentRecorderMessageTypes.SUBMIT_ASSESSMENT: {
           const recorderWindowId = window.sessionStorage.getItem(ASSESSMENT_RECORDER_ID_PARAM);
-          window.sessionStorage.removeItem('isStrigoRecordingMode');
           const urlToSave = getURLWithoutStrigoRecorderParams(window.location.href);
 
           window.opener.postMessage(
@@ -164,7 +150,6 @@ export function addAssessmentRecorderIframe(): void {
         }
 
         case AssessmentRecorderMessageTypes.CANCEL_ASSESSMENT: {
-          window.sessionStorage.removeItem('isStrigoRecordingMode');
           window.close();
 
           break;

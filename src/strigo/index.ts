@@ -10,6 +10,7 @@ import { DockingSide, User } from '../modules/config/config.types';
 import { getElementSelection } from '../modules/element-selector/element-selector';
 import { customizeHatColors } from '../modules/document/document';
 import { setupUrlTriggers } from '../modules/url-trigger/url-trigger';
+import { getLocalStorageConfig } from '../modules/config/config';
 
 import { IStrigoSDK, SdkConfig, SDKSetupData, SdkTypes } from './types';
 
@@ -28,13 +29,6 @@ class StrigoSDK implements IStrigoSDK {
         Logger.info('SDK was already initialized');
 
         return;
-      }
-
-      const strigoPreviewUserToken = urlTools.getStrigoPreviewUserTokenFromURL();
-
-      if (strigoPreviewUserToken) {
-        Logger.info('strigoPreviewUserToken found - SDK will be initialized with token');
-        sessionStorage.setItem('strigoPreviewUserToken', strigoPreviewUserToken);
       }
 
       assessmentsStorage.initAssessmentStorage();
@@ -58,7 +52,18 @@ class StrigoSDK implements IStrigoSDK {
 
       // Auto open academy if it was opened in this session before.
       if (this.config.sdkType !== SdkTypes.CHILD && sessionManager.shouldPanelBeOpen()) {
-        this.setup();
+        const persistedToken = getLocalStorageConfig()?.user?.token;
+        const strigoPreviewUserToken = sessionStorage.getItem('strigoPreviewUserToken');
+        const setupData = strigoPreviewUserToken
+          ? {
+              token: {
+                token: strigoPreviewUserToken,
+                expiration: `${Date.now() + 1000 * 60 * 60 * 24}`,
+              },
+              isPreview: true,
+            }
+          : { token: persistedToken };
+        this.setup(setupData);
       }
     } catch (err) {
       Logger.error('Could not initialize SDK', { err });
@@ -91,6 +96,7 @@ class StrigoSDK implements IStrigoSDK {
         version,
         openWidget = true,
         dockingSide = DockingSide.RIGHT,
+        isPreview,
       } = { ...config.user, ...config, ...data };
 
       if (!email || !token) {
@@ -124,18 +130,20 @@ class StrigoSDK implements IStrigoSDK {
         }
       }
 
-      configManager.setupLocalStorageConfig({
-        user: {
-          email,
-          token,
-        },
-        initSite: urlTools.getUrlData(),
-        version,
-        loggingConfig: configuration?.loggingConfig,
-        assessmentThresholds: configuration?.assessmentThresholds,
-        isAcademyAssessmentDebug: configuration?.isAcademyAssessmentDebug,
-        dockingSide,
-      });
+      if (!isPreview) {
+        configManager.setupLocalStorageConfig({
+          user: {
+            email,
+            token,
+          },
+          initSite: urlTools.getUrlData(),
+          version,
+          loggingConfig: configuration?.loggingConfig,
+          assessmentThresholds: configuration?.assessmentThresholds,
+          isAcademyAssessmentDebug: configuration?.isAcademyAssessmentDebug,
+          dockingSide,
+        });
+      }
 
       this.config.configured = true;
       Logger.info('Finished SDK setup.');

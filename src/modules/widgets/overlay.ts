@@ -73,19 +73,23 @@ class OverlayWidget implements IOverlayWidget {
     });
 
     const localConfig = configManager.getLocalStorageConfig();
-    const urlStrigoUserToken = sessionStorage.getItem('strigoPreviewUserToken');
+    const strigoPreviewUserToken = sessionStorage.getItem('strigoPreviewUserToken');
+    const isPreview = !!strigoPreviewUserToken;
     const academyPlayerFrame = documentTools.createWidget(
-      urlTools.generateStrigoIframeURL({
-        ...localConfig,
-        user: {
-          token: {
-            token: urlStrigoUserToken ? urlStrigoUserToken : localConfig.user.token.token,
-            expiration: localConfig.user.token.expiration,
-          },
+      urlTools.generateStrigoIframeURL(
+        {
+          ...localConfig,
+          user: {
+            token: {
+              token: strigoPreviewUserToken ? strigoPreviewUserToken : localConfig.user.token.token,
+              expiration: localConfig.user.token.expiration,
+            },
 
-          email: localConfig.user.email,
+            email: localConfig.user.email,
+          },
         },
-      })
+        isPreview
+      )
     );
 
     const hostingAppWindow = documentTools.getHostingAppWindow();
