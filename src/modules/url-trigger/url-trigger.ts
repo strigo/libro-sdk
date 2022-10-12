@@ -7,7 +7,6 @@ import { StorageNames, StorageTypes } from '../storage-utils/storage-utils.types
 
 const bodyObserverOptions = {
   subtree: true,
-  characterData: true,
   childList: true,
 };
 
@@ -55,6 +54,7 @@ export function detectUrlTrigger(currentWindow: Window): void {
           strigoIframe.contentWindow.postMessage({ selectedCourseId: publishmentId }, '*');
           openWidget();
         }
+
         break;
       }
 
@@ -63,6 +63,7 @@ export function detectUrlTrigger(currentWindow: Window): void {
           strigoIframe.contentWindow.postMessage({ selectedCourseId: publishmentId }, '*');
           openWidget();
         }
+
         break;
       }
 
@@ -72,13 +73,12 @@ export function detectUrlTrigger(currentWindow: Window): void {
   }
 }
 
-const documentObserverHandler = function (pageMutations): void {
+const urlTriggerObserverHandler = function (pageMutations): void {
   const isAddedNodes = pageMutations.some((mutation) => mutation.addedNodes?.length > 0);
-  const isCharacterDataChanged = pageMutations.some((mutation) => mutation.type == 'characterData');
 
-  console.log('#####', { isAddedNodes, isCharacterDataChanged });
+  console.log('#####', { isAddedNodes });
 
-  if (!isAddedNodes && !isCharacterDataChanged) {
+  if (!isAddedNodes) {
     console.log('*** No added nodes and no character data change were detected after url change.', {
       previousLocation: currentLocation || '',
       newLocation: document.location.href,
@@ -110,7 +110,7 @@ export const initUrlTriggerObserver = debounce((windowToObserve: Window): void =
     console.log('*** Adding Strigo url trigger observer to document body');
 
     windowToObserve.strigoUrlTriggerObserver = {
-      observer: new MutationObserver(documentObserverHandler),
+      observer: new MutationObserver(urlTriggerObserverHandler),
       observedBodyElement: windowToObserve.document.body,
     };
 
@@ -124,7 +124,9 @@ export const initUrlTriggerObserver = debounce((windowToObserve: Window): void =
   detectUrlTrigger(windowToObserve);
 
   if (!windowToObserve.document.contains(windowToObserve.strigoUrlTriggerObserver.observedBodyElement)) {
-    console.log('*** Detected a "body" element change. Re-initializing the document observer - url trigger observer...');
+    console.log(
+      '*** Detected a "body" element change. Re-initializing the document observer - url trigger observer...'
+    );
     windowToObserve.strigoUrlTriggerObserver.observedBodyElement = windowToObserve.document.body;
     windowToObserve.strigoUrlTriggerObserver.observer.observe(windowToObserve.document, bodyObserverOptions);
   }
