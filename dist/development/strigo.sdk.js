@@ -13160,7 +13160,6 @@ ${JSON.stringify(parsedContext)}` : "");
   var import_lodash2 = __toESM(require_lodash(), 1);
   var bodyObserverOptions2 = {
     subtree: true,
-    characterData: true,
     childList: true
   };
   var currentLocation2;
@@ -13212,11 +13211,10 @@ ${JSON.stringify(parsedContext)}` : "");
       }
     }
   }
-  var documentObserverHandler2 = function(pageMutations) {
+  var urlTriggerObserverHandler = function(pageMutations) {
     const isAddedNodes = pageMutations.some((mutation) => mutation.addedNodes?.length > 0);
-    const isCharacterDataChanged = pageMutations.some((mutation) => mutation.type == "characterData");
-    console.log("#####", { isAddedNodes, isCharacterDataChanged });
-    if (!isAddedNodes && !isCharacterDataChanged) {
+    console.log("#####", { isAddedNodes });
+    if (!isAddedNodes) {
       console.log("*** No added nodes and no character data change were detected after url change.", {
         previousLocation: currentLocation2 || "",
         newLocation: document.location.href
@@ -13239,7 +13237,7 @@ ${JSON.stringify(parsedContext)}` : "");
     if (!windowToObserve?.strigoUrlTriggerObserver?.observer) {
       console.log("*** Adding Strigo url trigger observer to document body");
       windowToObserve.strigoUrlTriggerObserver = {
-        observer: new MutationObserver(documentObserverHandler2),
+        observer: new MutationObserver(urlTriggerObserverHandler),
         observedBodyElement: windowToObserve.document.body
       };
       detectUrlTrigger(windowToObserve);
