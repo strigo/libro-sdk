@@ -2,6 +2,7 @@ import { ACADEMY_HAT } from '../../strigo/consts';
 import * as sessionManager from '../session/session';
 import * as configManager from '../config/config';
 import { DockingSide, OrganizationAcademyColors, TextAccents } from '../config/config.types';
+import { Logger } from '../../services/logger';
 
 import { AppendCSSFileParams, AppendIframeParams } from './document.types';
 
@@ -147,12 +148,12 @@ const navigationObserver = function (pageMutations): void {
     const widget = window.document.getElementById('strigo-widget');
 
     if (widget) {
-      console.log('*** Strigo widget already exist on the DOM.');
+      Logger.info('*** Strigo widget already exist on the DOM.');
 
       return;
     }
 
-    console.log('*** Reloading widget in navigation observer');
+    Logger.info('*** Reloading widget in navigation observer');
     setTimeout(window.Strigo.open.bind(window.Strigo), 0);
   }
 };

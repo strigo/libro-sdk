@@ -1,5 +1,6 @@
 import stringSimilarity from 'string-similarity';
 
+import { Logger } from '../../services/logger';
 import * as configManager from '../config/config';
 
 import { RecordedElementInfo } from './no-code-assessment.types';
@@ -22,7 +23,7 @@ function getStyleSimilarityRating(recordedElementClasses: string[], capturedElem
 
   const similarityRatio = intersection.length / denominator;
 
-  console.log('*** Style similarity ratio:', similarityRatio);
+  Logger.info('*** Style similarity ratio:', similarityRatio);
 
   return similarityRatio;
 }
@@ -39,7 +40,7 @@ function getStructureSimilarityRating(recordedElementInfo, capturedElement): num
     capturedElementChildNodeNames.join(''),
     recordedElementChildNodeNames.join('')
   );
-  console.log('*** Internal structure similarity ratio:', internalStructureSimilarity);
+  Logger.info('*** Internal structure similarity ratio:', internalStructureSimilarity);
 
   return internalStructureSimilarity;
 }
@@ -61,14 +62,14 @@ function getTextSimilarityRating(recordedElementInfo: RecordedElementInfo, captu
     capturedElementDirectInnerText
   );
 
-  console.log('*** Text similarity ratio: ', textSimilarity);
+  Logger.info('*** Text similarity ratio: ', textSimilarity);
 
   return textSimilarity;
 }
 
 function getSimilarityRating(recordedElementInfo: RecordedElementInfo, capturedElement: HTMLElement): number {
   if (recordedElementInfo.tagName !== capturedElement.tagName.toLocaleLowerCase()) {
-    console.log('*** Mismatching element type. Similarity rating is 0.', {
+    Logger.info('*** Mismatching element type. Similarity rating is 0.', {
       recordedElementTagName: recordedElementInfo.tagName,
       capturedElementTagName: capturedElement.tagName.toLocaleLowerCase(),
     });
@@ -85,13 +86,13 @@ function getSimilarityRating(recordedElementInfo: RecordedElementInfo, capturedE
 
   const avgSimilarityRating = (styleSimilarityRating + structureSimilarityRating + textSimilarityRating) / 3;
 
-  console.log('*** Avg. similarity rating: ', avgSimilarityRating);
+  Logger.info('*** Avg. similarity rating: ', avgSimilarityRating);
 
   return avgSimilarityRating;
 }
 
 export function isSimilar(recordedElementInfo, capturedElement): boolean {
-  console.log('*** elementInfo', recordedElementInfo);
+  Logger.info('*** elementInfo', recordedElementInfo);
   const similarityRating = getSimilarityRating(recordedElementInfo, capturedElement);
 
   if (similarityRating < configManager.getLocalStorageConfig()?.assessmentThresholds?.totalSimilarityThreshold) {
@@ -142,7 +143,7 @@ export function isUrlStructureFormatSimilar(urlToEvaluate1: string, urlToEvaluat
 
   const pathSimilarityRating = pathProportionSimilarity + (1 - pathProportionSimilarity) * nonIdenticalPathSimilarity;
 
-  console.log('*** Url path similarity rating:', pathSimilarityRating);
+  Logger.info('*** Url path similarity rating:', pathSimilarityRating);
 
   return (
     pathSimilarityRating >= configManager.getLocalStorageConfig()?.assessmentThresholds?.urlPathSimilarityThreshold
