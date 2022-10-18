@@ -14,7 +14,7 @@ import { IOverlayWidget } from './widget.types';
 const MINIMUM_WIDTH = 342;
 
 function postDockableStateToStrigo(): void {
-  console.log('Posting dockable state to Strigo...');
+  Logger.info('Posting dockable state to Strigo...');
   const dockingSide = configManager.getConfigValue('dockingSide');
   const strigoIframe = document.getElementById('strigo-exercises') as HTMLIFrameElement;
   strigoIframe.contentWindow.postMessage({ dockable: true, dockingSide }, '*');
@@ -90,12 +90,12 @@ class OverlayWidget implements IOverlayWidget {
 
     const hostingAppWindow = documentTools.getHostingAppWindow();
     this.initEventListeners(hostingAppWindow, academyPlayerFrame);
-    console.log('adding observer');
+    Logger.info('adding assessment document observer');
     noCodeAssessment.initDocumentObserver(hostingAppWindow);
     urlTrigger.initUrlTriggerObserver(hostingAppWindow);
     documentTools.initNavigationObserver(hostingAppWindow);
 
-    console.log('observer added');
+    Logger.info('assessment document observer added');
     setupResizeFunctionality();
   }
 

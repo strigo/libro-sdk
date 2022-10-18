@@ -49,7 +49,7 @@ function countAndUpdateExampleElements(assessment: Assessment, locationElement: 
   const elementProfile = assessment.recordedAssessment?.exampleElement?.profile;
 
   if (elementProfile) {
-    console.log('*** No example element profile. Aborting count...');
+    Logger.info('*** No example element profile. Aborting count...');
 
     return;
   }
@@ -63,7 +63,7 @@ function countAndUpdateExampleElements(assessment: Assessment, locationElement: 
       allowDuplicates: true,
     });
   } catch (e) {
-    console.log('*** Failed to retrieve a selector for the example element');
+    Logger.info('*** Failed to retrieve a selector for the example element');
 
     return;
   }
@@ -72,12 +72,12 @@ function countAndUpdateExampleElements(assessment: Assessment, locationElement: 
 
   // TODO: narrow the query down to start from the location element instead of the entire document
   const exampleElements = document.querySelectorAll(exampleElementSelector) || [];
-  console.log('*** Example elements found:', exampleElements);
+  Logger.info('*** Example elements found:', exampleElements);
   const exampleElementsInsideTheLocationElement = Array.from(exampleElements).filter((exampleElement) =>
     locationElement.contains(exampleElement)
   );
 
-  console.log('*** Example elements that are inside the location element:', exampleElementsInsideTheLocationElement);
+  Logger.info('*** Example elements that are inside the location element:', exampleElementsInsideTheLocationElement);
 
   const currentExampleElementCount = exampleElementsInsideTheLocationElement?.length || 0;
   const previousAssessmentStorageState = window.sessionStorage.getItem(_id);
@@ -86,7 +86,7 @@ function countAndUpdateExampleElements(assessment: Assessment, locationElement: 
     : {};
   const previousExampleElementCount = parsedPreviousAssessmentStorageState?.[document.location.href];
 
-  console.log('*** evaluating example element count', {
+  Logger.info('*** evaluating example element count', {
     currentExampleElementCount,
     previousExampleElementCount,
     exampleElementSelector,
@@ -94,7 +94,7 @@ function countAndUpdateExampleElements(assessment: Assessment, locationElement: 
   });
 
   if (!previousExampleElementCount) {
-    console.log('*** Persisting example element count to local storage', { currentExampleElementCount });
+    Logger.info('*** Persisting example element count to local storage', { currentExampleElementCount });
     updateAssessmentStorageState(_id, { [document.location.href]: currentExampleElementCount });
 
     return currentExampleElementCount;
@@ -105,7 +105,7 @@ function countAndUpdateExampleElements(assessment: Assessment, locationElement: 
 
 const onAssessmentSuccess = async (assessment, detectedMeta = {}): Promise<void> => {
   const { _id: assessmentId, challengeSuccessEvent } = assessment;
-  console.log('*** Successfully detected assessment criteria!', {
+  Logger.info('*** Successfully detected assessment criteria!', {
     assessmentId,
     challengeSuccessEvent,
     ...assessment,
@@ -118,12 +118,12 @@ const onAssessmentSuccess = async (assessment, detectedMeta = {}): Promise<void>
 };
 
 function assessAddedItems(mutations): void {
-  console.log('*** Got an item count mutation in the location element!');
+  Logger.info('*** Got an item count mutation in the location element!');
 
   // Abort counting example elements and updating since when the url has changed,
   // since this is handled at the document observer level
   if (currentLocation !== document.location.href) {
-    console.log('*** Aborting element count due to race condition');
+    Logger.info('*** Aborting element count due to race condition');
 
     return;
   }
@@ -131,7 +131,7 @@ function assessAddedItems(mutations): void {
   const { challengeSuccessEvent, _id } = this.assessment;
 
   if (assessmentState[_id]?.status === AssessmentStatus.SUCCESS) {
-    console.log('*** Assessment already completed successfully.');
+    Logger.info('*** Assessment already completed successfully.');
 
     return;
   }
@@ -151,7 +151,7 @@ function assessAddedItems(mutations): void {
   const previousExampleElementCount = parsedPreviousAssessmentStorageState?.[document.location.href];
 
   if (previousExampleElementCount && currentExampleElementCount > parseInt(previousExampleElementCount)) {
-    console.log('*** Yo! we got a successfully added item!', {
+    Logger.info('*** Yo! we got a successfully added item!', {
       currentExampleElementCount,
       previousExampleElementCount,
     });
@@ -174,7 +174,7 @@ const getLocationElement = (
   const isLocationElementStillOnDOM = window.document.contains(cachedLocationElement);
 
   if (cachedLocationElement && isLocationElementStillOnDOM) {
-    console.log('*** Got a cached location element...', cachedLocationElement);
+    Logger.info('*** Got a cached location element...', cachedLocationElement);
     locationElement = cachedLocationElement;
     locationElementSelector = assessmentState[assessmentId]?.locationElementSelector;
   } else {
@@ -185,9 +185,9 @@ const getLocationElement = (
       throw new Error('*** No location element selector was found fitting.');
     }
 
-    console.log('*** Retrieving location element by selector:', locationElementSelector);
+    Logger.info('*** Retrieving location element by selector:', locationElementSelector);
     locationElement = window.document.querySelector(locationElementSelector);
-    console.log('*** Found location element:', {
+    Logger.info('*** Found location element:', {
       locationElement,
       locationElementSelector,
     });
@@ -249,7 +249,7 @@ const addAssessmentDebugUI = function (
   const previousDebugAssessmentContextElement = window.document.getElementById(`${assessment._id}-context-overlay`);
 
   if (previousDebugAssessmentContextElement) {
-    console.log('*** Already got an existing debug element for this assessment.', assessment);
+    Logger.info('*** Already got an existing debug element for this assessment.', assessment);
 
     return;
   }
@@ -298,7 +298,7 @@ const addAssessmentDebugUI = function (
 
   assessmentContextElement.children[0].children[1].appendChild(closeButton);
 
-  console.log('*** Appending assessment debug context element.');
+  Logger.info('*** Appending assessment debug context element.');
 
   const strigoContextElement = window.document.querySelectorAll(
     `[data-${strigoLocationDataIdSnakeCased}="${locationElementSelector}"]`
@@ -313,7 +313,7 @@ const addAssessmentDebugUI = function (
 };
 
 const evaluateAssessments = function (): void {
-  console.log('*** Evaluating Assessments...', {
+  Logger.info('*** Evaluating Assessments...', {
     bodyTextDuringAssessment: window.document.body.innerText.slice(0, 50),
   });
   const relevantAssessments = assessments.filter(({ recordedAssessment }) => {
@@ -335,13 +335,13 @@ const evaluateAssessments = function (): void {
     const locationElementProfile = recordedAssessment?.locationElement?.profile;
 
     if (!locationElementProfile) {
-      console.log('*** missing location element profile. Aborting...');
+      Logger.info('*** missing location element profile. Aborting...');
 
       return;
     }
 
     if (assessmentState?.[_id]?.status === AssessmentStatus.SUCCESS) {
-      console.log('*** Assessment already in "success" status. Aborting...');
+      Logger.info('*** Assessment already in "success" status. Aborting...');
 
       return;
     }
@@ -353,7 +353,7 @@ const evaluateAssessments = function (): void {
     try {
       locationElementResult = getLocationElement(_id, locationElementProfile);
     } catch (err) {
-      console.log('*** Failed to find location element. Aborting assessment evaluation...');
+      Logger.info('*** Failed to find location element. Aborting assessment evaluation...');
 
       return;
     }
@@ -377,9 +377,9 @@ const evaluateAssessments = function (): void {
             boundedAssessAddedItems([]);
             locationHandlers[_id].observer.observe(locationElement, exampleElementCountObserverOptions);
             Logger.info('Same reference - no need to observe again');
-            console.log(' *** Same reference - no need to observe again', locationElement);
+            Logger.info(' *** Same reference - no need to observe again', locationElement);
           } catch (e) {
-            console.log('*** Got an error in item count', e);
+            Logger.info('*** Got an error in item count', e);
             break;
           }
 
@@ -391,9 +391,9 @@ const evaluateAssessments = function (): void {
             boundedAssessAddedItems([]);
             locationHandlers[_id].observer.observe(locationElement, exampleElementCountObserverOptions);
             Logger.info('DOM Reference have changed - observing again');
-            console.log(' *** DOM Reference have changed - observing again', locationElement);
+            Logger.info(' *** DOM Reference have changed - observing again', locationElement);
           } catch (e) {
-            console.log('*** Got an error in item count', e);
+            Logger.info('*** Got an error in item count', e);
             break;
           }
 
@@ -409,7 +409,7 @@ const evaluateAssessments = function (): void {
           boundedAssessAddedItems([]);
           locationHandlers[_id].observer.observe(locationElement, exampleElementCountObserverOptions);
         } catch (e) {
-          console.log('*** Got an error in item count', e);
+          Logger.info('*** Got an error in item count', e);
           break;
         }
 
@@ -417,7 +417,7 @@ const evaluateAssessments = function (): void {
       }
 
       case AssessmentActionType.TEXT_CHANGE: {
-        console.log('*** Assessing text changes in location element...', {
+        Logger.info('*** Assessing text changes in location element...', {
           locationElement,
           locationElementType: locationElement instanceof HTMLInputElement ? 'input' : 'non-input',
           innerTextValue:
@@ -451,10 +451,10 @@ const documentObserverHandler = function (pageMutations): void {
   const isAddedNodes = pageMutations.some((mutation) => mutation.addedNodes?.length > 0);
   const isCharacterDataChanged = pageMutations.some((mutation) => mutation.type == 'characterData');
 
-  console.log('#####', { isAddedNodes, isCharacterDataChanged });
+  Logger.info('#####', { isAddedNodes, isCharacterDataChanged });
 
   if (!isAddedNodes && !isCharacterDataChanged) {
-    console.log('*** No added nodes and no character data change were detected after url change.', {
+    Logger.info('*** No added nodes and no character data change were detected after url change.', {
       previousLocation: currentLocation || '',
       newLocation: document.location.href,
     });
@@ -463,9 +463,9 @@ const documentObserverHandler = function (pageMutations): void {
   }
 
   if (currentLocation === document.location.href) {
-    console.log('*** No URL change and no nodes were added.');
+    Logger.info('*** No URL change and no nodes were added.');
   } else {
-    console.log('*** Detected URL change!', {
+    Logger.info('*** Detected URL change!', {
       previousLocation: currentLocation || '',
       newLocation: document.location.href,
     });
@@ -479,14 +479,14 @@ const documentObserverHandler = function (pageMutations): void {
 };
 
 export const initDocumentObserver = debounce((windowToObserve: Window): void => {
-  console.log('*** Initializing document observer');
+  Logger.info('*** Initializing document observer');
 
   assessments = getAssessmentsStorageData().assessments.filter(
     ({ assessmentType }) => assessmentType === 'recorded-flow'
   );
 
   if (!window?.strigoObserver?.observer) {
-    console.log('*** Adding Strigo observer to document body');
+    Logger.info('*** Adding Strigo observer to document body');
 
     window.strigoObserver = {
       observer: new MutationObserver(documentObserverHandler),
@@ -494,7 +494,7 @@ export const initDocumentObserver = debounce((windowToObserve: Window): void => 
     };
 
     evaluateAssessments();
-    console.log('*** Starting to observe document body');
+    Logger.info('*** Starting to observe document body');
     window?.strigoObserver?.observer?.observe(window.document, bodyObserverOptions);
 
     return;
@@ -503,7 +503,7 @@ export const initDocumentObserver = debounce((windowToObserve: Window): void => 
   evaluateAssessments();
 
   if (!window.document.contains(window.strigoObserver.observedBodyElement)) {
-    console.log('*** Detected a "body" element change. Re-initializing the document observer...');
+    Logger.info('*** Detected a "body" element change. Re-initializing the document observer...');
     window.strigoObserver.observedBodyElement = window.document.body;
     window.strigoObserver.observer.observe(window.document, bodyObserverOptions);
   }
