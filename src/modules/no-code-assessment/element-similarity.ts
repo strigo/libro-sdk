@@ -40,7 +40,7 @@ function getStructureSimilarityRating(recordedElementInfo, capturedElement): num
     capturedElementChildNodeNames.join(''),
     recordedElementChildNodeNames.join('')
   );
-  Logger.info('*** Internal structure similarity ratio:', internalStructureSimilarity);
+  Logger.info('*** Internal structure similarity ratio:', { internalStructureSimilarity });
 
   return internalStructureSimilarity;
 }
@@ -62,7 +62,7 @@ function getTextSimilarityRating(recordedElementInfo: RecordedElementInfo, captu
     capturedElementDirectInnerText
   );
 
-  Logger.info('*** Text similarity ratio: ', textSimilarity);
+  Logger.info('*** Text similarity ratio: ', { textSimilarity });
 
   return textSimilarity;
 }
@@ -92,7 +92,7 @@ function getSimilarityRating(recordedElementInfo: RecordedElementInfo, capturedE
 }
 
 export function isSimilar(recordedElementInfo, capturedElement): boolean {
-  Logger.info('*** elementInfo', recordedElementInfo);
+  Logger.info('*** elementInfo', { recordedElementInfo });
   const similarityRating = getSimilarityRating(recordedElementInfo, capturedElement);
 
   if (similarityRating < configManager.getLocalStorageConfig()?.assessmentThresholds?.totalSimilarityThreshold) {

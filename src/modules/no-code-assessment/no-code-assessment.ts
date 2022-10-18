@@ -72,12 +72,14 @@ function countAndUpdateExampleElements(assessment: Assessment, locationElement: 
 
   // TODO: narrow the query down to start from the location element instead of the entire document
   const exampleElements = document.querySelectorAll(exampleElementSelector) || [];
-  Logger.info('*** Example elements found:', exampleElements);
+  Logger.info('*** Example elements found:', { exampleElements });
   const exampleElementsInsideTheLocationElement = Array.from(exampleElements).filter((exampleElement) =>
     locationElement.contains(exampleElement)
   );
 
-  Logger.info('*** Example elements that are inside the location element:', exampleElementsInsideTheLocationElement);
+  Logger.info('*** Example elements that are inside the location element:', {
+    exampleElementsInsideTheLocationElement,
+  });
 
   const currentExampleElementCount = exampleElementsInsideTheLocationElement?.length || 0;
   const previousAssessmentStorageState = window.sessionStorage.getItem(_id);
@@ -174,7 +176,7 @@ const getLocationElement = (
   const isLocationElementStillOnDOM = window.document.contains(cachedLocationElement);
 
   if (cachedLocationElement && isLocationElementStillOnDOM) {
-    Logger.info('*** Got a cached location element...', cachedLocationElement);
+    Logger.info('*** Got a cached location element...', { cachedLocationElement });
     locationElement = cachedLocationElement;
     locationElementSelector = assessmentState[assessmentId]?.locationElementSelector;
   } else {
@@ -185,7 +187,7 @@ const getLocationElement = (
       throw new Error('*** No location element selector was found fitting.');
     }
 
-    Logger.info('*** Retrieving location element by selector:', locationElementSelector);
+    Logger.info('*** Retrieving location element by selector:', { locationElementSelector });
     locationElement = window.document.querySelector(locationElementSelector);
     Logger.info('*** Found location element:', {
       locationElement,
@@ -249,7 +251,7 @@ const addAssessmentDebugUI = function (
   const previousDebugAssessmentContextElement = window.document.getElementById(`${assessment._id}-context-overlay`);
 
   if (previousDebugAssessmentContextElement) {
-    Logger.info('*** Already got an existing debug element for this assessment.', assessment);
+    Logger.info('*** Already got an existing debug element for this assessment.', { assessment });
 
     return;
   }
@@ -377,9 +379,9 @@ const evaluateAssessments = function (): void {
             boundedAssessAddedItems([]);
             locationHandlers[_id].observer.observe(locationElement, exampleElementCountObserverOptions);
             Logger.info('Same reference - no need to observe again');
-            Logger.info(' *** Same reference - no need to observe again', locationElement);
+            Logger.info(' *** Same reference - no need to observe again', { locationElement });
           } catch (e) {
-            Logger.info('*** Got an error in item count', e);
+            Logger.error('*** Got an error in item count', { err: e });
             break;
           }
 
@@ -391,9 +393,9 @@ const evaluateAssessments = function (): void {
             boundedAssessAddedItems([]);
             locationHandlers[_id].observer.observe(locationElement, exampleElementCountObserverOptions);
             Logger.info('DOM Reference have changed - observing again');
-            Logger.info(' *** DOM Reference have changed - observing again', locationElement);
+            Logger.info(' *** DOM Reference have changed - observing again', { locationElement });
           } catch (e) {
-            Logger.info('*** Got an error in item count', e);
+            Logger.error('*** Got an error in item count', { err: e });
             break;
           }
 
