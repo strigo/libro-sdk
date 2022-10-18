@@ -23,7 +23,7 @@ function getStyleSimilarityRating(recordedElementClasses: string[], capturedElem
 
   const similarityRatio = intersection.length / denominator;
 
-  Logger.info('*** Style similarity ratio:', similarityRatio);
+  Logger.info('*** Style similarity ratio:', { similarityRatio });
 
   return similarityRatio;
 }
@@ -86,7 +86,7 @@ function getSimilarityRating(recordedElementInfo: RecordedElementInfo, capturedE
 
   const avgSimilarityRating = (styleSimilarityRating + structureSimilarityRating + textSimilarityRating) / 3;
 
-  Logger.info('*** Avg. similarity rating: ', avgSimilarityRating);
+  Logger.info('*** Avg. similarity rating: ', { avgSimilarityRating });
 
   return avgSimilarityRating;
 }
@@ -143,7 +143,7 @@ export function isUrlStructureFormatSimilar(urlToEvaluate1: string, urlToEvaluat
 
   const pathSimilarityRating = pathProportionSimilarity + (1 - pathProportionSimilarity) * nonIdenticalPathSimilarity;
 
-  Logger.info('*** Url path similarity rating:', pathSimilarityRating);
+  Logger.info('*** Url path similarity rating:', { pathSimilarityRating });
 
   return (
     pathSimilarityRating >= configManager.getLocalStorageConfig()?.assessmentThresholds?.urlPathSimilarityThreshold
