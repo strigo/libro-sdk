@@ -1,4 +1,5 @@
 import { isRecordingMode } from './modules/assessment-recorder/assessment-recorder';
+import { Logger } from './services/logger';
 import { Strigo } from './strigo';
 
 window.Strigo = Strigo;

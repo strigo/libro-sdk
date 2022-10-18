@@ -11341,10 +11341,10 @@ ${JSON.stringify(parsedContext)}` : "");
     if (filteredMutations.length > 0) {
       const widget = window.document.getElementById("strigo-widget");
       if (widget) {
-        console.log("*** Strigo widget already exist on the DOM.");
+        LoggerInstance.info("*** Strigo widget already exist on the DOM.");
         return;
       }
-      console.log("*** Reloading widget in navigation observer");
+      LoggerInstance.info("*** Reloading widget in navigation observer");
       setTimeout(window.Strigo.open.bind(window.Strigo), 0);
     }
   };
@@ -11476,7 +11476,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11485,7 +11485,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateWidgetCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-widget.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11494,7 +11494,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateAcademyHatCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-academy-hat.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
@@ -11503,7 +11503,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function generateRecorderCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-assessment-recorder.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -11511,7 +11511,7 @@ ${JSON.stringify(parsedContext)}` : "");
     return `${CDN_BASE_PATH}@${DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION}/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL() {
-    return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;
+    return window.Strigo.isDevelopment() ? "http://local.strigo.io:7015" : ASSESSMENT_RECORDER_URL;
   }
   function isRecordingUrlParamExists() {
     const { search } = window.location;
@@ -12719,14 +12719,14 @@ ${JSON.stringify(parsedContext)}` : "");
       return 0;
     }
     const similarityRatio = intersection.length / denominator;
-    console.log("*** Style similarity ratio:", similarityRatio);
+    LoggerInstance.info("*** Style similarity ratio:", { similarityRatio });
     return similarityRatio;
   }
   function getStructureSimilarityRating(recordedElementInfo, capturedElement) {
     const capturedElementChildNodeNames = Array.from(capturedElement.childNodes).map(({ nodeName }) => nodeName.toLowerCase());
     const recordedElementChildNodeNames = recordedElementInfo.internalStructure?.map(({ nodeName }) => nodeName.toLowerCase());
     const internalStructureSimilarity = import_string_similarity.default.compareTwoStrings(capturedElementChildNodeNames.join(""), recordedElementChildNodeNames.join(""));
-    console.log("*** Internal structure similarity ratio:", internalStructureSimilarity);
+    LoggerInstance.info("*** Internal structure similarity ratio:", internalStructureSimilarity);
     return internalStructureSimilarity;
   }
   function getTextSimilarityRating(recordedElementInfo, capturedElement) {
@@ -12737,12 +12737,12 @@ ${JSON.stringify(parsedContext)}` : "");
       return accTextArray;
     }, []).join("");
     const textSimilarity = import_string_similarity.default.compareTwoStrings(recordedElementInfo.directInnerText, capturedElementDirectInnerText);
-    console.log("*** Text similarity ratio: ", textSimilarity);
+    LoggerInstance.info("*** Text similarity ratio: ", textSimilarity);
     return textSimilarity;
   }
   function getSimilarityRating(recordedElementInfo, capturedElement) {
     if (recordedElementInfo.tagName !== capturedElement.tagName.toLocaleLowerCase()) {
-      console.log("*** Mismatching element type. Similarity rating is 0.", {
+      LoggerInstance.info("*** Mismatching element type. Similarity rating is 0.", {
         recordedElementTagName: recordedElementInfo.tagName,
         capturedElementTagName: capturedElement.tagName.toLocaleLowerCase()
       });
@@ -12754,11 +12754,11 @@ ${JSON.stringify(parsedContext)}` : "");
     const structureSimilarityRating = getStructureSimilarityRating(recordedElementInfo, capturedElement);
     const textSimilarityRating = getTextSimilarityRating(recordedElementInfo, capturedElement);
     const avgSimilarityRating = (styleSimilarityRating + structureSimilarityRating + textSimilarityRating) / 3;
-    console.log("*** Avg. similarity rating: ", avgSimilarityRating);
+    LoggerInstance.info("*** Avg. similarity rating: ", { avgSimilarityRating });
     return avgSimilarityRating;
   }
   function isSimilar(recordedElementInfo, capturedElement) {
-    console.log("*** elementInfo", recordedElementInfo);
+    LoggerInstance.info("*** elementInfo", recordedElementInfo);
     const similarityRating = getSimilarityRating(recordedElementInfo, capturedElement);
     if (similarityRating < getLocalStorageConfig()?.assessmentThresholds?.totalSimilarityThreshold) {
       return false;
@@ -12794,7 +12794,7 @@ ${JSON.stringify(parsedContext)}` : "");
       return nonIdenticalPathSimilarity > 0.1;
     }
     const pathSimilarityRating = pathProportionSimilarity + (1 - pathProportionSimilarity) * nonIdenticalPathSimilarity;
-    console.log("*** Url path similarity rating:", pathSimilarityRating);
+    LoggerInstance.info("*** Url path similarity rating:", { pathSimilarityRating });
     return pathSimilarityRating >= getLocalStorageConfig()?.assessmentThresholds?.urlPathSimilarityThreshold;
   }
 
@@ -12826,7 +12826,7 @@ ${JSON.stringify(parsedContext)}` : "");
   function countAndUpdateExampleElements(assessment, locationElement) {
     const elementProfile = assessment.recordedAssessment?.exampleElement?.profile;
     if (elementProfile) {
-      console.log("*** No example element profile. Aborting count...");
+      LoggerInstance.info("*** No example element profile. Aborting count...");
       return;
     }
     const { nodeTree, recordedElementInfo } = elementProfile;
@@ -12836,26 +12836,26 @@ ${JSON.stringify(parsedContext)}` : "");
         allowDuplicates: true
       });
     } catch (e) {
-      console.log("*** Failed to retrieve a selector for the example element");
+      LoggerInstance.info("*** Failed to retrieve a selector for the example element");
       return;
     }
     const { _id } = assessment;
     const exampleElements = document.querySelectorAll(exampleElementSelector) || [];
-    console.log("*** Example elements found:", exampleElements);
+    LoggerInstance.info("*** Example elements found:", exampleElements);
     const exampleElementsInsideTheLocationElement = Array.from(exampleElements).filter((exampleElement) => locationElement.contains(exampleElement));
-    console.log("*** Example elements that are inside the location element:", exampleElementsInsideTheLocationElement);
+    LoggerInstance.info("*** Example elements that are inside the location element:", exampleElementsInsideTheLocationElement);
     const currentExampleElementCount = exampleElementsInsideTheLocationElement?.length || 0;
     const previousAssessmentStorageState = window.sessionStorage.getItem(_id);
     const parsedPreviousAssessmentStorageState = previousAssessmentStorageState ? JSON.parse(previousAssessmentStorageState) : {};
     const previousExampleElementCount = parsedPreviousAssessmentStorageState?.[document.location.href];
-    console.log("*** evaluating example element count", {
+    LoggerInstance.info("*** evaluating example element count", {
       currentExampleElementCount,
       previousExampleElementCount,
       exampleElementSelector,
       documentText: document.body.innerText.slice(0, 10)
     });
     if (!previousExampleElementCount) {
-      console.log("*** Persisting example element count to local storage", { currentExampleElementCount });
+      LoggerInstance.info("*** Persisting example element count to local storage", { currentExampleElementCount });
       updateAssessmentStorageState(_id, { [document.location.href]: currentExampleElementCount });
       return currentExampleElementCount;
     }
@@ -12863,7 +12863,7 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   var onAssessmentSuccess = async (assessment, detectedMeta = {}) => {
     const { _id: assessmentId, challengeSuccessEvent } = assessment;
-    console.log("*** Successfully detected assessment criteria!", {
+    LoggerInstance.info("*** Successfully detected assessment criteria!", {
       assessmentId,
       challengeSuccessEvent,
       ...assessment,
@@ -12875,14 +12875,14 @@ ${JSON.stringify(parsedContext)}` : "");
     await window.Strigo.sendEvent(challengeSuccessEvent);
   };
   function assessAddedItems(mutations) {
-    console.log("*** Got an item count mutation in the location element!");
+    LoggerInstance.info("*** Got an item count mutation in the location element!");
     if (currentLocation !== document.location.href) {
-      console.log("*** Aborting element count due to race condition");
+      LoggerInstance.info("*** Aborting element count due to race condition");
       return;
     }
     const { challengeSuccessEvent, _id } = this.assessment;
     if (assessmentState[_id]?.status === "SUCCESS" /* SUCCESS */) {
-      console.log("*** Assessment already completed successfully.");
+      LoggerInstance.info("*** Assessment already completed successfully.");
       return;
     }
     let currentExampleElementCount;
@@ -12895,7 +12895,7 @@ ${JSON.stringify(parsedContext)}` : "");
     const parsedPreviousAssessmentStorageState = previousAssessmentStorageState ? JSON.parse(previousAssessmentStorageState) : {};
     const previousExampleElementCount = parsedPreviousAssessmentStorageState?.[document.location.href];
     if (previousExampleElementCount && currentExampleElementCount > parseInt(previousExampleElementCount)) {
-      console.log("*** Yo! we got a successfully added item!", {
+      LoggerInstance.info("*** Yo! we got a successfully added item!", {
         currentExampleElementCount,
         previousExampleElementCount
       });
@@ -12911,7 +12911,7 @@ ${JSON.stringify(parsedContext)}` : "");
     const cachedLocationElement = assessmentState[assessmentId]?.locationElement;
     const isLocationElementStillOnDOM = window.document.contains(cachedLocationElement);
     if (cachedLocationElement && isLocationElementStillOnDOM) {
-      console.log("*** Got a cached location element...", cachedLocationElement);
+      LoggerInstance.info("*** Got a cached location element...", cachedLocationElement);
       locationElement = cachedLocationElement;
       locationElementSelector = assessmentState[assessmentId]?.locationElementSelector;
     } else {
@@ -12920,9 +12920,9 @@ ${JSON.stringify(parsedContext)}` : "");
       if (!locationElementSelector) {
         throw new Error("*** No location element selector was found fitting.");
       }
-      console.log("*** Retrieving location element by selector:", locationElementSelector);
+      LoggerInstance.info("*** Retrieving location element by selector:", locationElementSelector);
       locationElement = window.document.querySelector(locationElementSelector);
-      console.log("*** Found location element:", {
+      LoggerInstance.info("*** Found location element:", {
         locationElement,
         locationElementSelector
       });
@@ -12963,7 +12963,7 @@ ${JSON.stringify(parsedContext)}` : "");
   var addAssessmentDebugUI = function(locationElementToDebug, locationElementSelector, assessment) {
     const previousDebugAssessmentContextElement = window.document.getElementById(`${assessment._id}-context-overlay`);
     if (previousDebugAssessmentContextElement) {
-      console.log("*** Already got an existing debug element for this assessment.", assessment);
+      LoggerInstance.info("*** Already got an existing debug element for this assessment.", assessment);
       return;
     }
     locationElementToDebug.style.border = "2px dashed #696CBF";
@@ -13000,7 +13000,7 @@ ${JSON.stringify(parsedContext)}` : "");
     <div>Selector used: ${locationElementSelector}</div>
   `;
     assessmentContextElement.children[0].children[1].appendChild(closeButton);
-    console.log("*** Appending assessment debug context element.");
+    LoggerInstance.info("*** Appending assessment debug context element.");
     const strigoContextElement = window.document.querySelectorAll(`[data-${strigoLocationDataIdSnakeCased}="${locationElementSelector}"]`)?.[0];
     if (strigoContextElement) {
       strigoContextElement.appendChild(assessmentContextElement);
@@ -13010,7 +13010,7 @@ ${JSON.stringify(parsedContext)}` : "");
     }
   };
   var evaluateAssessments = function() {
-    console.log("*** Evaluating Assessments...", {
+    LoggerInstance.info("*** Evaluating Assessments...", {
       bodyTextDuringAssessment: window.document.body.innerText.slice(0, 50)
     });
     const relevantAssessments = assessments.filter(({ recordedAssessment }) => {
@@ -13026,11 +13026,11 @@ ${JSON.stringify(parsedContext)}` : "");
       const { actionType, expectedText } = recordedAssessment;
       const locationElementProfile = recordedAssessment?.locationElement?.profile;
       if (!locationElementProfile) {
-        console.log("*** missing location element profile. Aborting...");
+        LoggerInstance.info("*** missing location element profile. Aborting...");
         return;
       }
       if (assessmentState?.[_id]?.status === "SUCCESS" /* SUCCESS */) {
-        console.log('*** Assessment already in "success" status. Aborting...');
+        LoggerInstance.info('*** Assessment already in "success" status. Aborting...');
         return;
       }
       updateAssessmentState(_id, { status: "pending" /* PENDING */ });
@@ -13038,7 +13038,7 @@ ${JSON.stringify(parsedContext)}` : "");
       try {
         locationElementResult = getLocationElement(_id, locationElementProfile);
       } catch (err) {
-        console.log("*** Failed to find location element. Aborting assessment evaluation...");
+        LoggerInstance.info("*** Failed to find location element. Aborting assessment evaluation...");
         return;
       }
       const isInDebugMode = getLocalStorageConfig()?.isAcademyAssessmentDebug;
@@ -13055,9 +13055,9 @@ ${JSON.stringify(parsedContext)}` : "");
               boundedAssessAddedItems([]);
               locationHandlers[_id].observer.observe(locationElement, exampleElementCountObserverOptions);
               LoggerInstance.info("Same reference - no need to observe again");
-              console.log(" *** Same reference - no need to observe again", locationElement);
+              LoggerInstance.info(" *** Same reference - no need to observe again", locationElement);
             } catch (e) {
-              console.log("*** Got an error in item count", e);
+              LoggerInstance.info("*** Got an error in item count", e);
               break;
             }
             break;
@@ -13067,9 +13067,9 @@ ${JSON.stringify(parsedContext)}` : "");
               boundedAssessAddedItems([]);
               locationHandlers[_id].observer.observe(locationElement, exampleElementCountObserverOptions);
               LoggerInstance.info("DOM Reference have changed - observing again");
-              console.log(" *** DOM Reference have changed - observing again", locationElement);
+              LoggerInstance.info(" *** DOM Reference have changed - observing again", locationElement);
             } catch (e) {
-              console.log("*** Got an error in item count", e);
+              LoggerInstance.info("*** Got an error in item count", e);
               break;
             }
             break;
@@ -13082,13 +13082,13 @@ ${JSON.stringify(parsedContext)}` : "");
             boundedAssessAddedItems([]);
             locationHandlers[_id].observer.observe(locationElement, exampleElementCountObserverOptions);
           } catch (e) {
-            console.log("*** Got an error in item count", e);
+            LoggerInstance.info("*** Got an error in item count", e);
             break;
           }
           break;
         }
         case "text-change" /* TEXT_CHANGE */: {
-          console.log("*** Assessing text changes in location element...", {
+          LoggerInstance.info("*** Assessing text changes in location element...", {
             locationElement,
             locationElementType: locationElement instanceof HTMLInputElement ? "input" : "non-input",
             innerTextValue: locationElement instanceof HTMLInputElement ? locationElement?.value : locationElement?.innerText,
@@ -13115,18 +13115,18 @@ ${JSON.stringify(parsedContext)}` : "");
   var documentObserverHandler = function(pageMutations) {
     const isAddedNodes = pageMutations.some((mutation) => mutation.addedNodes?.length > 0);
     const isCharacterDataChanged = pageMutations.some((mutation) => mutation.type == "characterData");
-    console.log("#####", { isAddedNodes, isCharacterDataChanged });
+    LoggerInstance.info("#####", { isAddedNodes, isCharacterDataChanged });
     if (!isAddedNodes && !isCharacterDataChanged) {
-      console.log("*** No added nodes and no character data change were detected after url change.", {
+      LoggerInstance.info("*** No added nodes and no character data change were detected after url change.", {
         previousLocation: currentLocation || "",
         newLocation: document.location.href
       });
       return;
     }
     if (currentLocation === document.location.href) {
-      console.log("*** No URL change and no nodes were added.");
+      LoggerInstance.info("*** No URL change and no nodes were added.");
     } else {
-      console.log("*** Detected URL change!", {
+      LoggerInstance.info("*** Detected URL change!", {
         previousLocation: currentLocation || "",
         newLocation: document.location.href
       });
@@ -13135,22 +13135,22 @@ ${JSON.stringify(parsedContext)}` : "");
     initDocumentObserver(window);
   };
   var initDocumentObserver = (0, import_lodash.default)((windowToObserve) => {
-    console.log("*** Initializing document observer");
+    LoggerInstance.info("*** Initializing document observer");
     assessments = getAssessmentsStorageData().assessments.filter(({ assessmentType }) => assessmentType === "recorded-flow");
     if (!window?.strigoObserver?.observer) {
-      console.log("*** Adding Strigo observer to document body");
+      LoggerInstance.info("*** Adding Strigo observer to document body");
       window.strigoObserver = {
         observer: new MutationObserver(documentObserverHandler),
         observedBodyElement: window.document.body
       };
       evaluateAssessments();
-      console.log("*** Starting to observe document body");
+      LoggerInstance.info("*** Starting to observe document body");
       window?.strigoObserver?.observer?.observe(window.document, bodyObserverOptions);
       return;
     }
     evaluateAssessments();
     if (!window.document.contains(window.strigoObserver.observedBodyElement)) {
-      console.log('*** Detected a "body" element change. Re-initializing the document observer...');
+      LoggerInstance.info('*** Detected a "body" element change. Re-initializing the document observer...');
       window.strigoObserver.observedBodyElement = window.document.body;
       window.strigoObserver.observer.observe(window.document, bodyObserverOptions);
     }
@@ -13213,18 +13213,18 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   var urlTriggerObserverHandler = function(pageMutations) {
     const isAddedNodes = pageMutations.some((mutation) => mutation.addedNodes?.length > 0);
-    console.log("#####", { isAddedNodes });
+    LoggerInstance.info("#####", { isAddedNodes });
     if (!isAddedNodes) {
-      console.log("*** No added nodes and no character data change were detected after url change.", {
+      LoggerInstance.info("*** No added nodes and no character data change were detected after url change.", {
         previousLocation: currentLocation2 || "",
         newLocation: document.location.href
       });
       return;
     }
     if (currentLocation2 === document.location.href) {
-      console.log("*** No URL change and no nodes were added.");
+      LoggerInstance.info("*** No URL change and no nodes were added.");
     } else {
-      console.log("*** Detected URL change!", {
+      LoggerInstance.info("*** Detected URL change!", {
         previousLocation: currentLocation2 || "",
         newLocation: document.location.href
       });
@@ -13233,21 +13233,21 @@ ${JSON.stringify(parsedContext)}` : "");
     initUrlTriggerObserver(window);
   };
   var initUrlTriggerObserver = (0, import_lodash2.default)((windowToObserve) => {
-    console.log("*** Initializing url trigger observer");
+    LoggerInstance.info("*** Initializing url trigger observer");
     if (!windowToObserve?.strigoUrlTriggerObserver?.observer) {
-      console.log("*** Adding Strigo url trigger observer to document body");
+      LoggerInstance.info("*** Adding Strigo url trigger observer to document body");
       windowToObserve.strigoUrlTriggerObserver = {
         observer: new MutationObserver(urlTriggerObserverHandler),
         observedBodyElement: windowToObserve.document.body
       };
       detectUrlTrigger(windowToObserve);
-      console.log("*** Starting to observe document body - url trigger observer");
+      LoggerInstance.info("*** Starting to observe document body - url trigger observer");
       windowToObserve?.strigoUrlTriggerObserver?.observer?.observe(windowToObserve.document, bodyObserverOptions2);
       return;
     }
     detectUrlTrigger(windowToObserve);
     if (!windowToObserve.document.contains(windowToObserve.strigoUrlTriggerObserver.observedBodyElement)) {
-      console.log('*** Detected a "body" element change. Re-initializing the document observer - url trigger observer...');
+      LoggerInstance.info('*** Detected a "body" element change. Re-initializing the document observer - url trigger observer...');
       windowToObserve.strigoUrlTriggerObserver.observedBodyElement = windowToObserve.document.body;
       windowToObserve.strigoUrlTriggerObserver.observer.observe(windowToObserve.document, bodyObserverOptions2);
     }
@@ -13256,7 +13256,7 @@ ${JSON.stringify(parsedContext)}` : "");
   // src/modules/widgets/overlay.ts
   var MINIMUM_WIDTH = 342;
   function postDockableStateToStrigo() {
-    console.log("Posting dockable state to Strigo...");
+    LoggerInstance.info("Posting dockable state to Strigo...");
     const dockingSide = getConfigValue("dockingSide");
     const strigoIframe = document.getElementById("strigo-exercises");
     strigoIframe.contentWindow.postMessage({ dockable: true, dockingSide }, "*");
@@ -13315,11 +13315,11 @@ ${JSON.stringify(parsedContext)}` : "");
       }));
       const hostingAppWindow = getHostingAppWindow();
       this.initEventListeners(hostingAppWindow, academyPlayerFrame);
-      console.log("adding observer");
+      LoggerInstance.info("adding assessment document observer");
       initDocumentObserver(hostingAppWindow);
       initUrlTriggerObserver(hostingAppWindow);
       initNavigationObserver(hostingAppWindow);
-      console.log("observer added");
+      LoggerInstance.info("assessment document observer added");
       setupResizeFunctionality();
     }
     shutdown() {
@@ -13546,7 +13546,7 @@ ${JSON.stringify(parsedContext)}` : "");
       this.config = {};
     }
     isDevelopment() {
-      return false;
+      return true;
     }
     init() {
       try {
@@ -13603,7 +13603,7 @@ ${JSON.stringify(parsedContext)}` : "");
         }
         const configuration = await fetchRemoteConfiguration(token);
         if (!configuration?.allowedAcademyDomains?.includes(window.location.host.replace(/^www\./i, ""))) {
-          console.log("Running on an unrelated domain. Aborting...", {
+          LoggerInstance.warn("Running on an unrelated domain. Aborting...", {
             allowedDomains: configuration?.allowedAcademyDomains,
             currentHost: window.location.host
           });
@@ -13743,7 +13743,7 @@ ${JSON.stringify(parsedContext)}` : "");
   // src/strigo.sdk.ts
   window.Strigo = Strigo;
   if (isRecordingMode()) {
-    console.log("Strigo recorder mode");
+    LoggerInstance.info("Strigo recorder mode");
     window.Strigo.assessmentRecorder();
   } else {
     window.Strigo.init();
