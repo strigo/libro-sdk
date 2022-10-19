@@ -12194,7 +12194,6 @@ ${JSON.stringify(parsedContext)}` : "");
           break;
         }
         case "submit-assessment" /* SUBMIT_ASSESSMENT */: {
-          debugger;
           const recorderWindowId = window.sessionStorage.getItem(ASSESSMENT_RECORDER_ID_PARAM);
           const urlToSave = getURLWithoutStrigoRecorderParams(window.location.href);
           window.opener.postMessage({
@@ -13446,7 +13445,7 @@ ${JSON.stringify(parsedContext)}` : "");
       const mainDiv = generatePageStructure();
       const academyPanelFrame = appendIFrame({
         parentElement: mainDiv,
-        url: generateStrigoIframeURL(config),
+        url: generateStrigoIframeURL(config, false),
         classNames: STRIGO_IFRAME_CLASSES,
         id: "strigo-exercises"
       });
@@ -13588,7 +13587,7 @@ ${JSON.stringify(parsedContext)}` : "");
           openWidget: openWidget2 = true,
           dockingSide = "right" /* RIGHT */,
           isPreview
-        } = { ...config.user, ...config, ...data };
+        } = { ...config?.user, ...config, ...data };
         if (!email || !token) {
           throw new Error("Setup data is missing");
         }

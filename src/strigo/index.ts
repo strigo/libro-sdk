@@ -97,7 +97,7 @@ class StrigoSDK implements IStrigoSDK {
         openWidget = true,
         dockingSide = DockingSide.RIGHT,
         isPreview,
-      } = { ...config.user, ...config, ...data };
+      } = { ...config?.user, ...config, ...data };
 
       if (!email || !token) {
         throw new Error('Setup data is missing');
