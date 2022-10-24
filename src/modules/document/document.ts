@@ -115,6 +115,14 @@ export function removeWidget(hostingAppWindow: Window): void {
   hostingAppWindow.document.getElementById('strigo-widget').remove();
 }
 
+export function removeLoader(): void {
+  const loader = document.getElementById('loader');
+  loader.remove();
+
+  const academyHatIcon = document.getElementById('strigo-academy-hat-icon');
+  academyHatIcon.classList.remove('loader');
+}
+
 export function openWidget(): void {
   const widget = document.getElementById('strigo-widget');
   widget.classList.add('slide-in');
@@ -191,10 +199,15 @@ export function createWidget(url: string): HTMLIFrameElement {
   };
 
   const academyHatIcon = document.createElement('div');
-  academyHatIcon.className = 'strigo-academy-hat-icon';
+  academyHatIcon.className = 'strigo-academy-hat-icon loader';
   academyHatIcon.id = 'strigo-academy-hat-icon';
   academyHatIcon.innerHTML = ACADEMY_HAT;
   academyHatDiv.appendChild(academyHatIcon);
+
+  const loaderElement = document.createElement('div');
+  loaderElement.className = 'loader';
+  loaderElement.id = 'loader';
+  academyHatDiv.appendChild(loaderElement);
 
   // Create collapse div
   const collapseDiv = document.createElement('div');

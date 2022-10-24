@@ -8,7 +8,7 @@ import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MessageTypes } from '../modules/listeners/listeners.types';
 import { DockingSide, User } from '../modules/config/config.types';
 import { getElementSelection } from '../modules/element-selector/element-selector';
-import { customizeHatColors } from '../modules/document/document';
+import { customizeHatColors, removeLoader } from '../modules/document/document';
 import { setupUrlTriggers } from '../modules/url-trigger/url-trigger';
 import { getLocalStorageConfig } from '../modules/config/config';
 
@@ -183,6 +183,7 @@ class StrigoSDK implements IStrigoSDK {
         currentUrl: config.initSite.href,
         shouldPanelBeOpen: sessionManager.shouldPanelBeOpen(),
         isLoading: true,
+        isRendered: false,
         widgetFlavor: config.selectedWidgetFlavor,
       });
 
@@ -201,6 +202,10 @@ class StrigoSDK implements IStrigoSDK {
 
     const widget = widgetFactory.getWidget(config.selectedWidgetFlavor);
     widget.open();
+
+    if (sessionManager.getSessionValue('isRendered')) {
+      removeLoader();
+    }
   }
 
   collapse(): void {
