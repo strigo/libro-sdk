@@ -1,6 +1,6 @@
 import * as sessionManager from '../session/session';
 import * as configManager from '../config/config';
-import ovelayWidget from '../widgets/overlay';
+import overlayWidget from '../widgets/overlay';
 import { Logger } from '../../services/logger';
 import { WidgetFlavors } from '../widgets/widget.types';
 
@@ -16,7 +16,7 @@ function onHostEventHandler(ev: MessageEvent<any>): void {
       Logger.info('Panel move message received');
 
       if (sessionManager.getWidgetFlavor() === WidgetFlavors.OVERLAY) {
-        ovelayWidget.move();
+        overlayWidget.move();
       }
 
       break;
@@ -40,8 +40,15 @@ function onHostEventHandler(ev: MessageEvent<any>): void {
       Logger.info('Challenge event success received');
 
       if (sessionManager.getWidgetFlavor() === WidgetFlavors.OVERLAY) {
-        ovelayWidget.open();
+        overlayWidget.open();
       }
+
+      break;
+    }
+
+    case MessageTypes.RENDERED: {
+      Logger.info('Panel rendered message received');
+      window.Strigo?.expandPanel();
 
       break;
     }

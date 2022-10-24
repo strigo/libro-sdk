@@ -25,6 +25,7 @@ export interface IStrigoSDK {
   init: () => void;
   setup: (data?: SDKSetupData) => Promise<void>;
   open: () => void;
+  expandPanel: () => void;
   collapse?: () => void;
   shutdown: () => void;
   destroy: () => void;

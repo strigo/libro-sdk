@@ -14,7 +14,7 @@ import { IOverlayWidget } from './widget.types';
 const MINIMUM_WIDTH = 342;
 
 function postDockableStateToStrigo(): void {
-  Logger.info('Posting dockable state to Strigo...');
+  Logger.info('Posting dockable state to Strigo', {});
   const dockingSide = configManager.getConfigValue('dockingSide');
   const strigoIframe = document.getElementById('strigo-exercises') as HTMLIFrameElement;
   strigoIframe.contentWindow.postMessage({ dockable: true, dockingSide }, '*');
@@ -114,7 +114,7 @@ class OverlayWidget implements IOverlayWidget {
 
   collapse(): void {
     Logger.info('overlay collapse called');
-    documentTools.toggleWidget();
+    documentTools.collapseWidget();
   }
 
   open(): void {

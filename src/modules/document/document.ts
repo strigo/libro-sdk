@@ -127,7 +127,7 @@ export function openWidget(): void {
   academyHat.classList.remove('slide-in');
 }
 
-export function collapseWidget(): void {
+function collapse(): void {
   const widget = document.getElementById('strigo-widget');
   widget.classList.remove('slide-in');
   widget.classList.remove('loaded');
@@ -137,6 +137,12 @@ export function collapseWidget(): void {
 
   const academyHat = document.getElementById('strigo-academy-hat');
   academyHat.classList.add('slide-in');
+}
+
+export function collapseWidget(): void {
+  sessionManager.setSessionValue('shouldPanelBeOpen', false);
+
+  collapse();
 }
 
 const navigationObserver = function (pageMutations): void {
@@ -167,7 +173,7 @@ export function toggleWidget(): void {
   if (shouldPanelBeOpen) {
     openWidget();
   } else {
-    collapseWidget();
+    collapse();
   }
 }
 
@@ -219,7 +225,7 @@ export function createWidget(url: string): HTMLIFrameElement {
   if (shouldPanelBeOpen) {
     openWidget();
   } else {
-    collapseWidget();
+    collapse();
   }
 
   return strigoExercisesIframe;

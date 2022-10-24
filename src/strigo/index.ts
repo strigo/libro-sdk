@@ -150,6 +150,10 @@ class StrigoSDK implements IStrigoSDK {
 
       if (openWidget) {
         this.open();
+
+        // Collapse the panel so it would open when fully loaded
+        sessionManager.setSessionValue('shouldPanelBeOpen', false);
+        this.collapse();
       }
     } catch (err) {
       Logger.error('Could not setup SDK', { err });
@@ -189,6 +193,14 @@ class StrigoSDK implements IStrigoSDK {
     } catch (err) {
       Logger.error('Could not open academy panel', { err });
     }
+  }
+
+  expandPanel(): void {
+    Logger.info('Expanding academy panel');
+    const config = configManager.getLocalStorageConfig();
+
+    const widget = widgetFactory.getWidget(config.selectedWidgetFlavor);
+    widget.open();
   }
 
   collapse(): void {
