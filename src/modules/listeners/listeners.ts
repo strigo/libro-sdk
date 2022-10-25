@@ -14,7 +14,7 @@ function onHostEventHandler(ev: MessageEvent<unknown>): void {
     return;
   }
 
-  if (message.startsWith(MessageTypes.URL_TRIGGERED)) {
+  if (message.startsWith?.(MessageTypes.URL_TRIGGERED)) {
     const urlTriggeredCourses = (sessionManager.getSessionValue('urlTriggeredCourses') as string[]) || [];
     const selectedCourseId = message.split('/')[1];
 
