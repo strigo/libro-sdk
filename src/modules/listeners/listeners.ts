@@ -3,11 +3,44 @@ import * as configManager from '../config/config';
 import overlayWidget from '../widgets/overlay';
 import { Logger } from '../../services/logger';
 import { WidgetFlavors } from '../widgets/widget.types';
+import { openWidget } from '../document/document';
 
 import { EventTypes, MessageTypes } from './listeners.types';
 
-function onHostEventHandler(ev: MessageEvent<any>): void {
-  if (!ev || !ev.data) {
+function onHostEventHandler(ev: MessageEvent<unknown>): void {
+  const message = ev?.data as string;
+
+  if (!message) {
+    return;
+  }
+
+  if (message.startsWith(MessageTypes.URL_TRIGGERED)) {
+    const urlTriggeredCourses = (sessionManager.getSessionValue('urlTriggeredCourses') as string[]) || [];
+    const selectedCourseId = message.split('/')[1];
+
+    Logger.info('URL trigger message received', { selectedCourseId, urlTriggeredCourses });
+
+    if (!selectedCourseId) {
+      Logger.info('URL trigger message received without course id');
+
+      return;
+    }
+
+    if (urlTriggeredCourses.includes(selectedCourseId)) {
+      Logger.info('URL trigger message received for a course that was already opened, doing nothing');
+
+      return;
+    }
+
+    Logger.info('URL trigger message received for a new course, opening it');
+
+    urlTriggeredCourses.push(selectedCourseId);
+    sessionManager.setSessionValue('urlTriggeredCourses', urlTriggeredCourses);
+
+    if (sessionManager.getWidgetFlavor() === WidgetFlavors.OVERLAY) {
+      openWidget();
+    }
+
     return;
   }
 
@@ -37,7 +70,7 @@ function onHostEventHandler(ev: MessageEvent<any>): void {
     }
 
     case MessageTypes.CHALLENGE_SUCCESS: {
-      Logger.info('Challenge event success received');
+      Logger.info('Challenge event success message received');
 
       if (sessionManager.getWidgetFlavor() === WidgetFlavors.OVERLAY) {
         overlayWidget.open();
