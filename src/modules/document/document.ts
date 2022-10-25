@@ -117,10 +117,10 @@ export function removeWidget(hostingAppWindow: Window): void {
 
 export function removeLoader(): void {
   const loader = document.getElementById('loader');
-  loader.remove();
+  loader?.remove();
 
   const academyHatIcon = document.getElementById('strigo-academy-hat-icon');
-  academyHatIcon.classList.remove('loader');
+  academyHatIcon?.classList.remove('loader');
 }
 
 export function openWidget(): void {

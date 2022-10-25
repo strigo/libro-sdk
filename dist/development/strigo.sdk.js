@@ -11470,9 +11470,9 @@ ${JSON.stringify(parsedContext)}` : "");
   }
   function removeLoader() {
     const loader = document.getElementById("loader");
-    loader.remove();
+    loader?.remove();
     const academyHatIcon = document.getElementById("strigo-academy-hat-icon");
-    academyHatIcon.classList.remove("loader");
+    academyHatIcon?.classList.remove("loader");
   }
   function openWidget() {
     const widget = document.getElementById("strigo-widget");
@@ -13363,7 +13363,7 @@ ${JSON.stringify(parsedContext)}` : "");
     if (!message) {
       return;
     }
-    if (message.startsWith("url-triggered" /* URL_TRIGGERED */)) {
+    if (message.startsWith?.("url-triggered" /* URL_TRIGGERED */)) {
       const urlTriggeredCourses = getSessionValue("urlTriggeredCourses") || [];
       const selectedCourseId = message.split("/")[1];
       LoggerInstance.info("URL trigger message received", { selectedCourseId, urlTriggeredCourses });
