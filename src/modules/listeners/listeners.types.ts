@@ -10,4 +10,5 @@ export const enum MessageTypes {
   DESTROY = 'destroy',
   RENDERED = 'rendered',
   CHALLENGE_SUCCESS = 'challenge-success',
+  URL_TRIGGERED = 'url-triggered',
 }

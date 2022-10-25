@@ -11468,6 +11468,12 @@ ${JSON.stringify(parsedContext)}` : "");
   function removeWidget(hostingAppWindow) {
     hostingAppWindow.document.getElementById("strigo-widget").remove();
   }
+  function removeLoader() {
+    const loader = document.getElementById("loader");
+    loader.remove();
+    const academyHatIcon = document.getElementById("strigo-academy-hat-icon");
+    academyHatIcon.classList.remove("loader");
+  }
   function openWidget() {
     const widget = document.getElementById("strigo-widget");
     widget.classList.add("slide-in");
@@ -11477,7 +11483,7 @@ ${JSON.stringify(parsedContext)}` : "");
     const academyHat = document.getElementById("strigo-academy-hat");
     academyHat.classList.remove("slide-in");
   }
-  function collapseWidget() {
+  function collapse() {
     const widget = document.getElementById("strigo-widget");
     widget.classList.remove("slide-in");
     widget.classList.remove("loaded");
@@ -11485,6 +11491,10 @@ ${JSON.stringify(parsedContext)}` : "");
     collapseDiv.classList.add("slide-in");
     const academyHat = document.getElementById("strigo-academy-hat");
     academyHat.classList.add("slide-in");
+  }
+  function collapseWidget() {
+    setSessionValue("shouldPanelBeOpen", false);
+    collapse();
   }
   var navigationObserver = function(pageMutations) {
     const filteredMutations = pageMutations.filter((mutation) => {
@@ -11507,7 +11517,7 @@ ${JSON.stringify(parsedContext)}` : "");
     if (shouldPanelBeOpen2) {
       openWidget();
     } else {
-      collapseWidget();
+      collapse();
     }
   }
   function createWidget(url) {
@@ -11520,10 +11530,14 @@ ${JSON.stringify(parsedContext)}` : "");
       toggleWidget();
     };
     const academyHatIcon = document.createElement("div");
-    academyHatIcon.className = "strigo-academy-hat-icon";
+    academyHatIcon.className = "strigo-academy-hat-icon loader";
     academyHatIcon.id = "strigo-academy-hat-icon";
     academyHatIcon.innerHTML = ACADEMY_HAT;
     academyHatDiv.appendChild(academyHatIcon);
+    const loaderElement = document.createElement("div");
+    loaderElement.className = "loader";
+    loaderElement.id = "loader";
+    academyHatDiv.appendChild(loaderElement);
     const collapseDiv = document.createElement("div");
     collapseDiv.className = "strigo-collapse-div";
     collapseDiv.id = "strigo-collapse-div";
@@ -11545,7 +11559,7 @@ ${JSON.stringify(parsedContext)}` : "");
     if (shouldPanelBeOpen2) {
       openWidget();
     } else {
-      collapseWidget();
+      collapse();
     }
     return strigoExercisesIframe;
   }
@@ -12632,7 +12646,7 @@ ${JSON.stringify(parsedContext)}` : "");
     return {
       setSizes,
       getSizes,
-      collapse: function collapse(i) {
+      collapse: function collapse2(i) {
         adjustToMin(elements[i]);
       },
       destroy,
@@ -13173,20 +13187,28 @@ ${JSON.stringify(parsedContext)}` : "");
     if (!urlTriggers) {
       return;
     }
+    const urlTriggeredCourses = getSessionValue("urlTriggeredCourses") || [];
     for (const urlTrigger of urlTriggers) {
       const { publishmentId, urlTriggerMatchType, urlTriggerUrl } = urlTrigger;
+      LoggerInstance.info("Detect URL trigger invoked", { publishmentId, urlTriggeredCourses });
+      if (!publishmentId) {
+        LoggerInstance.info("URL trigger detected without course id");
+        continue;
+      }
+      if (urlTriggeredCourses.includes(publishmentId)) {
+        LoggerInstance.info("Detected URL trigger for a course that was already opened, doing nothing");
+        continue;
+      }
       switch (urlTriggerMatchType) {
         case "exact" /* EXACT */: {
           if (urlTriggerUrl.trim() === currentHref.trim()) {
             strigoIframe.contentWindow.postMessage({ selectedCourseId: publishmentId }, "*");
-            openWidget();
           }
           break;
         }
         case "starts_with" /* STARTS_WITH */: {
           if (currentHref.trim().startsWith(urlTriggerUrl.trim())) {
             strigoIframe.contentWindow.postMessage({ selectedCourseId: publishmentId }, "*");
-            openWidget();
           }
           break;
         }
@@ -13240,7 +13262,7 @@ ${JSON.stringify(parsedContext)}` : "");
   // src/modules/widgets/overlay.ts
   var MINIMUM_WIDTH = 342;
   function postDockableStateToStrigo() {
-    LoggerInstance.info("Posting dockable state to Strigo...");
+    LoggerInstance.info("Posting dockable state to Strigo", {});
     const dockingSide = getConfigValue("dockingSide");
     const strigoIframe = document.getElementById("strigo-exercises");
     strigoIframe.contentWindow.postMessage({ dockable: true, dockingSide }, "*");
@@ -13316,7 +13338,7 @@ ${JSON.stringify(parsedContext)}` : "");
     }
     collapse() {
       LoggerInstance.info("overlay collapse called");
-      toggleWidget();
+      collapseWidget();
     }
     open() {
       openWidget();
@@ -13337,7 +13359,28 @@ ${JSON.stringify(parsedContext)}` : "");
 
   // src/modules/listeners/listeners.ts
   function onHostEventHandler(ev) {
-    if (!ev || !ev.data) {
+    const message = ev?.data;
+    if (!message) {
+      return;
+    }
+    if (message.startsWith("url-triggered" /* URL_TRIGGERED */)) {
+      const urlTriggeredCourses = getSessionValue("urlTriggeredCourses") || [];
+      const selectedCourseId = message.split("/")[1];
+      LoggerInstance.info("URL trigger message received", { selectedCourseId, urlTriggeredCourses });
+      if (!selectedCourseId) {
+        LoggerInstance.info("URL trigger message received without course id");
+        return;
+      }
+      if (urlTriggeredCourses.includes(selectedCourseId)) {
+        LoggerInstance.info("URL trigger message received for a course that was already opened, doing nothing");
+        return;
+      }
+      LoggerInstance.info("URL trigger message received for a new course, opening it");
+      urlTriggeredCourses.push(selectedCourseId);
+      setSessionValue("urlTriggeredCourses", urlTriggeredCourses);
+      if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
+        openWidget();
+      }
       return;
     }
     switch (ev.data) {
@@ -13359,10 +13402,16 @@ ${JSON.stringify(parsedContext)}` : "");
         break;
       }
       case "challenge-success" /* CHALLENGE_SUCCESS */: {
-        LoggerInstance.info("Challenge event success received");
+        LoggerInstance.info("Challenge event success message received");
         if (getWidgetFlavor() === "overlay" /* OVERLAY */) {
           overlay_default.open();
         }
+        break;
+      }
+      case "rendered" /* RENDERED */: {
+        LoggerInstance.info("Panel rendered message received");
+        setSessionValue("isRendered", true);
+        window.Strigo?.expandPanel();
         break;
       }
       default: {
@@ -13629,6 +13678,8 @@ ${JSON.stringify(parsedContext)}` : "");
         LoggerInstance.info("Finished SDK setup.");
         if (openWidget2) {
           this.open();
+          setSessionValue("shouldPanelBeOpen", false);
+          this.collapse();
         }
       } catch (err) {
         LoggerInstance.error("Could not setup SDK", { err });
@@ -13651,6 +13702,7 @@ ${JSON.stringify(parsedContext)}` : "");
           currentUrl: config.initSite.href,
           shouldPanelBeOpen: shouldPanelBeOpen(),
           isLoading: true,
+          isRendered: false,
           widgetFlavor: config.selectedWidgetFlavor
         });
         const widget = getWidget(config.selectedWidgetFlavor);
@@ -13659,6 +13711,15 @@ ${JSON.stringify(parsedContext)}` : "");
         LoggerInstance.info("Opened academy panel.");
       } catch (err) {
         LoggerInstance.error("Could not open academy panel", { err });
+      }
+    }
+    expandPanel() {
+      LoggerInstance.info("Expanding academy panel");
+      const config = getLocalStorageConfig();
+      const widget = getWidget(config.selectedWidgetFlavor);
+      widget.open();
+      if (getSessionValue("isRendered")) {
+        removeLoader();
       }
     }
     collapse() {

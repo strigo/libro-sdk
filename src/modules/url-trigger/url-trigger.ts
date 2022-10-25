@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import debounce from 'lodash.debounce';
 
 import { Logger } from '../../services/logger';
+import * as sessionManager from '../session/session';
 import { UrlTrigger, UrlTriggerMatchType } from '../config/config.types';
-import { openWidget } from '../document/document';
 import { StorageNames, StorageTypes } from '../storage-utils/storage-utils.types';
 
 const bodyObserverOptions = {
@@ -45,14 +48,29 @@ export function detectUrlTrigger(currentWindow: Window): void {
     return;
   }
 
+  const urlTriggeredCourses = (sessionManager.getSessionValue('urlTriggeredCourses') as string[]) || [];
+
   for (const urlTrigger of urlTriggers) {
     const { publishmentId, urlTriggerMatchType, urlTriggerUrl } = urlTrigger;
+
+    Logger.info('Detect URL trigger invoked', { publishmentId, urlTriggeredCourses });
+
+    if (!publishmentId) {
+      Logger.info('URL trigger detected without course id');
+
+      continue;
+    }
+
+    if (urlTriggeredCourses.includes(publishmentId)) {
+      Logger.info('Detected URL trigger for a course that was already opened, doing nothing');
+
+      continue;
+    }
 
     switch (urlTriggerMatchType) {
       case UrlTriggerMatchType.EXACT: {
         if (urlTriggerUrl.trim() === currentHref.trim()) {
           strigoIframe.contentWindow.postMessage({ selectedCourseId: publishmentId }, '*');
-          openWidget();
         }
 
         break;
@@ -61,7 +79,6 @@ export function detectUrlTrigger(currentWindow: Window): void {
       case UrlTriggerMatchType.STARTS_WITH: {
         if (currentHref.trim().startsWith(urlTriggerUrl.trim())) {
           strigoIframe.contentWindow.postMessage({ selectedCourseId: publishmentId }, '*');
-          openWidget();
         }
 
         break;
