@@ -94,8 +94,6 @@ class StrigoSDK implements IStrigoSDK {
         email,
         token,
         version,
-        shouldOpenWidget = true,
-        shouldHideLoader = true,
         dockingSide = DockingSide.RIGHT,
         isPreview,
       } = { ...config?.user, ...config, ...data };

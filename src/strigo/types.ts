@@ -4,7 +4,6 @@ export interface SDKSetupData {
   email?: string;
   token?: StrigoToken;
   version?: string;
-  shouldOpenWidget?: boolean;
   isPreview?: boolean;
   shouldHideLoader?: boolean;
 }
