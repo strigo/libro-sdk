@@ -8,7 +8,7 @@ import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MessageTypes } from '../modules/listeners/listeners.types';
 import { DockingSide, User } from '../modules/config/config.types';
 import { getElementSelection } from '../modules/element-selector/element-selector';
-import { customizeHatColors, removeLoader } from '../modules/document/document';
+import { customizeHatColors, removeLoader, openWidget, collapseWidget } from '../modules/document/document';
 import { setupUrlTriggers } from '../modules/url-trigger/url-trigger';
 import { getLocalStorageConfig } from '../modules/config/config';
 
@@ -75,7 +75,7 @@ class StrigoSDK implements IStrigoSDK {
       Logger.info('Starting to setup SDK...');
 
       const strigoWidget = document.getElementById('strigo-widget');
-      const isPanelOpen = this.config.isOpen && strigoWidget;
+      const isPanelOpen = this.config.isRendered && strigoWidget;
 
       // Setup won't do anything for now (child will only be able to send events later)
       if (isPanelOpen || this.config.sdkType === SdkTypes.CHILD) {
@@ -94,7 +94,8 @@ class StrigoSDK implements IStrigoSDK {
         email,
         token,
         version,
-        openWidget = true,
+        shouldOpenWidget = true,
+        shouldHideLoader = true,
         dockingSide = DockingSide.RIGHT,
         isPreview,
       } = { ...config?.user, ...config, ...data };
@@ -146,33 +147,27 @@ class StrigoSDK implements IStrigoSDK {
       }
 
       this.config.configured = true;
-      Logger.info('Finished SDK setup.');
+      Logger.info('Finished SDK setup. Calling render...');
 
-      if (openWidget) {
-        this.open();
-
-        // Collapse the panel so it would open when fully loaded
-        sessionManager.setSessionValue('shouldPanelBeOpen', false);
-        this.collapse();
-      }
+      this.render();
     } catch (err) {
       Logger.error('Could not setup SDK', { err });
     }
   }
 
-  open(): void {
+  render(): void {
     try {
-      Logger.info('Opening academy panel...');
+      Logger.info('Rendering academy panel...');
 
       if (!this.config.configured) {
         throw new Error('SDK was not set up');
       }
 
       const strigoWidget = document.getElementById('strigo-widget');
-      const isPanelOpen = this.config.isOpen && strigoWidget;
+      const isPanelOpen = this.config.isRendered && strigoWidget;
 
       if (isPanelOpen || this.config.sdkType === SdkTypes.CHILD) {
-        Logger.info('Panel is already opened. Aborting "open" action...');
+        Logger.info('Panel is already rendered. Aborting "render" action...');
 
         return;
       }
@@ -183,37 +178,38 @@ class StrigoSDK implements IStrigoSDK {
         currentUrl: config.initSite.href,
         shouldPanelBeOpen: sessionManager.shouldPanelBeOpen(),
         isLoading: true,
-        isRendered: false,
+        isContentRendered: false,
         widgetFlavor: config.selectedWidgetFlavor,
       });
 
       const widget = widgetFactory.getWidget(config.selectedWidgetFlavor);
       widget.setup({ version: config.version });
-      this.config.isOpen = true;
-      Logger.info('Opened academy panel.');
+
+      this.config.isRendered = true;
+      Logger.info('Rendered academy panel.');
     } catch (err) {
-      Logger.error('Could not open academy panel', { err });
+      Logger.error('Could not open render panel', { err });
     }
   }
 
-  expandPanel(): void {
-    Logger.info('Expanding academy panel');
+  open(): void {
+    Logger.info('Opening academy panel');
     const config = configManager.getLocalStorageConfig();
 
     const widget = widgetFactory.getWidget(config.selectedWidgetFlavor);
     widget.open();
 
-    if (sessionManager.getSessionValue('isRendered')) {
+    if (sessionManager.getSessionValue('isContentRendered')) {
       removeLoader();
     }
   }
 
-  collapse(): void {
+  collapse(shouldHideLoader?: boolean): void {
     Logger.info('Collapsing academy panel');
     const { selectedWidgetFlavor } = configManager.getLocalStorageConfig();
 
     const widget = widgetFactory.getWidget(selectedWidgetFlavor);
-    widget.collapse();
+    widget.collapse(shouldHideLoader);
   }
 
   shutdown(): void {
@@ -227,7 +223,7 @@ class StrigoSDK implements IStrigoSDK {
         return;
       }
 
-      if (!this.config.isOpen) {
+      if (!this.config.isRendered) {
         Logger.info('Tried to close unopened academy panel');
 
         return;
@@ -238,7 +234,7 @@ class StrigoSDK implements IStrigoSDK {
 
       widget.collapse();
       widget.shutdown();
-      this.config.isOpen = false;
+      this.config.isRendered = false;
       Logger.info('Closed academy panel.');
     } catch (err) {
       Logger.error('Could not close academy panel', { err });

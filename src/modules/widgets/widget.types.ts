@@ -10,7 +10,7 @@ export interface IStrigoWidget {
   init: () => SdkTypes;
   setup: (params: { version?: string }) => void;
   move: () => void;
-  collapse: () => void;
+  collapse: (shouldHideLoader?: boolean) => void;
   shutdown: () => void;
   open: () => void;
 }

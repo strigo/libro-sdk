@@ -135,7 +135,7 @@ export function openWidget(): void {
   academyHat.classList.remove('slide-in');
 }
 
-function collapse(): void {
+function collapse(shouldHideLoader?: boolean): void {
   const widget = document.getElementById('strigo-widget');
   widget.classList.remove('slide-in');
   widget.classList.remove('loaded');
@@ -143,14 +143,19 @@ function collapse(): void {
   const collapseDiv = document.getElementById('strigo-collapse-div');
   collapseDiv.classList.add('slide-in');
 
+  if (shouldHideLoader === true) {
+    // Do not slide in the academy hat
+    return;
+  }
+
   const academyHat = document.getElementById('strigo-academy-hat');
   academyHat.classList.add('slide-in');
 }
 
-export function collapseWidget(): void {
+export function collapseWidget(shouldHideLoader?: boolean): void {
   sessionManager.setSessionValue('shouldPanelBeOpen', false);
 
-  collapse();
+  collapse(shouldHideLoader);
 }
 
 const navigationObserver = function (pageMutations): void {
@@ -186,7 +191,6 @@ export function toggleWidget(): void {
 }
 
 export function createWidget(url: string): HTMLIFrameElement {
-  const shouldPanelBeOpen = sessionManager.shouldPanelBeOpen();
   const dockingSide = configManager.getConfigValue('dockingSide');
 
   // Create academy hat
@@ -234,12 +238,6 @@ export function createWidget(url: string): HTMLIFrameElement {
 
   document.body.appendChild(widgetDiv);
   document.body.appendChild(academyHatDiv);
-
-  if (shouldPanelBeOpen) {
-    openWidget();
-  } else {
-    collapse();
-  }
 
   return strigoExercisesIframe;
 }

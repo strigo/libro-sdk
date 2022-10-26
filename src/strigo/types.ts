@@ -4,8 +4,9 @@ export interface SDKSetupData {
   email?: string;
   token?: StrigoToken;
   version?: string;
-  openWidget?: boolean;
+  shouldOpenWidget?: boolean;
   isPreview?: boolean;
+  shouldHideLoader?: boolean;
 }
 
 export enum SdkTypes {
@@ -17,7 +18,7 @@ export enum SdkTypes {
 export interface SdkConfig {
   initialized?: boolean;
   configured?: boolean;
-  isOpen?: boolean;
+  isRendered?: boolean;
   sdkType?: SdkTypes;
 }
 
@@ -25,8 +26,7 @@ export interface IStrigoSDK {
   init: () => void;
   setup: (data?: SDKSetupData) => Promise<void>;
   open: () => void;
-  expandPanel: () => void;
-  collapse?: () => void;
+  collapse?: (shouldHideLoader: boolean) => void;
   shutdown: () => void;
   destroy: () => void;
   sendEvent: (eventName: string) => Promise<void>;

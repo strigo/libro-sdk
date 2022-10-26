@@ -5,6 +5,6 @@ export interface StrigoSession {
   isLoading?: boolean;
   widgetFlavor: WidgetFlavors;
   isRecordingMode?: boolean;
-  isRendered: boolean;
+  isContentRendered: boolean;
   urlTriggeredCourses?: string[];
 }

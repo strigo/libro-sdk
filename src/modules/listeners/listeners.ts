@@ -81,9 +81,9 @@ function onHostEventHandler(ev: MessageEvent<unknown>): void {
 
     case MessageTypes.RENDERED: {
       Logger.info('Panel rendered message received');
-      sessionManager.setSessionValue('isRendered', true);
+      sessionManager.setSessionValue('isContentRendered', true);
 
-      window.Strigo?.expandPanel();
+      window.Strigo?.open();
 
       break;
     }

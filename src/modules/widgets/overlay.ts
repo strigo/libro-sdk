@@ -112,9 +112,9 @@ class OverlayWidget implements IOverlayWidget {
     documentTools.removeWidget(hostingAppWindow);
   }
 
-  collapse(): void {
+  collapse(shouldHideLoader?: boolean): void {
     Logger.info('overlay collapse called');
-    documentTools.collapseWidget();
+    documentTools.collapseWidget(shouldHideLoader);
   }
 
   open(): void {
