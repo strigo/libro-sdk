@@ -192,6 +192,11 @@ class StrigoSDK implements IStrigoSDK {
 
   open(): void {
     Logger.info('Opening academy panel');
+
+    if (!this.config.isRendered) {
+      throw new Error('SDK was not fully setup yet, not rendered. Open is not possible');
+    }
+
     const config = configManager.getLocalStorageConfig();
 
     const widget = widgetFactory.getWidget(config.selectedWidgetFlavor);

@@ -11,15 +11,15 @@ Include this snippet in the `<head>` section of your web application (you can co
 ```html
 <script>
   (function () {
-    var s = document.createElement("script");
-    s.id = "strigo-sdk";
-    s.type = "text/javascript";
+    var s = document.createElement('script');
+    s.id = 'strigo-sdk';
+    s.type = 'text/javascript';
     s.async = true;
-    s.src = "https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@master/dist/production/strigo.sdk.min.js";
-    s.setAttribute("data-web-api-key", "<webApiKey>");
-    s.setAttribute("data-subdomain", "<subdomain>");
-    s.setAttribute("data-layout-flavor", "dynamic");
-    var x = document.getElementsByTagName("script")[0];
+    s.src = 'https://cdn.jsdelivr.net/gh/strigo/strigo-sdk@master/dist/production/strigo.sdk.min.js';
+    s.setAttribute('data-web-api-key', '<webApiKey>');
+    s.setAttribute('data-subdomain', '<subdomain>');
+    s.setAttribute('data-layout-flavor', 'dynamic');
+    var x = document.getElementsByTagName('script')[0];
     x.parentNode.insertBefore(s, x);
   })();
 </script>
@@ -39,18 +39,35 @@ Make sure to retrieve the token before calling `Strigo.setup()`.
 
 ### Setup
 
-To start the Strigo experience, call `setup` with the following parameters:
+To setup the Strigo experience, call `setup` with the following parameters:
 
 ```js
 window.Strigo.setup({
-  email: "user@domain.com",
+  email: 'user@domain.com',
   // The token you received from Strigo's API
   token: {
-    token: "",
-    expiration: ""
+    token: '',
+    expiration: '',
   },
-  version: "v0.2.3"
+  version: 'v0.2.3',
 });
+```
+
+This will enable opening the panel upon request.
+
+### Opening the panel
+
+After `init` and then `setup` were called, `open` can be invoked in order to expand the Academy panel.
+`collapse` can be invoked to explicitly close the panel.
+
+```js
+window.Strigo.open();
+```
+
+or
+
+```js
+window.Strigo.collapse();
 ```
 
 ### Send events
@@ -70,7 +87,7 @@ window.Strigo.sendEvent(eventName);
 For instance, if you want to make changes to your web app's UI based on the state of the Strigo Panel, you can listen to the `strigo-opened` event - which the SDK will trigger whenever the `Strigo.setup()` is called.
 
 ```js
-window.addEventListener("strigo-opened", () => {
+window.addEventListener('strigo-opened', () => {
   // Your custom code here
   // e.g : setButtonDisabled(true)
 });
@@ -99,15 +116,17 @@ The academy panel will be closed, `sessionStorage` and `localStorage` configurat
 # Development
 
 # Local
+
 For developing with your local services and SDK:
 
-* Add `127.0.0.1       local.strigo.io` to your hosts file (`/etc/hosts`)
-* Set your `IS_DEVELOPMENT` variable to `true` in the `.env` file.
+- Add `127.0.0.1 local.strigo.io` to your hosts file (`/etc/hosts`)
+- Set your `IS_DEVELOPMENT` variable to `true` in the `.env` file.
 
 ## Working with the Strigo Chrome extension locally
+
 To allow a smoother dev experience with ability to test your changes in our Chrome extension
-you can direct your local dev server to also write your latest `strigo.sdk.js` bundle 
-into the *strigo-academy-chrome-extension* scripts folder. 
+you can direct your local dev server to also write your latest `strigo.sdk.js` bundle
+into the _strigo-academy-chrome-extension_ scripts folder.
 
 A new build of the extension is not required in that case since Chrome extensions invoke everything in the `scripts` folder dynamically.
 
@@ -116,22 +135,24 @@ The only thing you might need in order tou test your changes is to refresh the p
 -- in case you don't see your changes in the CE - try to update the extension in the `chrome://extensions` page.
 
 #### To start the dev server with the extension-hot-reload, run:
+
 ```sh
 npm run build start:extension
 ```
 
 ## Working with the Strigo Chrome extension in prod
 
-
 ## _DISCLAIMER_!
 
 ---
+
 We are "temporarily" 🙄 using the `dist/development/strigo.sdk.js` build for production as well!
 
 So the actual version you upload as the "prod" version of things should be the development build
 
 but with the **IS_DEVELOPMENT** variable set to **false**!
-____
+
+---
 
 To build a "development" build with the IS_DEVELOPMENT flag set to false you can either run the `start:extension` command,
 but set your `.env` file `IS_DEVELOPMENT` var to false.
@@ -140,10 +161,10 @@ or
 
 You can run a single "prod" build that will write the sdk script into the extension scripts folder,
 with `isDevelopment` flag set to `false`:
+
 ```bash
 npm run build:extension
 ```
-
 
 ## Testing
 

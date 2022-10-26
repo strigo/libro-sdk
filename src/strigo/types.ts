@@ -25,7 +25,7 @@ export interface IStrigoSDK {
   init: () => void;
   setup: (data?: SDKSetupData) => Promise<void>;
   open: () => void;
-  collapse?: (shouldHideLoader: boolean) => void;
+  collapse?: (shouldHideLoader?: boolean) => void;
   shutdown: () => void;
   destroy: () => void;
   sendEvent: (eventName: string) => Promise<void>;
