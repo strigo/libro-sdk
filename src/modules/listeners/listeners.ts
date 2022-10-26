@@ -83,7 +83,7 @@ function onHostEventHandler(ev: MessageEvent<unknown>): void {
       Logger.info('Panel rendered message received');
       sessionManager.setSessionValue('isContentRendered', true);
 
-      window.Strigo?.open();
+      // window.Strigo?.open();
 
       break;
     }
