@@ -22,7 +22,7 @@ export interface SdkConfig {
 }
 
 export interface IStrigoSDK {
-  init: () => void;
+  init: (options?: StrigoSDKInitOptions) => void;
   setup: (data?: SDKSetupData) => Promise<void>;
   open: () => void;
   expandPanel: () => void;
@@ -48,4 +48,8 @@ export interface StrigoWindow extends Window {
 export interface ElementObserver {
   observedBodyElement?: Element;
   observer: MutationObserver;
+}
+
+export interface StrigoSDKInitOptions {
+  isExtension?: boolean;
 }

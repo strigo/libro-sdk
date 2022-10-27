@@ -6,13 +6,12 @@ import * as assessmentRecorderModule from '../modules/assessment-recorder/assess
 import { Logger } from '../services/logger';
 import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MessageTypes } from '../modules/listeners/listeners.types';
-import { DockingSide, User } from '../modules/config/config.types';
+import { DockingSide } from '../modules/config/config.types';
 import { getElementSelection } from '../modules/element-selector/element-selector';
 import { customizeHatColors, removeLoader } from '../modules/document/document';
 import { setupUrlTriggers } from '../modules/url-trigger/url-trigger';
-import { getLocalStorageConfig } from '../modules/config/config';
 
-import { IStrigoSDK, SdkConfig, SDKSetupData, SdkTypes } from './types';
+import { IStrigoSDK, SdkConfig, SDKSetupData, SdkTypes, StrigoSDKInitOptions } from './types';
 
 class StrigoSDK implements IStrigoSDK {
   config: SdkConfig = {};
@@ -21,7 +20,7 @@ class StrigoSDK implements IStrigoSDK {
     return IS_DEVELOPMENT === 'true';
   }
 
-  init(): void {
+  init(options?: StrigoSDKInitOptions): void {
     try {
       Logger.info('Initializing SDK...');
 
@@ -52,18 +51,9 @@ class StrigoSDK implements IStrigoSDK {
 
       // Auto open academy if it was opened in this session before.
       if (this.config.sdkType !== SdkTypes.CHILD && sessionManager.shouldPanelBeOpen()) {
-        const persistedToken = getLocalStorageConfig()?.user?.token;
+        const currentToken = configManager.getCurrentUserToken();
         const strigoPreviewUserToken = sessionStorage.getItem('strigoPreviewUserToken');
-        const setupData = strigoPreviewUserToken
-          ? {
-              token: {
-                token: strigoPreviewUserToken,
-                expiration: `${Date.now() + 1000 * 60 * 60 * 24}`,
-              },
-              isPreview: true,
-            }
-          : { token: persistedToken };
-        this.setup(setupData);
+        this.setup({ token: currentToken, isPreview: !!strigoPreviewUserToken });
       }
     } catch (err) {
       Logger.error('Could not initialize SDK', { err });
@@ -91,7 +81,6 @@ class StrigoSDK implements IStrigoSDK {
       const config = configManager.getLocalStorageConfig();
 
       const {
-        email,
         token,
         version,
         openWidget = true,
@@ -99,7 +88,7 @@ class StrigoSDK implements IStrigoSDK {
         isPreview,
       } = { ...config?.user, ...config, ...data };
 
-      if (!email || !token) {
+      if (!token) {
         throw new Error('Setup data is missing');
       }
 
@@ -133,7 +122,6 @@ class StrigoSDK implements IStrigoSDK {
       if (!isPreview) {
         configManager.setupLocalStorageConfig({
           user: {
-            email,
             token,
           },
           initSite: urlTools.getUrlData(),
@@ -274,10 +262,8 @@ class StrigoSDK implements IStrigoSDK {
   }
 
   async sendEvent(eventName: string): Promise<void> {
-    const user = configManager.getConfigValue('user') as User;
-    const { token } = user;
-
-    await configManager.sendSuccessEvent(token, eventName);
+    const currentToken = configManager.getCurrentUserToken();
+    await configManager.sendSuccessEvent(currentToken, eventName);
     Logger.debug('sendEvent called', { eventName });
   }
 
