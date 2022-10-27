@@ -24,6 +24,7 @@ class StrigoSDK implements IStrigoSDK {
   init(): void {
     try {
       Logger.info('Initializing SDK...');
+      sessionManager.setSessionValue('shouldPanelBeOpen', true);
 
       if (this.config.initialized) {
         Logger.info('SDK was already initialized');
@@ -152,7 +153,6 @@ class StrigoSDK implements IStrigoSDK {
         this.open();
 
         // Collapse the panel so it would open when fully loaded
-        sessionManager.setSessionValue('shouldPanelBeOpen', false);
         this.collapse();
       }
     } catch (err) {
