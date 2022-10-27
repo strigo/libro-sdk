@@ -104,3 +104,15 @@ export async function sendSuccessEvent(token: StrigoToken, eventName: string): P
     return null;
   }
 }
+
+export function getCurrentUserToken(): StrigoToken {
+  const persistedToken = getLocalStorageConfig()?.user?.token;
+  const strigoPreviewUserToken = sessionStorage.getItem('strigoPreviewUserToken');
+
+  return strigoPreviewUserToken
+    ? ({
+        token: strigoPreviewUserToken,
+        expiration: `${Date.now() + 1000 * 60 * 60 * 24}`,
+      } as StrigoToken)
+    : persistedToken;
+}

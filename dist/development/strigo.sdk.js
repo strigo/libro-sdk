@@ -11313,6 +11313,14 @@ ${JSON.stringify(parsedContext)}` : "");
       return null;
     }
   }
+  function getCurrentUserToken() {
+    const persistedToken = getLocalStorageConfig()?.user?.token;
+    const strigoPreviewUserToken = sessionStorage.getItem("strigoPreviewUserToken");
+    return strigoPreviewUserToken ? {
+      token: strigoPreviewUserToken,
+      expiration: `${Date.now() + 1e3 * 60 * 60 * 24}`
+    } : persistedToken;
+  }
 
   // src/modules/session/session.ts
   function setupSessionStorage(initialSession) {
@@ -13316,8 +13324,7 @@ ${JSON.stringify(parsedContext)}` : "");
           token: {
             token: strigoPreviewUserToken ? strigoPreviewUserToken : localConfig.user.token.token,
             expiration: localConfig.user.token.expiration
-          },
-          email: localConfig.user.email
+          }
         }
       }, isPreview));
       const hostingAppWindow = getHostingAppWindow();
@@ -13585,7 +13592,7 @@ ${JSON.stringify(parsedContext)}` : "");
     isDevelopment() {
       return false;
     }
-    init() {
+    init(options) {
       try {
         LoggerInstance.info("Initializing SDK...");
         if (this.config.initialized) {
@@ -13604,16 +13611,9 @@ ${JSON.stringify(parsedContext)}` : "");
         this.config.initialized = true;
         LoggerInstance.info("Initialized SDK.");
         if (this.config.sdkType !== "CHILD" /* CHILD */ && shouldPanelBeOpen()) {
-          const persistedToken = getLocalStorageConfig()?.user?.token;
+          const currentToken = getCurrentUserToken();
           const strigoPreviewUserToken = sessionStorage.getItem("strigoPreviewUserToken");
-          const setupData = strigoPreviewUserToken ? {
-            token: {
-              token: strigoPreviewUserToken,
-              expiration: `${Date.now() + 1e3 * 60 * 60 * 24}`
-            },
-            isPreview: true
-          } : { token: persistedToken };
-          this.setup(setupData);
+          this.setup({ token: currentToken, isPreview: !!strigoPreviewUserToken });
         }
       } catch (err) {
         LoggerInstance.error("Could not initialize SDK", { err });
@@ -13633,14 +13633,13 @@ ${JSON.stringify(parsedContext)}` : "");
         }
         const config = getLocalStorageConfig();
         const {
-          email,
           token,
           version,
           openWidget: openWidget2 = true,
           dockingSide = "right" /* RIGHT */,
           isPreview
         } = { ...config?.user, ...config, ...data };
-        if (!email || !token) {
+        if (!token) {
           throw new Error("Setup data is missing");
         }
         const configuration = await fetchRemoteConfiguration(token);
@@ -13666,7 +13665,6 @@ ${JSON.stringify(parsedContext)}` : "");
         if (!isPreview) {
           setupLocalStorageConfig({
             user: {
-              email,
               token
             },
             initSite: getUrlData(),
@@ -13772,9 +13770,8 @@ ${JSON.stringify(parsedContext)}` : "");
       }
     }
     async sendEvent(eventName) {
-      const user = getConfigValue("user");
-      const { token } = user;
-      await sendSuccessEvent(token, eventName);
+      const currentToken = getCurrentUserToken();
+      await sendSuccessEvent(currentToken, eventName);
       LoggerInstance.debug("sendEvent called", { eventName });
     }
     startElementSelector(onElementProfileCreated, onElementSelectionCancel2, rootElementSelector) {
@@ -13799,7 +13796,9 @@ ${JSON.stringify(parsedContext)}` : "");
 
   // src/strigo.sdk.ts
   window.Strigo = Strigo;
-  window.Strigo.init();
+  if (!(window.chrome && chrome.runtime && chrome.runtime.id)) {
+    window.Strigo.init({ isExtension: false });
+  }
 })();
 /*!
  * html2canvas 1.4.1 <https://html2canvas.hertzen.com>

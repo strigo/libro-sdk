@@ -84,8 +84,6 @@ class OverlayWidget implements IOverlayWidget {
               token: strigoPreviewUserToken ? strigoPreviewUserToken : localConfig.user.token.token,
               expiration: localConfig.user.token.expiration,
             },
-
-            email: localConfig.user.email,
           },
         },
         isPreview

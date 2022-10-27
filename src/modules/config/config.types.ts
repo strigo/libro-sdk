@@ -50,7 +50,7 @@ export interface StrigoProtectedConfig {
 }
 
 export interface User {
-  email: string;
+  email?: string;
   token: StrigoToken;
 }
 
