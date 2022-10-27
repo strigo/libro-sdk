@@ -83,7 +83,9 @@ function onHostEventHandler(ev: MessageEvent<unknown>): void {
       Logger.info('Panel rendered message received');
       sessionManager.setSessionValue('isRendered', true);
 
-      window.Strigo?.expandPanel();
+      if (sessionManager.shouldPanelBeOpen()) {
+        window.Strigo?.expandPanel();
+      }
 
       break;
     }
