@@ -8,7 +8,7 @@ import * as widgetFactory from '../modules/widgets/widget-factory';
 import { MessageTypes } from '../modules/listeners/listeners.types';
 import { DockingSide, User } from '../modules/config/config.types';
 import { getElementSelection } from '../modules/element-selector/element-selector';
-import { customizeHatColors, removeLoader, openWidget, collapseWidget } from '../modules/document/document';
+import { customizeHatColors, removeLoader } from '../modules/document/document';
 import { setupUrlTriggers } from '../modules/url-trigger/url-trigger';
 import { getLocalStorageConfig } from '../modules/config/config';
 
@@ -147,13 +147,13 @@ class StrigoSDK implements IStrigoSDK {
       this.config.configured = true;
       Logger.info('Finished SDK setup. Calling render...');
 
-      this.render();
+      this.render(false);
     } catch (err) {
       Logger.error('Could not setup SDK', { err });
     }
   }
 
-  render(): void {
+  render(shouldOpenPanel = true): void {
     try {
       Logger.info('Rendering academy panel...');
 
@@ -185,6 +185,10 @@ class StrigoSDK implements IStrigoSDK {
 
       this.config.isRendered = true;
       Logger.info('Rendered academy panel.');
+
+      if (shouldOpenPanel && sessionManager.shouldPanelBeOpen()) {
+        this.open();
+      }
     } catch (err) {
       Logger.error('Could not open render panel', { err });
     }

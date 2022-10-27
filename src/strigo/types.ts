@@ -24,6 +24,7 @@ export interface SdkConfig {
 export interface IStrigoSDK {
   init: () => void;
   setup: (data?: SDKSetupData) => Promise<void>;
+  render: (shouldOpenPanel: boolean) => void;
   open: () => void;
   collapse?: (shouldHideLoader?: boolean) => void;
   shutdown: () => void;

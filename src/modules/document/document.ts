@@ -173,7 +173,7 @@ const navigationObserver = function (pageMutations): void {
     }
 
     Logger.info('*** Reloading widget in navigation observer');
-    setTimeout(window.Strigo.open.bind(window.Strigo), 0);
+    setTimeout(window.Strigo.render.bind(window.Strigo), 0);
   }
 };
 
@@ -203,15 +203,15 @@ export function createWidget(url: string): HTMLIFrameElement {
   };
 
   const academyHatIcon = document.createElement('div');
-  academyHatIcon.className = 'strigo-academy-hat-icon loader';
+  academyHatIcon.className = 'strigo-academy-hat-icon'; //loader';
   academyHatIcon.id = 'strigo-academy-hat-icon';
   academyHatIcon.innerHTML = ACADEMY_HAT;
   academyHatDiv.appendChild(academyHatIcon);
 
-  const loaderElement = document.createElement('div');
-  loaderElement.className = 'loader';
-  loaderElement.id = 'loader';
-  academyHatDiv.appendChild(loaderElement);
+  // const loaderElement = document.createElement('div');
+  // loaderElement.className = 'loader';
+  // loaderElement.id = 'loader';
+  // academyHatDiv.appendChild(loaderElement);
 
   // Create collapse div
   const collapseDiv = document.createElement('div');
