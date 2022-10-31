@@ -13411,7 +13411,10 @@ ${JSON.stringify(parsedContext)}` : "");
       case "rendered" /* RENDERED */: {
         LoggerInstance.info("Panel rendered message received");
         setSessionValue("isRendered", true);
-        window.Strigo?.expandPanel();
+        removeLoader();
+        if (shouldPanelBeOpen()) {
+          window.Strigo?.expandPanel();
+        }
         break;
       }
       default: {
@@ -13677,9 +13680,10 @@ ${JSON.stringify(parsedContext)}` : "");
         this.config.configured = true;
         LoggerInstance.info("Finished SDK setup.");
         if (openWidget2) {
+          const shouldPanelBeOpen2 = shouldPanelBeOpen();
           this.open();
-          setSessionValue("shouldPanelBeOpen", false);
           this.collapse();
+          setSessionValue("shouldPanelBeOpen", shouldPanelBeOpen2);
         }
       } catch (err) {
         LoggerInstance.error("Could not setup SDK", { err });

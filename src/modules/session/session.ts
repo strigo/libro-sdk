@@ -27,8 +27,8 @@ export function getSession(): StrigoSession {
 }
 
 export function shouldPanelBeOpen(): boolean {
+  
   return getSession() ? getSession().shouldPanelBeOpen : true;
-
 }
 
 export function getWidgetFlavor(): WidgetFlavors {
