@@ -24,7 +24,6 @@ class StrigoSDK implements IStrigoSDK {
   init(): void {
     try {
       Logger.info('Initializing SDK...');
-      sessionManager.setSessionValue('shouldPanelBeOpen', true);
 
       if (this.config.initialized) {
         Logger.info('SDK was already initialized');
@@ -150,10 +149,14 @@ class StrigoSDK implements IStrigoSDK {
       Logger.info('Finished SDK setup.');
 
       if (openWidget) {
+        // Save the original state of the panel
+        const shouldPanelBeOpen = sessionManager.shouldPanelBeOpen();
         this.open();
-
         // Collapse the panel so it would open when fully loaded
         this.collapse();
+
+        // Return the original state of the panel after collapsing
+        sessionManager.setSessionValue('shouldPanelBeOpen', shouldPanelBeOpen);
       }
     } catch (err) {
       Logger.error('Could not setup SDK', { err });

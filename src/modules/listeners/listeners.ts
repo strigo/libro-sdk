@@ -3,7 +3,7 @@ import * as configManager from '../config/config';
 import overlayWidget from '../widgets/overlay';
 import { Logger } from '../../services/logger';
 import { WidgetFlavors } from '../widgets/widget.types';
-import { openWidget } from '../document/document';
+import { openWidget, removeLoader } from '../document/document';
 
 import { EventTypes, MessageTypes } from './listeners.types';
 
@@ -82,6 +82,7 @@ function onHostEventHandler(ev: MessageEvent<unknown>): void {
     case MessageTypes.RENDERED: {
       Logger.info('Panel rendered message received');
       sessionManager.setSessionValue('isRendered', true);
+      removeLoader();
 
       if (sessionManager.shouldPanelBeOpen()) {
         window.Strigo?.expandPanel();
