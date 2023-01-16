@@ -11073,7 +11073,7 @@
   }
   function generateCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo.min.css`;
@@ -11082,7 +11082,7 @@
   }
   function generateWidgetCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-widget.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-widget.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-widget.min.css`;
@@ -11091,7 +11091,7 @@
   }
   function generateAcademyHatCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-academy-hat.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-academy-hat.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-academy-hat.min.css`;
@@ -11100,7 +11100,7 @@
   }
   function generateRecorderCssURL(version) {
     if (window.Strigo.isDevelopment()) {
-      return `${SDK_LOCAL_URL}/styles/strigo-assessment-recorder.css`;
+      return `${"http://local.strigo.io:7005"}/styles/strigo-assessment-recorder.css`;
     }
     if (version) {
       return `${CDN_BASE_PATH}@${version}/dist/production/styles/strigo-assessment-recorder.min.css`;
@@ -11108,7 +11108,7 @@
     return `${CDN_BASE_PATH}@${DEFAULT_ASSESSMENT_RECORDER_CSS_VERSION}/dist/production/styles/strigo-assessment-recorder.min.css`;
   }
   function generateAssessmentRecorderURL() {
-    return window.Strigo.isDevelopment() ? RECORDER_LOCAL_URL : ASSESSMENT_RECORDER_URL;
+    return window.Strigo.isDevelopment() ? "http://local.strigo.io:7015" : ASSESSMENT_RECORDER_URL;
   }
   function getURLWithoutStrigoRecorderParams(url) {
     const capturedElementUrl = new URL(url);
@@ -13019,8 +13019,9 @@ ${JSON.stringify(parsedContext)}` : "");
     LoggerInstance.info("*** Evaluating Assessments...", {
       bodyTextDuringAssessment: window.document.body.innerText.slice(0, 50)
     });
+    console.log("assessments", assessments);
     const relevantAssessments = assessments.filter(({ recordedAssessment }) => {
-      const recordedElementUrl = recordedAssessment?.locationElement?.profile?.recordedElementInfo?.url;
+      const recordedElementUrl = recordedAssessment?.locationElement?.profile?.recordedElementInfo?.url || recordedAssessment?.url;
       if (!recordedElementUrl) {
         return false;
       }
@@ -13030,6 +13031,14 @@ ${JSON.stringify(parsedContext)}` : "");
     relevantAssessments.forEach((assessment) => {
       const { recordedAssessment, challengeSuccessEvent, _id } = assessment;
       const { actionType, expectedText } = recordedAssessment;
+      if (actionType === "notification" /* NOTIFICATION */ && expectedText) {
+        const notificationText = window.document.body.innerText?.toLowerCase();
+        if (notificationText.indexOf(expectedText.toLowerCase())) {
+          LoggerInstance.info("*** Found notification text. Sending success event...");
+          window.Strigo.sendEvent(challengeSuccessEvent);
+        }
+        return;
+      }
       const locationElementProfile = recordedAssessment?.locationElement?.profile;
       if (!locationElementProfile) {
         LoggerInstance.info("*** missing location element profile. Aborting...");
@@ -13590,7 +13599,7 @@ ${JSON.stringify(parsedContext)}` : "");
       this.config = {};
     }
     isDevelopment() {
-      return false;
+      return true;
     }
     init(options) {
       try {

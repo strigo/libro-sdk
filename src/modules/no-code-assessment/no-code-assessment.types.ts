@@ -6,6 +6,7 @@ export enum AssessmentType {
 export enum AssessmentActionType {
   TEXT_CHANGE = 'text-change',
   ADDED_ITEM = 'added-item',
+  NOTIFICATION = 'notification',
 }
 
 export enum NodeIdentifierType {
