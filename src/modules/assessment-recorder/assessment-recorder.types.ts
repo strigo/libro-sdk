@@ -6,6 +6,7 @@ export const ASSESSMENT_RECORDER_PARAM = 'strigoAssessmentRecorder';
 export enum AssessmentActionType {
   TEXT_CHANGE = 'text-change',
   ADDED_ITEM = 'added-item',
+  NOTIFICATION = 'notification',
 }
 
 export const enum AssessmentRecorderMessageTypes {
