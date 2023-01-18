@@ -318,12 +318,13 @@ const evaluateAssessments = function (): void {
   Logger.info('*** Evaluating Assessments...', {
     bodyTextDuringAssessment: window.document.body.innerText.slice(0, 50),
   });
-  console.log('assessments', assessments);
   const relevantAssessments = assessments.filter(({ recordedAssessment }) => {
     const recordedElementUrl =
       recordedAssessment?.locationElement?.profile?.recordedElementInfo?.url || recordedAssessment?.url;
+
     if (!recordedElementUrl) {
-      
+      Logger.info('*** missing recorded element url. Aborting...');
+
       return false;
     }
 
@@ -455,30 +456,6 @@ const evaluateAssessments = function (): void {
 
         break;
       }
-
-      // case AssessmentActionType.NOTIFICATION: {
-      //   Logger.info('*** Assessing text detected on the document...', {
-      //     locationElement,
-      //     locationElementType: locationElement instanceof HTMLInputElement ? 'input' : 'non-input',
-      //     innerTextValue:
-      //       locationElement instanceof HTMLInputElement ? locationElement?.value : locationElement?.innerText,
-      //     expectedText,
-      //   });
-
-      //   if (locationElement instanceof HTMLInputElement) {
-      //     if (locationElement?.value?.includes(expectedText)) {
-      //       onAssessmentSuccess(assessment, { locationElement });
-      //       break;
-      //     }
-      //   }
-
-      //   if (locationElement?.innerText?.includes(expectedText)) {
-      //     onAssessmentSuccess(assessment, { locationElement });
-      //     break;
-      //   }
-
-      //   break;
-      // }
 
       default: {
         break;
