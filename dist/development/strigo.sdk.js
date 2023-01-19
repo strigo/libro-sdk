@@ -13032,8 +13032,8 @@ ${JSON.stringify(parsedContext)}` : "");
       const { recordedAssessment, challengeSuccessEvent, _id } = assessment;
       const { actionType, expectedText } = recordedAssessment;
       if (actionType === "notification" /* NOTIFICATION */ && expectedText) {
-        const notificationText = window.document.body.innerText?.toLowerCase();
-        if (notificationText.indexOf(expectedText.toLowerCase())) {
+        const bodyText = window.document.body.innerText?.toLowerCase();
+        if (bodyText.length > 100 && bodyText.indexOf(expectedText.toLowerCase()) !== -1) {
           LoggerInstance.info("*** Found notification text. Sending success event...");
           window.Strigo.sendEvent(challengeSuccessEvent);
         }
