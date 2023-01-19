@@ -338,9 +338,9 @@ const evaluateAssessments = function (): void {
     const { actionType, expectedText } = recordedAssessment;
 
     if (actionType === AssessmentActionType.NOTIFICATION && expectedText) {
-      const notificationText = window.document.body.innerText?.toLowerCase();
+      const bodyText = window.document.body.innerText?.toLowerCase();
 
-      if (notificationText.indexOf(expectedText.toLowerCase())) {
+      if (bodyText.length > 100 && bodyText.indexOf(expectedText.toLowerCase()) !== -1) {
         Logger.info('*** Found notification text. Sending success event...');
 
         window.Strigo.sendEvent(challengeSuccessEvent);
