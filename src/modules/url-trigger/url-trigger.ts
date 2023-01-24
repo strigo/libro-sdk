@@ -61,6 +61,12 @@ export function detectUrlTrigger(currentWindow: Window): void {
       continue;
     }
 
+    if (!urlTriggerUrl) {
+      Logger.info('URL trigger detected without url');
+
+      continue;
+    }
+
     if (urlTriggeredCourses.includes(publishmentId)) {
       Logger.info('Detected URL trigger for a course that was already opened, doing nothing');
 

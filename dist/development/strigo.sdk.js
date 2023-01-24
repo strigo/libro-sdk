@@ -13212,6 +13212,10 @@ ${JSON.stringify(parsedContext)}` : "");
         LoggerInstance.info("URL trigger detected without course id");
         continue;
       }
+      if (!urlTriggerUrl) {
+        LoggerInstance.info("URL trigger detected without url");
+        continue;
+      }
       if (urlTriggeredCourses.includes(publishmentId)) {
         LoggerInstance.info("Detected URL trigger for a course that was already opened, doing nothing");
         continue;
